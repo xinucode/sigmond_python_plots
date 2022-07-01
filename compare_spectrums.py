@@ -10,7 +10,6 @@ import argparse
 
 titles = {"isodoublet_nonstrange":r"$I=\nicefrac{1}{2}$","isoquartet_nonstrange_fermionic":r"$I=\nicefrac{3}{2}$"}
 
-
 remove_ref = False
 do_scattering_particles = False
 file1 = ""
@@ -71,19 +70,26 @@ for graph in graphs:
         spectrum_type = configdata['comparison']['spectrum_type']
         do_scattering_particles = bool(configdata['comparison']['do_scattering_particles'])
 
-        best_legend_loc=configdata['comparison']['best_legend_loc']
+        if 'best_legend_loc' in configdata['comparison'].keys():
+            best_legend_loc=configdata['comparison']['best_legend_loc']
+        else:
+            best_legend_loc = ""
 
         if spectrum_type=="mom":
             do_scattering_particles = False
 
-        file_name = channel+f"-{spectrum_type}_spectrum_comparison_graph.jpg"
+        file_name = channel+f"-{spectrum_type}_spectrum_comparison_graph.pdf"
+        if 'plot_ni_levels' in configdata['comparison'].keys():
+            plot_ni_levels = configdata['comparison']['plot_ni_levels']
+        else:
+            plot_ni_levels = False
 
     if ('final_spectrum' in configdata.keys()) and (graph=='final_spectrum'):
         file_directory = configdata['final_spectrum']['file_directory']
         best_legend_loc=configdata['final_spectrum']['best_legend_loc']
         files["this"] = os.path.join(channel,file_directory,configdata['final_spectrum']['file'])
         spectrum_type="energy"
-        file_name = channel+"_spectrum_graph.jpg"
+        file_name = channel+"_spectrum_graph.pdf"
 #         non_interacting_levels = configdata['final_spectrum']['non_interacting_levels']
 
     Refs = {}
@@ -101,17 +107,20 @@ for graph in graphs:
                 Refs[scat] = value
                 break
 
-    used_levels=configdata['used_levels']
+    if 'used_levels' in configdata.keys():
+        used_levels=configdata['used_levels']
+    else:
+        used_levels = {}
 
     expected_keys = ['PSQ0', 'PSQ1', 'PSQ2', 'PSQ3', 'PSQ4']
-    possible_irreps = ['G1u', 'G1g', 'Hg', 'G1', 'G2', 'F1', 'F2', 'G','Hu']
+    possible_irreps = ['G1u', 'G1g', 'Hg', 'G1', 'G2', 'F1', 'F2', 'G','Hu','A1g','T1g']
     if spectrum_type=="mom":
         energy_keys = ['q2cm_0_ref', 'q2cm_1_ref', 'q2cm_2_ref', 'q2cm_3_ref', 'q2cm_4_ref', 'q2cm_5_ref', 'q2cm_6_ref', 'q2cm_7_ref', 'q2cm_8_ref', 'q2cm_9_ref', 'q2cm_10_ref']
     elif spectrum_type=="energy":
         if remove_ref:
             energy_keys = ['ecm_0', 'ecm_1', 'ecm_2', 'ecm_3', 'ecm_4', 'ecm_5', 'ecm_6', 'ecm_7', 'ecm_8', 'ecm_9', 'ecm_10']
         else:
-            energy_keys = ['ecm_0_ref', 'ecm_1_ref', 'ecm_2_ref', 'ecm_3_ref', 'ecm_4_ref', 'ecm_5_ref', 'ecm_6_ref', 'ecm_7_ref', 'ecm_8_ref', 'ecm_9_ref', 'ecm_10_ref']
+            energy_keys = ['ecm_0_ref', 'ecm_1_ref', 'ecm_2_ref', 'ecm_3_ref', 'ecm_4_ref', 'ecm_5_ref', 'ecm_6_ref', 'ecm_7_ref', 'ecm_8_ref', 'ecm_9_ref', 'ecm_10_ref', 'ecm_11_ref']
     else:
         print("Bad spectrum type")
 
@@ -123,6 +132,7 @@ for graph in graphs:
     ekeys = {}
     evals = {}
     eerrs = {}
+    max_level_num = 0
     for dataset in datasets.keys():
         vals[dataset] = []
         keys[dataset] = []
@@ -135,7 +145,7 @@ for graph in graphs:
         for i, (mom) in enumerate(expected_keys):
             for j, (irrep) in enumerate(possible_irreps):
                 for k, (energy) in enumerate(energy_keys):
-
+                    
                     if not datasets[dataset].empty:
                         val1, err1 = utils.select_val(datasets[dataset], mom, irrep, energy)
                     else:
@@ -146,10 +156,13 @@ for graph in graphs:
                         keys[dataset].append(irrep_key)
                         vals[dataset].append(val1)
                         errs[dataset].append(err1)
-                        if used_levels[irrep_key]:
-                            if k in used_levels[irrep_key]:
-                                vals_used[dataset].append(val1)
-                                keys_used[dataset].append(irrep_key)
+                        if k>max_level_num:
+                            max_level_num=k
+                        if used_levels:
+                            if used_levels[irrep_key]:
+                                if k in used_levels[irrep_key]:
+                                    vals_used[dataset].append(val1)
+                                    keys_used[dataset].append(irrep_key)
                                 
                 for k, (energy) in enumerate(elastic_scat_keys):
 
@@ -249,15 +262,15 @@ for graph in graphs:
             plt.title(channel)
             plt.savefig(os.path.join(channel,configdata['comparison']['file_directory'],channel+"-ni_comparison_graph-"+'_'.join(datasets.keys()).replace(" ","-")+".jpg"))
             
+    somekey = list(indexes.keys())[0]
             
     #plot spectrum
     f = plt.figure()
-    f.set_figwidth(15)
-    f.set_figheight(10)
+    f.set_figwidth(max(indexes[somekey])+7)
+    f.set_figheight(max_level_num+5)
     dd=0.1
     plt.style.use('spectrum.mplstyle')
 
-    somekey = list(indexes.keys())[0]
     if not remove_ref:
         if configdata['thresholds']:
             for threshold in configdata['thresholds'].keys():
@@ -268,17 +281,22 @@ for graph in graphs:
                     threshold_label=threshold_label.replace(utils.latex_format[particle], particle)
                     threshold_label=threshold_label.replace(particle, utils.latex_format[particle])
 
-                plt.hlines(threshold_value,min(indexes[somekey]-dd*(len(vals.keys())/2)),max(indexes[somekey]+dd*(len(vals.keys())/2)),color='black', linestyle="solid") 
-                plt.text( max(indexes[somekey])*(1-0.125),threshold_value*0.985, threshold_label)
+                plt.hlines(threshold_value,min(indexes[somekey]-dd*(len(vals.keys())/2)),max(indexes[somekey]+dd*(len(vals.keys())/2)),color='black', linestyle="solid", zorder=1) 
+                plt.text( max(indexes[somekey])*(1-0.125),threshold_value*0.985, threshold_label, zorder=6)
 
     for i,dataset in enumerate(vals.keys()):
-        plt.errorbar(indexes[dataset]+dd*(i-((len(vals.keys())-1)/2)), vals[dataset], np.array(errs[dataset]),  capsize=5, color=utils.colors[i], marker=utils.markers[i],linestyle="", linewidth=0.0, elinewidth=2.0,mfc='white',zorder=3)
-        plt.scatter(indexes_used[dataset]+dd*(i-((len(vals.keys())-1)/2)),vals_used[dataset],color=utils.colors[i], marker=utils.markers[i], label = dataset, zorder=4)
+        if used_levels:
+            marker_color = 'white'
+        else:
+            marker_color = utils.colors[i]
+        plt.errorbar(indexes[dataset]+dd*(i-((len(vals.keys())-1)/2)), vals[dataset], np.array(errs[dataset]),  capsize=5, color=utils.colors[i], marker=utils.markers[i],linestyle="", linewidth=0.0, elinewidth=2.0,mfc=marker_color,zorder=4)
+        if used_levels:
+            plt.scatter(indexes_used[dataset]+dd*(i-((len(vals.keys())-1)/2)),vals_used[dataset],color=utils.colors[i], marker=utils.markers[i], label = dataset, zorder=5)
         
-    if ('final_spectrum' in configdata.keys()) and (graph=='final_spectrum'):
+    if (graph=='final_spectrum') or plot_ni_levels:
         for i,dataset in enumerate(evals.keys()):
-            plt.errorbar(eindexes[dataset]+dd*(i-((len(evals.keys())-1)/2)), evals[dataset], np.array(eerrs[dataset]), color="lightgray", marker="_",linestyle="", linewidth=0.0, elinewidth=20.0,zorder=1)
-            plt.scatter(eindexes[dataset]+dd*(i-((len(evals.keys())-1)/2)),evals[dataset],color="darkgrey", marker="_",s=400,zorder=2)
+            plt.errorbar(eindexes[dataset], evals[dataset], np.array(eerrs[dataset]), color="lightgray", marker="_",linestyle="", linewidth=0.0, elinewidth=80.0,zorder=2)
+            plt.scatter(eindexes[dataset],evals[dataset],color="darkgrey", marker="_",s=6400,zorder=3)
 
     if spectrum_type=='energy':
         plt.ylabel(r"$E_{cm}/$"+utils.latex_format[rest_mass])
@@ -287,8 +305,9 @@ for graph in graphs:
     plt.xlabel(r"$\Lambda(d^2)$")
     latex_keys = [utils.latex_format[key.split('(')[0]]+"("+key.split('(')[1] for key in keys[somekey]]
     plt.xticks(indexes[somekey], latex_keys)
+    plt.xlim(min(indexes[somekey])-0.5,max(indexes[somekey])+0.5)
 
-    if (graph=='comparison'):
+    if (graph=='comparison') and best_legend_loc:
         plt.legend(title=titles[channel], loc=best_legend_loc)
     plt.savefig(os.path.join(channel,file_directory,file_name))
     plt.show()
