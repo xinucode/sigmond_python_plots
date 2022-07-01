@@ -1,0 +1,22 @@
+channel: hexaquark
+scattering_particles:
+  - N
+thresholds: []
+#   "N + N": [ N, N ]
+#   "N + 2pi": [ N, pi, pi]
+rest_mass: N
+  
+comparison:
+#     best_legend_loc: lower left
+    do_scattering_particles: false
+    plot_ni_levels: true
+    spectrum_type: energy
+    file_directory: spectrum
+    files:
+      Pivot(n-1,3,6): energy_estimates_hexaquark_2exp_trimmed_rebin1_Bootstrap.csv
+      Pivot(n,3,6): energy_estimates_hexaquark_2exp_all_rebin1_Bootstrap.csv
+      
+# final_spectrum:
+# #     best_legend_loc: lower left
+#     file_directory: spectrum
+#     file: energy_estimates_isodoublet_nonstrange_colin_rebin20_Bootstrap.csv
