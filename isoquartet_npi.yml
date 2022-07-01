@@ -1,0 +1,45 @@
+channel: isoquartet_nonstrange_fermionic
+best_legend_loc: upper right
+do_scattering_particles: false
+scattering_particles:
+  - N
+  - pi
+used_levels:
+  G1g(0):
+  - 0
+  G1u(0):
+  - 0
+  - 1
+  Hg(0):
+  - 0
+  Hu(0):
+  - 0
+  G1(1):
+  - 0
+  - 1
+  - 2
+  G2(1):
+  - 0
+  G(2):
+  - 0
+  - 1
+  - 2
+  - 3
+  - 4
+  F1(3):
+  - 0
+  - 1
+  F2(3):
+  - 0
+  - 1
+  G(3):
+  - 0
+  - 1
+  - 2
+  - 3
+  G1(4):
+  - 0
+  - 1
+  - 2
+  G2(4):
+  - 0
