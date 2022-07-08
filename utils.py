@@ -6,8 +6,9 @@ import os, sys
 single_had_key = 'single_hadrons'
 
 #designates colors and markers for plotting
-colors = ['green','orange','blue','purple','black','red','brown','gray']
+colors = ['green','blue','orange','purple','black','red','brown','gray']
 markers = ['o','s','D','v','^','*','x','+']
+zigzag_shifts = [-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1]
 
 #list of files that are jackknife samples rather than bootstrap
 jackknife_sampling_methods = ['isoquartet_nonstrange_fermionic\\qsqr_samplings_isoquartet_nonstrange_fermionic_colin_rebin20_jackknife.hdf5','isoquartet_nonstrange_fermionic\\qsqr_samplings_isoquartet_nonstrange_fermionic_colin_rebin20_jackknife_6-12.hdf5']
@@ -15,7 +16,43 @@ jackknife_sampling_methods = ['isoquartet_nonstrange_fermionic\\qsqr_samplings_i
 #Gives a numerical order for the irreps so that I can control how they show up in the plots
 alphabetical = {'A1g':1.01107,'F1':0.0601,'F2':0.0602,'G': 0.07,'G1': 0.0701,'G1g': 0.07107,'G1u': 0.07121,'G2': 0.0702, 'Hg': 0.0807, 'Hu': 0.0821, 'T1g':0.20107}
 #latex format of all irreps
-latex_format = {'A1g':r"I=1 $A_{1g}$",'F1':r"$F_1$",'F2':r"$F_2$",'G': r'$G$','G1': r"$G_1$",'G1g': r"$G_{1g}$",'G1u': r"$G_{1u}$",'G2': r"$G_2$", 'Hg': r"$H_g$", 'Hu': r"$H_u$", 'N': r'$m_N$', 'pi':r"$m_\pi$",'T1g':r"I=0 $T_{1g}$"}
+latex_format = {'A1g':r"I=1 $A_{1g}$",'F1':r"$F_1$",'F2':r"$F_2$",'G': r'$G$','G1': r"$G_1$",'G1g': r"$G_{1g}$",'G1u': r"$G_{1u}$",'G2': r"$G_2$", 'Hg': r"$H_g$", 'Hu': r"$H_u$", 'N': r'$N$', 'pi':r"$\pi$", 'mpi':r"$m_\pi$",'mpi2':r"$m_\pi^2$",'T1g':r"I=0 $T_{1g}$"}
+
+def unique(an_ordered_list):
+    if len(an_ordered_list)<=1:
+        return an_ordered_list
+    final_list = []
+    element = an_ordered_list[0]
+    final_list.append(element)
+    for item in an_ordered_list:
+        if item!=element and item not in final_list:
+            element=item
+            final_list.append(element)
+    return final_list
+
+# def zig_zag_shifts( irreps, levels, used_levels ):
+#     shifts = np.zeros(len(levels))
+#     used_shifts = np.zeros(len(used_levels))
+#     zigzag_index = 0
+#     last_index = -1
+#     for i,index in enumerate(indices):
+#         if keys[i] in irreps:
+#             if last_index==index:
+#                 zigzag_index+=1
+#             else:
+#                 zigzag_index=0
+#                 last_index = index
+#             shifts[i] = zigzag_shifts[zigzag_index]
+                
+#     zigzag_index = 0
+#     last_index = -1
+#     for i,index in enumerate(used_indices):
+#         if used_keys[i] in irreps:
+# #             print(keys.index(used_keys[i]))
+#             for used_level in used_levels[used_keys[i]]:
+#                 used_shifts[i] = shifts[ keys.index(used_keys[i])+used_level]
+        
+#     return shifts,used_shifts
 
 #uses the irrep and momentum in form G1u(0) and orders based on momentum number + irrep's "alphabetical" value
 def sort_by_mom(irrep):
@@ -90,6 +127,33 @@ def retrieve_sigmond_script_data_hdf5(file):
                 pass
     split_obs_col(dataset)
     q2s.close()
+    return dataset
+
+#retrieves data from Fernando's print statements that I put into a
+# dat file
+def retrieve_sigmond_script_data_dat(file,spectrum_type):
+    dataframe_input = pd.read_csv(file,sep=" ",header=None,names=["obs-irrep","mom","a","qsqr","b","mass"])
+    irrep = np.array(dataframe_input["obs-irrep"])+np.array(dataframe_input["mom"],dtype="str")
+    obs_mom = ["PSQ"+str(x) for x in list(dataframe_input["mom"])]
+    levels = np.zeros( len(dataframe_input["obs-irrep"]) )
+    mass = dataframe_input["mass"][0]
+    for i,row in enumerate(irrep):
+        levels[i]=np.count_nonzero(irrep[0:i] == row)
+        
+    if spectrum_type=="energy":
+        levels2 = ["ecm_"+str(int(level))+"_ref" for level in list(levels)]
+    else:
+        levels2 = ["q2cm_"+str(int(level))+"_ref" for level in list(levels)]
+    dataframe_input.insert(1, "obs-mom", obs_mom)
+    dataframe_input.insert(2, "obs-level", levels2)
+    if spectrum_type=="energy":
+        ecm = np.sqrt(1.0+np.array(dataframe_input["qsqr"]))+np.sqrt(mass*mass+np.array(dataframe_input["qsqr"]))
+    else: 
+        ecm = np.array(dataframe_input["qsqr"])
+    dataframe_input.insert(3, "val", ecm)
+    errs = np.zeros( len(dataframe_input["obs-irrep"]) )
+    dataframe_input.insert(4, "err", errs)
+    dataset = pd.DataFrame(columns=["obs-mom","obs-irrep","obs-level", 'val', 'err'],data=dataframe_input[["obs-mom","obs-irrep","obs-level","val","err"]])
     return dataset
     
 #retrieves data from john's ascii files
@@ -167,12 +231,13 @@ def select_val_dat(dataset, mom, irrep, energy, spec_type):
     return None, None
 
 #based on filetype, chooses how to unpack the files. Also retrieves the rest masses
-def unpack_file( filename ):
+def unpack_file( filename, spectrum_type):
     if os.path.isfile(filename) and filename.endswith(".csv"):
         dataset1 = retrieve_sigmond_script_data(filename)
     elif os.path.isfile(filename) and filename.endswith(".hdf5"):
         dataset1 = retrieve_sigmond_script_data_hdf5(filename)
-
+    elif os.path.isfile(filename) and filename.endswith(".dat"):
+        dataset1 = retrieve_sigmond_script_data_dat(filename, spectrum_type)
     elif os.path.isdir(filename):
         dataset1 = pd.DataFrame()
     else:

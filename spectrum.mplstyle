@@ -251,7 +251,7 @@ font.style:   normal
 font.variant: normal
 font.weight:  normal
 font.stretch: normal
-font.size:    20.0
+font.size:    25.0
 
 font.serif:      DejaVu Serif, Bitstream Vera Serif, Computer Modern Roman, New Century Schoolbook, Century Schoolbook L, Utopia, ITC Bookman, Bookman, Nimbus Roman No9 L, Times New Roman, Times, Palatino, Charter, serif
 font.sans-serif: DejaVu Sans, Bitstream Vera Sans, Computer Modern Sans Serif, Lucida Grande, Verdana, Geneva, Lucid, Arial, Helvetica, Avant Garde, sans-serif
@@ -329,7 +329,7 @@ mathtext.fontset: cm  # Should be 'dejavusans' (default),
 ## "mathtext.fontset: custom" is defined by the mathtext.bf, .cal, .it, ...
 ## settings which map a TeX font name to a fontconfig font pattern.  (These
 ## settings are not used for other font sets.)
-mathtext.bf:  sans:bold
+mathtext.bf:  sans
 mathtext.cal: cursive
 mathtext.it:  sans:italic
 mathtext.rm:  sans
@@ -339,7 +339,7 @@ mathtext.tt:  monospace
                         # 'stixsans'] when a symbol can not be found in one of the
                         # custom math fonts. Select 'None' to not perform fallback
                         # and replace the missing character by a dummy symbol.
-mathtext.default: it  # The default font to use for math.
+mathtext.default: regular  # The default font to use for math.
                        # Can be any of the LaTeX font names, including
                        # the special name "regular" for the same font
                        # used in regular text.
@@ -358,7 +358,7 @@ mathtext.default: it  # The default font to use for math.
 #axes.grid.axis:     both    # which axis the grid should apply to
 #axes.grid.which:    major   # gridlines at {major, minor, both} ticks
 #axes.titlelocation: center  # alignment of the title: {left, right, center}
-axes.titlesize:     20.0   # fontsize of the axes title
+axes.titlesize:     25.0   # fontsize of the axes title
 axes.titleweight:   normal  # font weight of title
 axes.titlecolor:    auto    # color of the axes title, auto falls back to
                              # text.color as default value
@@ -464,7 +464,7 @@ axes.labelcolor:    black
 #xtick.major.pad:     3.5     # distance to major tick label in points
 #xtick.minor.pad:     3.4     # distance to the minor tick label in points
 #xtick.color:         black   # color of the tick labels
-#xtick.labelsize:     medium  # fontsize of the tick labels
+xtick.labelsize:     medium  # fontsize of the tick labels
 #xtick.direction:     out     # direction: {in, out, inout}
 #xtick.minor.visible: False   # visibility of minor ticks on x-axis
 #xtick.major.top:     True    # draw x axis top major ticks
@@ -517,8 +517,8 @@ legend.shadow:        True    # if True, give background a shadow effect
 #legend.numpoints:     1        # the number of marker points in the legend line
 #legend.scatterpoints: 1        # number of scatter points
 #legend.markerscale:   1.0      # the relative size of legend markers vs. original
-legend.fontsize:      17.0
-#legend.title_fontsize: None    # None sets to the same as the default axes.
+legend.fontsize:      15.0
+legend.title_fontsize: 25.0    # None sets to the same as the default axes.
 
 ## Dimensions as fraction of fontsize:
 #legend.borderpad:     0.4  # border whitespace

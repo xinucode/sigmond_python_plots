@@ -8,6 +8,74 @@ import utils
 import yaml
 import argparse
 
+"""
+Sample Config Yaml file
+----------------------
+channel: isoquartet_nonstrange_fermionic #name of channel and corresponding 
+                                            #subdirectory where relevant files are located
+scattering_particles: [N, pi] #list of scattering particle names
+rest_mass: pi #the particle used to normalize the energy values
+thresholds: #(optional) dict of thersholds with the key being how you want the threshold 
+                #to appear on the graph (replaced with latex) and the value is a list of  
+                #the rest masses to be summed over for the threshold value
+    "Npi": [ N, pi ]
+    "Npipi": [ N, pi, pi]
+used_levels: #(optional) dict of bases and lists of their levels to be filled markers in
+                #leaving the rest of the values empty. If not present, then all values will
+                #be filled markers
+    G1g(0): [0]
+    G1u(0): [0,1]
+    Hg(0): [0]
+    Hu(0): [0]
+    G1(1): [0,1,2]
+    G2(1): [0]
+    G(2): [0,1,2,3,4]
+    F1(3): [0]
+    F2(3): [0,1]
+    G(3): [0,1,2,3]
+    G1(4): [0,1,2]
+    G2(4): [0]
+  
+fig_width: 14 #(optional) sets width of all figures
+fig_height: 6 #(optional) sets height of all figures
+
+compare_spectrums: #(optional) generates graph that compares several spectrums with similar bases side by side
+    spectrum_type: energy #value can be "energy" or "mom" determines how the files are parsed and how the graph 
+                            #is labelled
+    file_directory: final #subdirectory inside "channel" where the data can be found and the graph will be produced
+    files: #dict of files with the legend labels as the keys and filenames as the values
+        Pivot(n-1,8,16): energy_estimates_isoquartet_nonstrange_fermionic_colin_trimmed_rebin20_Bootstrap.csv
+        Pivot(n,8,16): energy_estimates_isoquartet_nonstrange_fermionic_colin_rebin20_Bootstrap_8-16.csv
+        Pivot(n,6,12): energy_estimates_isoquartet_nonstrange_fermionic_colin_rebin20_Bootstrap_6-12.csv
+        Pivot(n,4,8): energy_estimates_isoquartet_nonstrange_fermionic_colin_rebin20_Bootstrap_4-8.csv
+    best_legend_loc: upper left #(optional) put legend where desired. If omitted, no legend. If legend is
+                                #desired but unsure where, put "best"
+    do_scattering_particles: false #(optional) generate another graph that compares the elastic levels. False if
+                                    #omitted
+    fig_width: 14 #(optional) sets width of this figure, supercedes the setting for all figures
+    fig_height: 6 #(optional) sets height of this figure, supercedes the setting for all figures
+    shift: ['Hg(0)','G1(1)','G2(1)','G(2)','G(3)','F1(3)','G1(4)','G2(4)'] #(optional) list of irreps(d^2) to zigzag
+                                                                            #shift the levels so they don't overlap
+    omit: [G1g(0),Hu(0)] #(optional) list of irreps(d^2) to omit; otherwise, it graphs all irreps
+    yrange: [0.0,2.5] #(optional) manually select the yrange, otherwise matplotlib automatically sets it
+    plot_ni_levels: true #(optional) default false; plots the non interacting levels for each spectrum
+    ni_width: 40 #(optional) default 80; sets the width of the non-interacting levels (if plot_ni_levels==true)
+      
+final_spectrum: #(optional) generates graph that plots just one spectrum
+    spectrum_type: energy #value can be "energy" or "mom" determines how the files are parsed and how the graph 
+                            #is labelled
+    file_directory: final #subdirectory inside "channel" where the data can be found and the graph will be produced
+    file: energy_estimates_isoquartet_nonstrange_fermionic_colin_rebin20_Bootstrap_8-16.csv #file with data
+    shift: ['Hg(0)','G1(1)','G2(1)','G(2)','G(3)','F1(3)','G1(4)','G2(4)'] #(optional) list of irreps(d^2) to zigzag
+                                                                            #shift the levels so they don't overlap
+    ni_width: 40 #(optional) default 80; sets the width of the non-interacting levels
+    best_legend_loc: lower left #(optional) put legend where desired. If omitted, no legend. If legend is
+                                #desired but unsure where, put "best"
+    fig_width: 14 #(optional) sets width of this figure, supercedes the setting for all figures
+    fig_height: 6 #(optional) sets height of this figure, supercedes the setting for all figures
+    omit: [G1g(0),Hu(0)] #(optional) list of irreps(d^2) to omit; otherwise, it graphs all irreps
+"""
+
 titles = {"isodoublet_nonstrange":r"$I=\nicefrac{1}{2}$","isoquartet_nonstrange_fermionic":r"$I=\nicefrac{3}{2}$"}
 
 remove_ref = False
@@ -56,22 +124,29 @@ if len(particle_names)==2:
 channel = configdata['channel']
 rest_mass = configdata['rest_mass']
 
-graphs = ['comparison','final_spectrum']
+graphs = ['compare_spectrums','final_spectrum']
+ni_width = 80.0
+omit = []
 
 for graph in graphs:
     files = {}
     if graph not in configdata.keys():
         continue
-    if ('comparison' in configdata.keys()) and (graph=='comparison'):
-        file_directory = configdata['comparison']['file_directory']
-        for key in configdata['comparison']['files'].keys():
-            if configdata['comparison']['file_directory']:
-                files[key] = os.path.join(channel,file_directory,configdata['comparison']['files'][key])
-        spectrum_type = configdata['comparison']['spectrum_type']
-        do_scattering_particles = bool(configdata['comparison']['do_scattering_particles'])
+        
+    if "omit" in configdata[graph].keys():
+        omit = configdata[graph]["omit"]
+        
+    if ('compare_spectrums' in configdata.keys()) and (graph=='compare_spectrums'):
+        file_directory = configdata['compare_spectrums']['file_directory']
+        for key in configdata['compare_spectrums']['files'].keys():
+            if configdata['compare_spectrums']['file_directory']:
+                files[key] = os.path.join(channel,file_directory,configdata['compare_spectrums']['files'][key])
+        spectrum_type = configdata['compare_spectrums']['spectrum_type']
+        if 'do_scattering_particles' in configdata['compare_spectrums'].keys():
+            do_scattering_particles = bool(configdata['compare_spectrums']['do_scattering_particles'])
 
-        if 'best_legend_loc' in configdata['comparison'].keys():
-            best_legend_loc=configdata['comparison']['best_legend_loc']
+        if 'best_legend_loc' in configdata['compare_spectrums'].keys():
+            best_legend_loc=configdata['compare_spectrums']['best_legend_loc']
         else:
             best_legend_loc = ""
 
@@ -79,17 +154,22 @@ for graph in graphs:
             do_scattering_particles = False
 
         file_name = channel+f"-{spectrum_type}_spectrum_comparison_graph.pdf"
-        if 'plot_ni_levels' in configdata['comparison'].keys():
-            plot_ni_levels = configdata['comparison']['plot_ni_levels']
+        if 'plot_ni_levels' in configdata['compare_spectrums'].keys():
+            plot_ni_levels = configdata['compare_spectrums']['plot_ni_levels']
+            if 'ni_width' in configdata['compare_spectrums'].keys():
+                ni_width = configdata['compare_spectrums']['ni_width']
         else:
             plot_ni_levels = False
+            
 
     if ('final_spectrum' in configdata.keys()) and (graph=='final_spectrum'):
         file_directory = configdata['final_spectrum']['file_directory']
         best_legend_loc=configdata['final_spectrum']['best_legend_loc']
         files["this"] = os.path.join(channel,file_directory,configdata['final_spectrum']['file'])
-        spectrum_type="energy"
+        spectrum_type = configdata['compare_spectrums']['spectrum_type']
         file_name = channel+"_spectrum_graph.pdf"
+        if 'ni_width' in configdata['final_spectrum'].keys():
+            ni_width = configdata['final_spectrum']['ni_width']
 #         non_interacting_levels = configdata['final_spectrum']['non_interacting_levels']
 
     Refs = {}
@@ -97,7 +177,7 @@ for graph in graphs:
 
     #import info from files
     for file in files.keys():
-        datasets[file] = utils.unpack_file(files[file])
+        datasets[file] = utils.unpack_file(files[file],spectrum_type)
 
     for scat in particle_names:
         value = 0.0
@@ -113,7 +193,7 @@ for graph in graphs:
         used_levels = {}
 
     expected_keys = ['PSQ0', 'PSQ1', 'PSQ2', 'PSQ3', 'PSQ4']
-    possible_irreps = ['G1u', 'G1g', 'Hg', 'G1', 'G2', 'F1', 'F2', 'G','Hu','A1g','T1g']
+    possible_irreps = ['G1u', 'Hg', 'G1', 'G2', 'F1', 'F2', 'G','A1g','G1g','Hu', 'T1g']
     if spectrum_type=="mom":
         energy_keys = ['q2cm_0_ref', 'q2cm_1_ref', 'q2cm_2_ref', 'q2cm_3_ref', 'q2cm_4_ref', 'q2cm_5_ref', 'q2cm_6_ref', 'q2cm_7_ref', 'q2cm_8_ref', 'q2cm_9_ref', 'q2cm_10_ref']
     elif spectrum_type=="energy":
@@ -127,8 +207,11 @@ for graph in graphs:
     keys = {}
     vals = {}
     errs = {}
+    levs = {}
     vals_used = {}
     keys_used = {}
+    errs_used = {}
+    levs_used = {}
     ekeys = {}
     evals = {}
     eerrs = {}
@@ -137,8 +220,11 @@ for graph in graphs:
         vals[dataset] = []
         keys[dataset] = []
         errs[dataset] = []
+        levs[dataset] = []
         vals_used[dataset] = []
         keys_used[dataset] = []
+        errs_used[dataset] = []
+        levs_used[dataset] = []
         evals[dataset] = []
         ekeys[dataset] = []
         eerrs[dataset] = []
@@ -153,16 +239,26 @@ for graph in graphs:
 
                     if val1 is not None and err1 is not None:
                         irrep_key = f"{irrep}({mom.replace('PSQ','')})"
-                        keys[dataset].append(irrep_key)
-                        vals[dataset].append(val1)
-                        errs[dataset].append(err1)
+                        if irrep_key in omit:
+                            continue
                         if k>max_level_num:
                             max_level_num=k
+                        used = False
                         if used_levels:
                             if used_levels[irrep_key]:
                                 if k in used_levels[irrep_key]:
                                     vals_used[dataset].append(val1)
                                     keys_used[dataset].append(irrep_key)
+                                    errs_used[dataset].append(err1)
+                                    levs_used[dataset].append(k)
+                                    used = True
+#                                     print(irrep_key,k,val1)
+                        if not used:
+                            keys[dataset].append(irrep_key)
+                            vals[dataset].append(val1)
+                            errs[dataset].append(err1)
+                            levs[dataset].append(k)
+                        
                                 
                 for k, (energy) in enumerate(elastic_scat_keys):
 
@@ -221,7 +317,7 @@ for graph in graphs:
     for dataset in datasets.keys():
         indexes[dataset] = np.zeros(len(keys[dataset]))
         for j, key in enumerate(keys[dataset]):
-            this_list = list(set(keys[dataset]))
+            this_list = list(set(keys[dataset]+keys_used[dataset]))
             this_list.sort(key=utils.sort_by_mom)
             for i, unique_key in enumerate(this_list):
                 if key == unique_key:
@@ -231,20 +327,24 @@ for graph in graphs:
     for dataset in datasets.keys():
         indexes_used[dataset] = np.zeros(len(keys_used[dataset]))
         for j, ukey in enumerate(keys_used[dataset]):
-            for k, key in enumerate(keys[dataset]):
-                if ukey==key:
-                    indexes_used[dataset][j] = indexes[dataset][k]
-                    break
+            this_list = list(set(keys[dataset]+keys_used[dataset]))
+            this_list.sort(key=utils.sort_by_mom)
+            for i, unique_key in enumerate(this_list):
+                if ukey == unique_key:
+                    indexes_used[dataset][j] = i
+                
+                    
     eindexes = {}
     for dataset in datasets.keys():
         eindexes[dataset] = np.zeros(len(ekeys[dataset]))
         for j, ukey in enumerate(ekeys[dataset]):
-            for k, key in enumerate(keys[dataset]):
-                if ukey==key:
-                    eindexes[dataset][j] = indexes[dataset][k]
-                    break
+            this_list = list(set(keys[dataset]+keys_used[dataset]))
+            this_list.sort(key=utils.sort_by_mom)
+            for i, unique_key in enumerate(this_list):
+                if ukey == unique_key:
+                    eindexes[dataset][j] = i
                     
-    if ('comparison' in configdata.keys()) and (graph=='comparison'):
+    if ('compare_spectrums' in configdata.keys()) and (graph=='compare_spectrums'):
         #plot scattering particles
         if do_scattering_particles:
             f = plt.figure()
@@ -260,18 +360,29 @@ for graph in graphs:
             plt.legend()
             plt.xticks(scat_indexes2, scat_keys2)
             plt.title(channel)
-            plt.savefig(os.path.join(channel,configdata['comparison']['file_directory'],channel+"-ni_comparison_graph-"+'_'.join(datasets.keys()).replace(" ","-")+".jpg"))
+            plt.savefig(os.path.join(channel,configdata['compare_spectrums']['file_directory'],channel+"-ni_comparison_graph.pdf"))
             
     somekey = list(indexes.keys())[0]
             
     #plot spectrum
     f = plt.figure()
-    f.set_figwidth(max(indexes[somekey])+7)
-    f.set_figheight(max_level_num+5)
-    dd=0.1
+    if 'fig_width' in configdata.keys():
+        f.set_figwidth(configdata['fig_width'])
+    if 'fig_height' in configdata.keys():
+        f.set_figheight(configdata['fig_height'])
+    if 'fig_width' in configdata[graph].keys():
+        f.set_figwidth(configdata[graph]['fig_width'])
+    if 'fig_height' in configdata[graph].keys():
+        f.set_figheight(configdata[graph]['fig_height'])
+    dd=0.15
+    ddd = 0.10/len(files.keys())
+    
     plt.style.use('spectrum.mplstyle')
+    
 
-    if not remove_ref:
+    minx = min(list(indexes[somekey])+list(indexes_used[somekey]))
+    maxx = max(list(indexes[somekey])+list(indexes_used[somekey]))
+    if not remove_ref and spectrum_type=="energy":
         if configdata['thresholds']:
             for threshold in configdata['thresholds'].keys():
                 threshold_value = 0.0
@@ -281,34 +392,70 @@ for graph in graphs:
                     threshold_label=threshold_label.replace(utils.latex_format[particle], particle)
                     threshold_label=threshold_label.replace(particle, utils.latex_format[particle])
 
-                plt.hlines(threshold_value,min(indexes[somekey]-dd*(len(vals.keys())/2)),max(indexes[somekey]+dd*(len(vals.keys())/2)),color='black', linestyle="solid", zorder=1) 
-                plt.text( max(indexes[somekey])*(1-0.125),threshold_value*0.985, threshold_label, zorder=6)
+                plt.hlines(threshold_value,minx-dd*(len(vals.keys())/2),maxx+dd*(len(vals.keys())/2),color='black', linestyle="--", zorder=1) 
+                plt.text( (maxx+dd*(len(vals.keys())/2))*(1.025),threshold_value-0.04, threshold_label, zorder=6,size="x-small")
+    if spectrum_type=="mom":
+        plt.hlines(0.0,minx-dd*(len(vals.keys())/2),maxx+dd*(len(vals.keys())/2),color='black', linestyle="--", zorder=1)
 
     for i,dataset in enumerate(vals.keys()):
+        shifted_array = 0.0 
+        used_shifted_array = 0.0 
+#         if ('compare_spectrums' in configdata.keys()) and (graph=='compare_spectrums'):
+        if 'shift' in configdata[graph].keys():
+            if configdata[graph]['shift']:
+                shifted_array = np.array([utils.zigzag_shifts[lev] if keys[dataset][i] in configdata[graph]['shift'] else 0.0 for i,lev in enumerate(levs[dataset])])
+                used_shifted_array = np.array([utils.zigzag_shifts[lev] if keys_used[dataset][i] in configdata[graph]['shift'] else 0.0 for i,lev in enumerate(levs_used[dataset])])
         if used_levels:
             marker_color = 'white'
         else:
             marker_color = utils.colors[i]
-        plt.errorbar(indexes[dataset]+dd*(i-((len(vals.keys())-1)/2)), vals[dataset], np.array(errs[dataset]),  capsize=5, color=utils.colors[i], marker=utils.markers[i],linestyle="", linewidth=0.0, elinewidth=2.0,mfc=marker_color,zorder=4)
+
         if used_levels:
-            plt.scatter(indexes_used[dataset]+dd*(i-((len(vals.keys())-1)/2)),vals_used[dataset],color=utils.colors[i], marker=utils.markers[i], label = dataset, zorder=5)
+            unused_label = None
+        else:
+            unused_label = dataset
+        
+        splitting_factor = (i-((len(vals.keys())-1)/2))
+        
+        if len(np.nonzero(errs[dataset])[0]):
+            plt.errorbar(indexes[dataset]+dd*splitting_factor+ddd*shifted_array, vals[dataset], np.array(errs[dataset]),  capsize=5, color=utils.colors[i], marker=utils.markers[i],linestyle="", linewidth=0.0, elinewidth=1.5,mfc=marker_color,zorder=4,label=unused_label)
+        else:
+            plt.scatter(indexes[dataset]+dd*splitting_factor+ddd*shifted_array, vals[dataset], color=utils.colors[i], marker=utils.markers[i],linewidth=0.0, zorder=4,label=unused_label)
+        if used_levels:
+            if len(np.nonzero(errs_used[dataset])[0]):
+                plt.errorbar(indexes_used[dataset]+dd*splitting_factor+ddd*used_shifted_array,vals_used[dataset], np.array(errs_used[dataset]),  capsize=5, color=utils.colors[i], marker=utils.markers[i],linestyle="", linewidth=0.0, elinewidth=1.5,mfc=utils.colors[i],zorder=4,label=dataset)
+            else:
+                plt.scatter(indexes_used[dataset]+dd*splitting_factor+ddd*used_shifted_array,vals_used[dataset], color=utils.colors[i], marker=utils.markers[i], linewidth=0.0, zorder=4,label=dataset)
         
     if (graph=='final_spectrum') or plot_ni_levels:
         for i,dataset in enumerate(evals.keys()):
-            plt.errorbar(eindexes[dataset], evals[dataset], np.array(eerrs[dataset]), color="lightgray", marker="_",linestyle="", linewidth=0.0, elinewidth=80.0,zorder=2)
-            plt.scatter(eindexes[dataset],evals[dataset],color="darkgrey", marker="_",s=6400,zorder=3)
+            plt.errorbar(eindexes[dataset]+dd*(i-((len(evals.keys())-1)/2)), evals[dataset], np.array(eerrs[dataset]), color="lightgray", marker="_",linestyle="", linewidth=0.0, elinewidth=ni_width,zorder=2)
+            plt.scatter(eindexes[dataset]+dd*(i-((len(evals.keys())-1)/2)),evals[dataset],color="darkgrey", marker="_",s=ni_width*ni_width,zorder=3)
 
     if spectrum_type=='energy':
-        plt.ylabel(r"$E_{cm}/$"+utils.latex_format[rest_mass])
+        plt.ylabel(r"$E_{\textup{cm}}/$"+utils.latex_format["m"+rest_mass])
     else:
-        plt.ylabel(r"$q^2_{cm}$")
+        plt.ylabel(r"$q^2_{\textup{cm}}/$"+utils.latex_format["m"+rest_mass+"2"])
     plt.xlabel(r"$\Lambda(d^2)$")
-    latex_keys = [utils.latex_format[key.split('(')[0]]+"("+key.split('(')[1] for key in keys[somekey]]
-    plt.xticks(indexes[somekey], latex_keys)
-    plt.xlim(min(indexes[somekey])-0.5,max(indexes[somekey])+0.5)
+    latex_keys = [utils.latex_format[key.split('(')[0]]+"("+key.split('(')[1] for key in keys[somekey]+keys_used[somekey]]
+#     print(utils.unique(list(indexes[somekey])+list(indexes_used[somekey])),utils.unique(latex_keys))
+#     print(indexes[somekey],latex_keys)
+    plt.xticks(utils.unique(list(indexes[somekey])+list(indexes_used[somekey])), utils.unique(latex_keys),size="small")
+    plt.xlim(minx-0.5-dd*(len(vals.keys())/2),maxx+0.5+dd*(len(vals.keys())/2))
+    if not remove_ref and spectrum_type=="energy":
+        if configdata['thresholds']:
+            plt.xlim(minx-0.5-dd*(len(vals.keys())/2),(maxx+dd*(len(vals.keys())/2))*1.025+0.5)
 
-    if (graph=='comparison') and best_legend_loc:
-        plt.legend(title=titles[channel], loc=best_legend_loc)
+    if "yrange" in configdata[graph].keys():
+        plt.ylim( configdata[graph]["yrange"][0],configdata[graph]["yrange"][1])
+            
+    if (graph=='compare_spectrums'):
+        if best_legend_loc and channel in titles.keys():
+            plt.legend(title=titles[channel], loc=best_legend_loc)
+        elif best_legend_loc:
+            plt.legend(loc=best_legend_loc)
+        
+    plt.tight_layout()
     plt.savefig(os.path.join(channel,file_directory,file_name))
-    plt.show()
+#     plt.show()
     plt.clf()

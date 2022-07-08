@@ -5,16 +5,36 @@ thresholds: []
 #   "N + N": [ N, N ]
 #   "N + 2pi": [ N, pi, pi]
 rest_mass: N
-  
-comparison:
-#     best_legend_loc: lower left
+used_levels:
+  A1g(0): [4]
+  T1g(0): [8]
+fig_width: 10
+fig_height: 10
+
+# compare_spectrums:
+# #     best_legend_loc: lower left
+#     do_scattering_particles: false
+#     plot_ni_levels: true
+#     spectrum_type: energy
+#     file_directory: spectrum
+#     shift: [T1g(0)]
+#     files:
+#       Pivot(n-1,3,6): energy_estimates_hexaquark_2exp_trimmed_rebin1_Bootstrap.csv
+#       Pivot(n,3,6): energy_estimates_hexaquark_2exp_all_rebin1_Bootstrap.csv
+      
+compare_spectrums:
+    best_legend_loc: best
     do_scattering_particles: false
     plot_ni_levels: true
+    ni_width: 40
     spectrum_type: energy
-    file_directory: spectrum
+    file_directory: geom_spectrum
+    shift: [T1g(0)]
     files:
-      Pivot(n-1,3,6): energy_estimates_hexaquark_2exp_trimmed_rebin1_Bootstrap.csv
-      Pivot(n,3,6): energy_estimates_hexaquark_2exp_all_rebin1_Bootstrap.csv
+      Pivot(n-1,3,6) 2exp: energy_estimates_hexaquark_2exp_trimmed_rebin1_Bootstrap.csv
+      Pivot(n,3,6) 2exp: energy_estimates_hexaquark_2exp_rebin1_Bootstrap.csv
+      Pivot(n-1,3,6) geom: energy_estimates_hexaquark_geom_trimmed_rebin1_Bootstrap.csv
+      Pivot(n,3,6) geom: energy_estimates_hexaquark_geom_rebin1_Bootstrap.csv
       
 # final_spectrum:
 # #     best_legend_loc: lower left
