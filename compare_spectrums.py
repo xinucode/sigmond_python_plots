@@ -166,7 +166,7 @@ for graph in graphs:
         file_directory = configdata['final_spectrum']['file_directory']
         best_legend_loc=configdata['final_spectrum']['best_legend_loc']
         files["this"] = os.path.join(channel,file_directory,configdata['final_spectrum']['file'])
-        spectrum_type = configdata['compare_spectrums']['spectrum_type']
+        spectrum_type = configdata['final_spectrum']['spectrum_type']
         file_name = channel+"_spectrum_graph.pdf"
         if 'ni_width' in configdata['final_spectrum'].keys():
             ni_width = configdata['final_spectrum']['ni_width']
@@ -393,7 +393,7 @@ for graph in graphs:
                     threshold_label=threshold_label.replace(particle, utils.latex_format[particle])
 
                 plt.hlines(threshold_value,minx-dd*(len(vals.keys())/2),maxx+dd*(len(vals.keys())/2),color='black', linestyle="--", zorder=1) 
-                plt.text( (maxx+dd*(len(vals.keys())/2))*(1.025),threshold_value-0.04, threshold_label, zorder=6,size="x-small")
+                plt.text( (maxx+dd*(len(vals.keys())/2))*(1.01),threshold_value-0.04, threshold_label, zorder=6,size="x-small")
     if spectrum_type=="mom":
         plt.hlines(0.0,minx-dd*(len(vals.keys())/2),maxx+dd*(len(vals.keys())/2),color='black', linestyle="--", zorder=1)
 
