@@ -2,6 +2,8 @@
 Python plots from sigmond data
 
 ## contents
+utils.py - common functions needed for any given plotting script. Input functions and
+    error functions are here.
 compare_spectrums.py - python script to generate various spectrum plots, to both plot a 
     spectrum and also compare several spectrums. Requires a config file as an argument
 rest_mass/ - rest mass tmin plots and others in development
@@ -10,7 +12,8 @@ rest_mass/ - rest mass tmin plots and others in development
 to run example spectrum plot:
 python compare_spectrums.py hexaquark.yml
 
-## Sample spectrum config file
+## Sample config files
+### Sample spectrum config file
 channel: isoquartet_nonstrange_fermionic #name of channel and corresponding 
                                             #subdirectory where relevant files are located
 scattering_particles: [N, pi] #list of scattering particle names
@@ -74,3 +77,44 @@ final_spectrum: #(optional) generates graph that plots just one spectrum
     fig_width: 14 #(optional) sets width of this figure, supercedes the setting for all figures
     fig_height: 6 #(optional) sets height of this figure, supercedes the setting for all figures
     omit: [G1g(0),Hu(0)] #(optional) list of irreps(d^2) to omit; otherwise, it graphs all irreps
+    yrange: [0.0,2.5] #(optional) manually select the yrange, otherwise matplotlib automatically sets it
+    
+## Input data
+### spectrum data
+There are several different available input filetypes, though they were developed for specific output data from
+sigmond, sigmond scripts, and collaborators. 
+
+Spectrum data, which consists of the spectrum levels and their errors, comes in the form of energy or tranverse
+momentum squared (qsqr), which is why the "spectrum_type" tag is required for both plot types, with "mom" 
+referring to the latter case.
+
+Due to the nature of the data, there are also two different methods of printing out the values and error bars for
+any given level. Either the value and error would be printed as columns, calculated in the analysis scripts, or
+the bootstrap/jackknife samples will be printed to the file. Commonly, the latter is in the form of hdf5 files.
+The functions in utils.py address the input and calculation of these errors when necessary. 
+
+#### CSV files
+At this moment in time, sigmond scripts only produces csv files with energy values in them. CSV files will have
+"obs","val", and "err" labels. The "obs" column will state the label for the energy value and state the irrep, 
+momentum, and possible the level of the value. "val" gives energy value. "err" gives symmetric error. 
+
+#### HDF5 files
+HDF5 files are more versatile. Sigmond/sigmond scripts will output both energy and momentum files. Currently,
+hdf5 files are all samplings files, meaning that rather than printing the error, they print the samples used
+to calculate this error. In order to properly calculate the error, jackknife or bootstrap needs to be stated.
+Due to the strong desire across the collaboration for boostrap, the default method is boostrap, but for
+verification of boostrap methods, it is sometimes necessary or preferential to use jackknife method. If a file
+uses jackknife sampling, the filename is appended to the utils.jackknife_sampling_methods list (likely,
+another method should be used, but I use it so infrequently, and I always label the jackknife files, so this
+is what I have coded rn).
+
+#### DAT files
+Sigmond does not produce dat files. The contents of the dat files are the output of my collaborator 
+Fernando Romero-Lopez's phse shift analysis code which is basically a csv file with columns "irrep", "d^2",
+"predicted qsqr values","input qsqr values","something else, I dunno", "(mN/mpi)^2".
+
+#### directories
+My collaborator, John Bulava,  prints his calculated files into organized directories. He gives my a directory 
+with the organized files and in a given file in that directory will have one energy or qsqr value and it's error. 
+The syntax of his output may change, so beware. Right now, the function utils.select_val_ascii() correctly searches 
+the directory and finds the value in the file correctly.
