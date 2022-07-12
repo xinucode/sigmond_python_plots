@@ -132,7 +132,7 @@ def retrieve_sigmond_script_data_hdf5(file):
 #retrieves data from Fernando's print statements that I put into a
 # dat file
 def retrieve_sigmond_script_data_dat(file,spectrum_type):
-    dataframe_input = pd.read_csv(file,sep=" ",header=None,names=["obs-irrep","mom","a","qsqr","b","mass"])
+    dataframe_input = pd.read_csv(file,sep=" ",header=None,names=["obs-irrep","mom","qsqr","a","b","mass"])
     irrep = np.array(dataframe_input["obs-irrep"])+np.array(dataframe_input["mom"],dtype="str")
     obs_mom = ["PSQ"+str(x) for x in list(dataframe_input["mom"])]
     levels = np.zeros( len(dataframe_input["obs-irrep"]) )

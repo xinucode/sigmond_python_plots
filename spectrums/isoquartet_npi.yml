@@ -1,0 +1,68 @@
+channel: isoquartet_nonstrange_fermionic
+scattering_particles: [N, pi]
+thresholds:
+  "Npi": [ N, pi ]
+  "Npipi": [ N, pi, pi]
+rest_mass: pi
+used_levels:
+    G1g(0): [0]
+    G1u(0): [0]
+    Hg(0): [0]
+    Hu(0): [0]
+    G1(1): [0,1,2]
+    G2(1): [0]
+    G(2): [0,1,2,3,4]
+    F1(3): [0,1]
+    F2(3): [0,1]
+    G(3): [0,1,2,3]
+    G1(4): [0,1,2]
+    G2(4): [0]
+  
+fig_width: 14
+fig_height: 6
+
+# compare_spectrums:
+#     best_legend_loc: upper left
+#     do_scattering_particles: false
+#     spectrum_type: energy
+#     file_directory: final
+#     files:
+#       (n-1,8a,16a): energy_estimates_isoquartet_nonstrange_fermionic_colin_trimmed_rebin20_Bootstrap.csv
+#       (n,8a,16a): energy_estimates_isoquartet_nonstrange_fermionic_colin_rebin20_Bootstrap_8-16.csv
+#       (n,6a,12a): energy_estimates_isoquartet_nonstrange_fermionic_colin_rebin20_Bootstrap_6-12.csv
+#       (n,4a,8a): energy_estimates_isoquartet_nonstrange_fermionic_colin_rebin20_Bootstrap_4-8.csv
+#     remove_xlabel: true
+
+compare_spectrums:
+    best_legend_loc: upper left
+    do_scattering_particles: false
+    spectrum_type: energy
+    file_directory: final2
+    files:
+      (n-1,8a,16a): energy_estimates_isoquartet_nonstrange_fermionic_colin_trimmed_rebin20_Bootstrap.csv
+      (n,8a,16a): energy_estimates_isoquartet_nonstrange_fermionic_colin_rebin20_Bootstrap_8-16.csv
+      (n,6a,12a): energy_estimates_isoquartet_nonstrange_fermionic_colin_rebin20_Bootstrap_6-12.csv
+      (n,4a,8a): energy_estimates_isoquartet_nonstrange_fermionic_colin_rebin20_Bootstrap_4-8.csv
+    remove_xlabel: true
+      
+# final_spectrum:
+#     spectrum_type: energy
+#     shift: ['Hg(0)','G1(1)','G2(1)','G(2)','G(3)','F1(3)','G1(4)','G2(4)']
+#     ni_width: 40
+#     best_legend_loc: lower left
+#     file_directory: final2
+#     file: energy_estimates_isoquartet_nonstrange_fermionic_colin_rebin20_Bootstrap_8-16.csv
+#     remove_xlabel: true
+
+# compare_spectrums:
+#     best_legend_loc: upper left
+#     omit: [G1g(0),Hu(0)]
+#     yrange: [0.0,2.25]
+#     do_scattering_particles: false
+#     spectrum_type: mom
+#     file_directory: final_spectrum
+#     files: 
+#       "input data": qsqr_samplings_isoquartet_nonstrange_fermionic_colin_rebin20.hdf5
+#       fit: predicted_values2.dat
+#     remove_xlabel: true
+#     graph_unused_levels: false
