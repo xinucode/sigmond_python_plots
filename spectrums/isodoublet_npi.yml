@@ -1,4 +1,5 @@
 channel: isodoublet_nonstrange
+title: $I=\nicefrac{1}{2}$
 scattering_particles:
   - N
   - pi

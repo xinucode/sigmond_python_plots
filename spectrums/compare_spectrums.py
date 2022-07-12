@@ -18,6 +18,8 @@ channel: isoquartet_nonstrange_fermionic #name of channel and corresponding
                                             #subdirectory where relevant files are located
 scattering_particles: [N, pi] #list of scattering particle names
 rest_mass: pi #the particle used to normalize the energy values
+title: $I=\nicefrac{3}{2}$ #(optional) if unspecified, plot will not print a title in the legend.
+    #also no title will print if no legend
 thresholds: #(optional) dict of thersholds with the key being how you want the threshold 
                 #to appear on the graph (replaced with latex) and the value is a list of  
                 #the rest masses to be summed over for the threshold value
@@ -85,8 +87,6 @@ final_spectrum: #(optional) generates graph that plots just one spectrum
         #unused levels will not be graphed.
 """
 
-titles = {"isodoublet_nonstrange":r"$I=\nicefrac{1}{2}$","isoquartet_nonstrange_fermionic":r"$I=\nicefrac{3}{2}$"}
-
 remove_ref = False
 do_scattering_particles = False
 file1 = ""
@@ -109,6 +109,7 @@ with open(args.config, "r") as yamlfile:
     configdata = yaml.load(yamlfile, Loader=yaml.FullLoader)
     
 particle_names = configdata['scattering_particles']
+# print()
 
 scat_momentum_tags = ['(0)_ref','(1)_ref','(2)_ref','(3)_ref','(4)_ref']
 scattering_particles = []
@@ -473,8 +474,8 @@ for graph in graphs:
             plt.xlim(minx-0.5-dd*(len(vals.keys())/2),(maxx+dd*(len(vals.keys())/2))*1.025+0.5)
             
     if (graph=='compare_spectrums'):
-        if best_legend_loc and channel in titles.keys():
-            plt.legend(title=titles[channel], loc=best_legend_loc)
+        if best_legend_loc and "title" in configdata.keys():
+            plt.legend(title=rf"{configdata['title']}", loc=best_legend_loc)
         elif best_legend_loc:
             plt.legend(loc=best_legend_loc)
         

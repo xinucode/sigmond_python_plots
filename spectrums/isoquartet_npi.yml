@@ -1,4 +1,5 @@
 channel: isoquartet_nonstrange_fermionic
+title: $I=\nicefrac{3}{2}$
 scattering_particles: [N, pi]
 thresholds:
   "Npi": [ N, pi ]
