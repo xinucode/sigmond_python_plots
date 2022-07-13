@@ -3,20 +3,7 @@ import numpy as np
 import h5py
 import os, sys
 
-single_had_key = 'single_hadrons'
-
-#designates colors and markers for plotting
-colors = ['green','blue','orange','purple','black','red','brown','gray']
-markers = ['o','s','D','v','^','*','x','+']
-zigzag_shifts = [-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1]
-
-#list of files that are jackknife samples rather than bootstrap
-jackknife_sampling_methods = ['isoquartet_nonstrange_fermionic\\qsqr_samplings_isoquartet_nonstrange_fermionic_colin_rebin20_jackknife.hdf5','isoquartet_nonstrange_fermionic\\qsqr_samplings_isoquartet_nonstrange_fermionic_colin_rebin20_jackknife_6-12.hdf5']
-
-#Gives a numerical order for the irreps so that I can control how they show up in the plots
-alphabetical = {'A1g':1.01107,'F1':0.0601,'F2':0.0602,'G': 0.07,'G1': 0.0701,'G1g': 0.07107,'G1u': 0.07121,'G2': 0.0702, 'Hg': 0.0807, 'Hu': 0.0821, 'T1g':0.20107}
-#latex format of all irreps
-latex_format = {'A1g':r"I=1 $A_{1g}$",'F1':r"$F_1$",'F2':r"$F_2$",'G': r'$G$','G1': r"$G_1$",'G1g': r"$G_{1g}$",'G1u': r"$G_{1u}$",'G2': r"$G_2$", 'Hg': r"$H_g$", 'Hu': r"$H_u$", 'N': r'$N$', 'pi':r"$\pi$", 'mpi':r"$m_\pi$",'mpi2':r"$m_\pi^2$",'T1g':r"I=0 $T_{1g}$"}
+import settings
 
 def unique(an_ordered_list):
     if len(an_ordered_list)<=1:
@@ -57,7 +44,7 @@ def unique(an_ordered_list):
 #uses the irrep and momentum in form G1u(0) and orders based on momentum number + irrep's "alphabetical" value
 def sort_by_mom(irrep):
     parts = irrep.split("(")
-    return float(parts[1][0])+float(alphabetical[parts[0]])
+    return float(parts[1][0])+float(settings.alphabetical[parts[0]])
 
 #goes through data file and inserts info into the dataframe (pandas)
 def split_obs_col(dataset):
@@ -67,7 +54,7 @@ def split_obs_col(dataset):
     obs_level = []
     for i, (obs) in enumerate(obs_names):
         obs_list = obs.split('/')
-        if obs_list[0] == single_had_key:
+        if obs_list[0] == settings.single_had_key:
             obs_mom.append(None)
             obs_irrep.append(None)
             obs_level.append(obs_list[1])
@@ -112,13 +99,13 @@ def retrieve_sigmond_script_data(file):
 def retrieve_sigmond_script_data_hdf5(file):
     q2s = h5py.File(file,'r')
     dataset = pd.DataFrame(columns=['obs', 'val', 'err'])
-    if file in jackknife_sampling_methods:
+    if file in settings.jackknife_sampling_methods:
         print("jackknife success")
     for mom in q2s.keys():
         for basis in q2s[mom].keys():
             try:
                 for value in q2s[mom+'/'+basis].keys():
-                    if file in jackknife_sampling_methods:
+                    if file in settings.jackknife_sampling_methods:
                         df2 = pd.DataFrame([[mom+'/'+basis+'/'+value, q2s[mom+'/'+basis+'/'+value][0], jackknife_error_by_array(q2s[mom+'/'+basis+'/'+value])]], columns=['obs', 'val', 'err'])
                     else:
                         df2 = pd.DataFrame([[mom+'/'+basis+'/'+value, q2s[mom+'/'+basis+'/'+value][0], bootstrap_error_by_array(q2s[mom+'/'+basis+'/'+value])]], columns=['obs', 'val', 'err'])

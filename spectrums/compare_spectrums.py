@@ -9,6 +9,7 @@ import argparse
 
 sys.path.append('../')
 import utils
+import settings
 
 
 """
@@ -371,8 +372,8 @@ for graph in graphs:
             dd = 0.1
 
             for i,dataset in enumerate(scat_vals.keys()):
-                plt.scatter(scat_indexes2+dd*i,scat_vals[dataset],color=utils.colors[i], marker=utils.markers[i], label = dataset)
-                plt.errorbar(scat_indexes2+dd*i, scat_vals[dataset], scat_errs[dataset], fmt='.', capsize=5,color=utils.colors[i])
+                plt.scatter(scat_indexes2+dd*i,scat_vals[dataset],color=settings.colors[i], marker=settings.markers[i], label = dataset)
+                plt.errorbar(scat_indexes2+dd*i, scat_vals[dataset], scat_errs[dataset], fmt='.', capsize=5,color=settings.colors[i])
             plt.ylabel(r"$E_{cm}/m_\pi$")
             plt.xlabel("Noninteracting Scattering Levels")
             plt.legend()
@@ -407,8 +408,8 @@ for graph in graphs:
                 threshold_label = threshold
                 for particle in configdata['thresholds'][threshold]:
                     threshold_value+=Refs[particle][0]
-                    threshold_label=threshold_label.replace(utils.latex_format[particle], particle)
-                    threshold_label=threshold_label.replace(particle, utils.latex_format[particle])
+                    threshold_label=threshold_label.replace(settings.latex_format[particle], particle)
+                    threshold_label=threshold_label.replace(particle, settings.latex_format[particle])
 
                 plt.hlines(threshold_value,minx-dd*(len(vals.keys())/2),maxx+dd*(len(vals.keys())/2),color='black', linestyle="--", zorder=1) 
                 plt.text( (maxx+dd*(len(vals.keys())/2))*(1.01),threshold_value-0.04, threshold_label, zorder=6,size="x-small")
@@ -425,12 +426,12 @@ for graph in graphs:
 #         if ('compare_spectrums' in configdata.keys()) and (graph=='compare_spectrums'):
         if 'shift' in configdata[graph].keys():
             if configdata[graph]['shift']:
-                shifted_array = np.array([utils.zigzag_shifts[lev] if keys[dataset][i] in configdata[graph]['shift'] else 0.0 for i,lev in enumerate(levs[dataset])])
-                used_shifted_array = np.array([utils.zigzag_shifts[lev] if keys_used[dataset][i] in configdata[graph]['shift'] else 0.0 for i,lev in enumerate(levs_used[dataset])])
+                shifted_array = np.array([settings.zigzag_shifts[lev] if keys[dataset][i] in configdata[graph]['shift'] else 0.0 for i,lev in enumerate(levs[dataset])])
+                used_shifted_array = np.array([settings.zigzag_shifts[lev] if keys_used[dataset][i] in configdata[graph]['shift'] else 0.0 for i,lev in enumerate(levs_used[dataset])])
         if used_levels:
             marker_color = 'white'
         else:
-            marker_color = utils.colors[i]
+            marker_color = settings.colors[i]
 
         if used_levels:
             unused_label = None
@@ -441,15 +442,15 @@ for graph in graphs:
         
         if (not used_levels) or (used_levels and graph_unused_levels):
             if len(np.nonzero(errs[dataset])[0]):
-                plt.errorbar(indexes[dataset]+dd*splitting_factor+ddd*shifted_array, vals[dataset], np.array(errs[dataset]),  capsize=5, color=utils.colors[i], marker=utils.markers[i],linestyle="", linewidth=0.0, elinewidth=1.5,mfc=marker_color,zorder=4,label=unused_label)
+                plt.errorbar(indexes[dataset]+dd*splitting_factor+ddd*shifted_array, vals[dataset], np.array(errs[dataset]),  capsize=5, color=settings.colors[i], marker=settings.markers[i],linestyle="", linewidth=0.0, elinewidth=1.5,mfc=marker_color,zorder=4,label=unused_label)
             else:
-                plt.scatter(indexes[dataset]+dd*splitting_factor+ddd*shifted_array, vals[dataset], color=utils.colors[i], marker=utils.markers[i],linewidth=0.0, zorder=4,label=unused_label)
+                plt.scatter(indexes[dataset]+dd*splitting_factor+ddd*shifted_array, vals[dataset], color=settings.colors[i], marker=settings.markers[i],linewidth=0.0, zorder=4,label=unused_label)
         
         if used_levels:
             if len(np.nonzero(errs_used[dataset])[0]):
-                plt.errorbar(indexes_used[dataset]+dd*splitting_factor+ddd*used_shifted_array,vals_used[dataset], np.array(errs_used[dataset]),  capsize=5, color=utils.colors[i], marker=utils.markers[i],linestyle="", linewidth=0.0, elinewidth=1.5,mfc=utils.colors[i],zorder=4,label=dataset)
+                plt.errorbar(indexes_used[dataset]+dd*splitting_factor+ddd*used_shifted_array,vals_used[dataset], np.array(errs_used[dataset]),  capsize=5, color=settings.colors[i], marker=settings.markers[i],linestyle="", linewidth=0.0, elinewidth=1.5,mfc=settings.colors[i],zorder=4,label=dataset)
             else:
-                plt.scatter(indexes_used[dataset]+dd*splitting_factor+ddd*used_shifted_array,vals_used[dataset], color=utils.colors[i], marker=utils.markers[i], linewidth=0.0, zorder=4,label=dataset)
+                plt.scatter(indexes_used[dataset]+dd*splitting_factor+ddd*used_shifted_array,vals_used[dataset], color=settings.colors[i], marker=settings.markers[i], linewidth=0.0, zorder=4,label=dataset)
         
     if (graph=='final_spectrum') or plot_ni_levels:
         for i,dataset in enumerate(evals.keys()):
@@ -460,13 +461,13 @@ for graph in graphs:
     if "yrange" in configdata[graph].keys():
         plt.ylim( configdata[graph]["yrange"][0],configdata[graph]["yrange"][1])
     if spectrum_type=='energy':
-        plt.ylabel(r"$E_{\textup{cm}}/$"+utils.latex_format["m"+rest_mass])
+        plt.ylabel(r"$E_{\textup{cm}}/$"+settings.latex_format["m"+rest_mass])
     else:
-        plt.ylabel(r"$q^2_{\textup{cm}}/$"+utils.latex_format["m"+rest_mass+"2"])
+        plt.ylabel(r"$q^2_{\textup{cm}}/$"+settings.latex_format["m"+rest_mass+"2"])
 
     if not remove_xlabel:
         plt.xlabel(r"$\Lambda(d^2)$")
-    latex_keys = [utils.latex_format[key.split('(')[0]]+"("+key.split('(')[1] for key in keys[somekey]+keys_used[somekey]]
+    latex_keys = [settings.latex_format[key.split('(')[0]]+"("+key.split('(')[1] for key in keys[somekey]+keys_used[somekey]]
     plt.xticks(utils.unique(list(indexes[somekey])+list(indexes_used[somekey])), utils.unique(latex_keys),size="small")
     plt.xlim(minx-0.5-dd*(len(vals.keys())/2),maxx+0.5+dd*(len(vals.keys())/2))
     if not remove_ref and spectrum_type=="energy":
