@@ -1,20 +1,28 @@
 # sigmond_python_plots
-Python plots from sigmond data
+Python plots from sigmond data. See https://github.com/andrewhanlon/sigmond and https://github.com/andrewhanlon/sigmond_scripts .
 
 ## contents
+spectrum.mplstyle - style file for matplotlib plots that is applied to all plots
+
 utils.py - common functions needed for any given plotting script. Input functions and
     error functions are here.
+
 spectrums/compare_spectrums.py - python script to generate various spectrum plots, to both plot a 
     spectrum and also compare several spectrums. Requires a config file as an argument
+
 tmins/ - rest mass tmin plots and others in development
+
 m_delta/ - m_delta comparison plot in development
-    
+
 ## basic commands
 to run example spectrum plot:
+```
 python spectrums/compare_spectrums.py spectrums/hexaquark.yml
+```
 
 ## Sample config files
 ### Sample spectrums config file
+```
 channel: isoquartet_nonstrange_fermionic #name of channel and corresponding 
                                             #subdirectory where relevant files are located
 scattering_particles: [N, pi] #list of scattering particle names
@@ -86,7 +94,8 @@ final_spectrum: #(optional) generates graph that plots just one spectrum
     remove_xlabel: true #(optional) default false; boolean to decide if print xlabel
     graph_unused_levels: false #(optional) default true; if unused_levels is specified and this tag is set to false, 
         #unused levels will not be graphed.
-    
+```
+
 ## Input data
 ### spectrum data
 There are several different available input filetypes, though they were developed for specific output data from
