@@ -4,6 +4,8 @@ Python plots from sigmond data. See https://github.com/andrewhanlon/sigmond and 
 ## contents
 spectrum.mplstyle - style file for matplotlib plots that is applied to all plots
 
+settings.py - Key plot settings such as colors, latex, and data ordering
+
 utils.py - common functions needed for any given plotting script. Input functions and
     error functions are here.
 
