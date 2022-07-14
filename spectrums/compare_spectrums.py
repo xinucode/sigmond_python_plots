@@ -10,6 +10,7 @@ import argparse
 sys.path.append('../')
 import utils
 import settings
+plt.style.use('../spectrum.mplstyle')
 
 
 """
@@ -393,14 +394,16 @@ for graph in graphs:
         f.set_figwidth(configdata[graph]['fig_width'])
     if 'fig_height' in configdata[graph].keys():
         f.set_figheight(configdata[graph]['fig_height'])
-    dd=0.15
-    ddd = 0.10/len(files.keys())
     
-    plt.style.use('../spectrum.mplstyle')
     
-
     minx = min(list(indexes[somekey])+list(indexes_used[somekey]))
     maxx = max(list(indexes[somekey])+list(indexes_used[somekey]))
+    dd=0.015*(maxx-minx)
+    ddd = 0.010*(maxx-minx)/len(files.keys())
+    
+    
+    
+
     if not remove_ref and spectrum_type=="energy":
         if configdata['thresholds']:
             for threshold in configdata['thresholds'].keys():

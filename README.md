@@ -4,20 +4,23 @@ Python plots from sigmond data
 ## contents
 utils.py - common functions needed for any given plotting script. Input functions and
     error functions are here.
-compare_spectrums.py - python script to generate various spectrum plots, to both plot a 
+spectrums/compare_spectrums.py - python script to generate various spectrum plots, to both plot a 
     spectrum and also compare several spectrums. Requires a config file as an argument
-rest_mass/ - rest mass tmin plots and others in development
+tmins/ - rest mass tmin plots and others in development
+m_delta/ - m_delta comparison plot in development
     
 ## basic commands
 to run example spectrum plot:
-python compare_spectrums.py hexaquark.yml
+python spectrums/compare_spectrums.py spectrums/hexaquark.yml
 
 ## Sample config files
-### Sample spectrum config file
+### Sample spectrums config file
 channel: isoquartet_nonstrange_fermionic #name of channel and corresponding 
                                             #subdirectory where relevant files are located
 scattering_particles: [N, pi] #list of scattering particle names
 rest_mass: pi #the particle used to normalize the energy values
+title: $I=\nicefrac{3}{2}$ #(optional) if unspecified, plot will not print a title in the legend.
+    #also no title will print if no legend
 thresholds: #(optional) dict of thersholds with the key being how you want the threshold 
                 #to appear on the graph (replaced with latex) and the value is a list of  
                 #the rest masses to be summed over for the threshold value
@@ -63,6 +66,9 @@ compare_spectrums: #(optional) generates graph that compares several spectrums w
     yrange: [0.0,2.5] #(optional) manually select the yrange, otherwise matplotlib automatically sets it
     plot_ni_levels: true #(optional) default false; plots the non interacting levels for each spectrum
     ni_width: 40 #(optional) default 80; sets the width of the non-interacting levels (if plot_ni_levels==true)
+    remove_xlabel: #(optional) default false; boolean to decide if print xlabel
+    graph_unused_levels: false #(optional) default true; if unused_levels is specified and this tag is set to false, 
+        #unused levels will not be graphed.
       
 final_spectrum: #(optional) generates graph that plots just one spectrum
     spectrum_type: energy #value can be "energy" or "mom" determines how the files are parsed and how the graph 
@@ -77,7 +83,9 @@ final_spectrum: #(optional) generates graph that plots just one spectrum
     fig_width: 14 #(optional) sets width of this figure, supercedes the setting for all figures
     fig_height: 6 #(optional) sets height of this figure, supercedes the setting for all figures
     omit: [G1g(0),Hu(0)] #(optional) list of irreps(d^2) to omit; otherwise, it graphs all irreps
-    yrange: [0.0,2.5] #(optional) manually select the yrange, otherwise matplotlib automatically sets it
+    remove_xlabel: true #(optional) default false; boolean to decide if print xlabel
+    graph_unused_levels: false #(optional) default true; if unused_levels is specified and this tag is set to false, 
+        #unused levels will not be graphed.
     
 ## Input data
 ### spectrum data
