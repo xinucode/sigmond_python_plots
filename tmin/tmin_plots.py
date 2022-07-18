@@ -734,23 +734,28 @@ if __name__ == "__main__":
     project_info = yaml.load(yamlfile, Loader=yaml.FullLoader)
     yamlfile.close()
     
-    
     if "rest_mass" in project_info.keys():
         for particle in project_info["rest_mass"]['particles'].keys():
             print(f"\nCreating {particle} rest mass tmin plot...")
             files = project_info["rest_mass"]['particles'][particle]['files']
-            ylabel = f'"am\\s{settings.xmgrace_format[particle]}"'
+            organized_files = {}
+            for file in files:
+                organized_files[settings.tmin_file_tags[file[-5:]]] = file #assumes no ratio (single hadrons should not have ratio fits)
+                
             if project_info["rest_mass"]['out_type']=="xmgrace":
-                if len(files)==3:
-                    this_rest_mass_tmin_plot = rest_mass_tmin_plot(files[0],files[1],ylabel,filename_3 = files[2])
-                elif len(files)==2:
-                    this_rest_mass_tmin_plot = rest_mass_tmin_plot(files[0],files[1],ylabel)
+                ylabel = f'"am\\s{settings.xmgrace_format[particle]}"'
+                if ('single' in organized_files.keys()) and ('double' in organized_files.keys()):
+                    if 'geometric' in organized_files.keys():
+                        this_rest_mass_tmin_plot = rest_mass_tmin_plot(organized_files['single'],organized_files['double'],ylabel,filename_3 = organized_files['geometric'])
+                    else:
+                        this_rest_mass_tmin_plot = rest_mass_tmin_plot(organized_files['single'],organized_files['double'],ylabel)
                 else:
-                    print(f"No rest mass plot generated for {particle}. Requires 2-3 tmin plots to combine.")
+                    print(f"The xmgrace plots are only configured for 'single' and 'double' and/or 'geometric'.")
 
                 outfilestub = project_info["rest_mass"]['particles'][particle]['outfilestub']
                 this_rest_mass_tmin_plot.write(outfilestub+".agr")
                 print_to_svg(this_rest_mass_tmin_plot,outfilestub)
+                
             elif project_info["rest_mass"]['out_type']=="python":
                 #get the info from the xmgrace files
                 #run the jupyter notebook script
