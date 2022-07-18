@@ -3,10 +3,13 @@ import copy
 from zipfile import ZipFile
 import os, sys
 import yaml
+import pandas as pd
+import matplotlib.pyplot as plt
 
 sys.path.insert(0,'../')
 import xmgrace_parser
 import settings
+plt.style.use('../spectrum.mplstyle')
 
 #settings for sigmond plots
 #legend_setting = "0.25, 0.92" #string of x,y location where legend should be located on graph
@@ -726,6 +729,55 @@ def zip_channel( name,this_file_list ):
         this_zip.write(basis+".svg")
     this_zip.close()
     
+def retrieve_xmgrace_data_xydydy( files ):
+    datasets = {}
+    for key in files.keys():
+        this_plot = xmgrace_parser.AgrFile(files[key],True) 
+        xydydy_data_indexes = get_data_by_type(this_plot,xydydy)
+        t = np.array([])
+        val = np.array([])
+        err1 = np.array([])
+        err2 = np.array([])
+        for (g,s) in xydydy_data_indexes:
+            this_t, this_val, this_err1, this_err2 = this_plot.get_dataset(g,s).get_data()
+            t = np.concatenate((t, this_t))
+            val = np.concatenate((val, this_val))
+            err1 = np.concatenate((err1, this_err1))
+            err2 = np.concatenate((err2, this_err2))
+        datasets[key] = pd.DataFrame()
+        datasets[key].insert(0,0,t)
+        datasets[key].insert(1,1,val)
+        datasets[key].insert(2,2,err1)
+        datasets[key].insert(3,3,err2)
+    return datasets
+
+def retrieve_xmgrace_data_xy( files ):
+    t = np.array([])
+    val = np.array([])
+    for key in files.keys():
+        this_plot = xmgrace_parser.AgrFile(files[key],True) 
+        xy_data_indexes = get_data_by_type(this_plot,xy)
+        for (g,s) in xy_data_indexes:
+            this_t, this_val = this_plot.get_dataset(g,s).get_data()
+            t = np.concatenate((t, this_t))
+            val = np.concatenate((val, this_val))
+        
+    sorted_values = list(set(val))
+    sorted_values.sort()
+    return sorted_values
+
+def generate_python_rest_mass_plot( fits, tmins ):
+    minx = 10
+    maxx = 10
+    for i,label in enumerate(list(tmins.keys())):
+        minx = min(min(np.array(tmins[label][0])),minx)
+        maxx = max(max(np.array(tmins[label][0])),maxx)
+        plt.errorbar(np.array(tmins[label][0]),np.array(tmins[label][1]),np.concatenate([[np.array(tmins[label][3])],[np.array(tmins[label][2])]]),  capsize=5, color=settings.colors[i], marker=settings.markers[i],linestyle="", linewidth=0.0, elinewidth=1.5,label=label)
+    
+    plt.hlines(fits[1],minx,maxx,color="black")
+    plt.hlines(fits[0],minx,maxx,color="black",ls="--")
+    plt.hlines(fits[2],minx,maxx,color="black",ls="--")
+
         
 #run plots
 if __name__ == "__main__":
@@ -735,7 +787,7 @@ if __name__ == "__main__":
     yamlfile.close()
     
     if "rest_mass" in project_info.keys():
-        for particle in project_info["rest_mass"]['particles'].keys():
+        for i,particle in enumerate(project_info["rest_mass"]['particles'].keys()):
             print(f"\nCreating {particle} rest mass tmin plot...")
             files = project_info["rest_mass"]['particles'][particle]['files']
             organized_files = {}
@@ -757,10 +809,42 @@ if __name__ == "__main__":
                 print_to_svg(this_rest_mass_tmin_plot,outfilestub)
                 
             elif project_info["rest_mass"]['out_type']=="python":
-                #get the info from the xmgrace files
-                #run the jupyter notebook script
-                #enable/disable combined plots
-                pass
+                combine = False
+                n_particles = len(project_info["rest_mass"]['particles'].keys())
+                if 'combine' in project_info["rest_mass"].keys():
+                    combine = project_info["rest_mass"]['combine']
+                    if n_particles <= 1:
+                        combine = False
+                    
+                #retrieve data
+                tmin_data = retrieve_xmgrace_data_xydydy(organized_files)
+                fit_data = retrieve_xmgrace_data_xy(organized_files)
+                
+                #plot data
+                if (combine and not i) or not combine:
+                    f = plt.figure()
+                    f.set_figwidth(8*(combine+1))
+                    f.set_figheight(6)
+                
+                if combine:
+                    plt.subplot(np.ceil(n_particles/2), 2, i+1)
+                    
+                print(i,n_particles,particle)
+                generate_python_rest_mass_plot( fit_data, tmin_data )
+                
+                plt.xlabel(r"$t_{\textup{min}}/a$")
+                plt.ylabel(rf"$am_{{{particle}}}$")
+#                 plt.legend()
+                
+                if not combine:
+                    plt.tight_layout()
+                    plt.savefig(f'{particle}_tmin.pdf')
+                    plt.clf()
+        
+        if project_info["rest_mass"]['out_type']=="python" and combine:
+            plt.tight_layout()
+            plt.savefig('rest_mass_tmin.pdf')
+                
         
     if "spectrum_tmins" in project_info.keys():
         for channel in project_info["spectrum_tmins"]["infiles"]: #spec.infiles.keys():
