@@ -6,10 +6,7 @@ import yaml
 
 sys.path.insert(0,'../')
 import xmgrace_parser
-
-#these are the files where you specify the file locations of the xmgrace tmin plots
-import rest_mass_config
-# import spectrum_tmins_config as spec
+import settings
 
 #settings for sigmond plots
 #legend_setting = "0.25, 0.92" #string of x,y location where legend should be located on graph
@@ -739,20 +736,26 @@ if __name__ == "__main__":
     
     
     if "rest_mass" in project_info.keys():
-        for particle in project_info["rest_mass"].keys():
+        for particle in project_info["rest_mass"]['particles'].keys():
             print(f"\nCreating {particle} rest mass tmin plot...")
-            files = project_info["rest_mass"][particle]['files']
-            ylabel = project_info["rest_mass"][particle]['ylabel']
-            if len(files)==3:
-                this_rest_mass_tmin_plot = rest_mass_tmin_plot(files[0],files[1],ylabel,filename_3 = files[2])
-            elif len(files)==2:
-                this_rest_mass_tmin_plot = rest_mass_tmin_plot(files[0],files[1],ylabel)
-            else:
-                print(f"No rest mass plot generated for {particle}. Requires 2-3 tmin plots to combine.")
-                      
-            outfilestub = project_info["rest_mass"][particle]['outfilestub']
-            this_rest_mass_tmin_plot.write(outfilestub+".agr")
-            print_to_svg(this_rest_mass_tmin_plot,outfilestub)
+            files = project_info["rest_mass"]['particles'][particle]['files']
+            ylabel = f'"am\\s{settings.xmgrace_format[particle]}"'
+            if project_info["rest_mass"]['out_type']=="xmgrace":
+                if len(files)==3:
+                    this_rest_mass_tmin_plot = rest_mass_tmin_plot(files[0],files[1],ylabel,filename_3 = files[2])
+                elif len(files)==2:
+                    this_rest_mass_tmin_plot = rest_mass_tmin_plot(files[0],files[1],ylabel)
+                else:
+                    print(f"No rest mass plot generated for {particle}. Requires 2-3 tmin plots to combine.")
+
+                outfilestub = project_info["rest_mass"]['particles'][particle]['outfilestub']
+                this_rest_mass_tmin_plot.write(outfilestub+".agr")
+                print_to_svg(this_rest_mass_tmin_plot,outfilestub)
+            elif project_info["rest_mass"]['out_type']=="python":
+                #get the info from the xmgrace files
+                #run the jupyter notebook script
+                #enable/disable combined plots
+                pass
         
     if "spectrum_tmins" in project_info.keys():
         for channel in project_info["spectrum_tmins"]["infiles"]: #spec.infiles.keys():

@@ -1,18 +1,19 @@
 rest_mass:
-    N:
-        files:
-            - /latticeQCD/raid3/sarahski/lqcd/D200_R000/isoquartet_nonstrange_fermionic_bootstrap/.sigmond/plots/spectrum/tmin_plots/isoquartet_nonstrange_fermionic_colin/rebin20/single_hadrons/tmin_fit_isodoublet-S0-P000-G1g-NSS0-0_20000G1g-N[SS0]-0T2-25-20_0.agr
-            - /latticeQCD/raid3/sarahski/lqcd/D200_R000/isoquartet_nonstrange_fermionic_bootstrap/.sigmond/plots/spectrum/tmin_plots/isoquartet_nonstrange_fermionic_colin/rebin20/single_hadrons/tmin_fit_isodoublet-S0-P000-G1g-NSS0-0_20000G1g-N[SS0]-0T2-25-20_4.agr
-            - /latticeQCD/raid3/sarahski/lqcd/D200_R000/isoquartet_nonstrange_fermionic_bootstrap/.sigmond/plots/spectrum/tmin_plots/isoquartet_nonstrange_fermionic_colin/rebin20/single_hadrons/tmin_fit_isodoublet-S0-P000-G1g-NSS0-0_20000G1g-N[SS0]-0T2-25-15_8.agr
-        outfilestub: N0_tmin_all
-        ylabel: '"am\\sN"'
-        
-    pi:
-        files:
-            - /latticeQCD/raid3/sarahski/lqcd/D200_R000/isoquartet_nonstrange_fermionic_bootstrap/.sigmond/plots/spectrum/tmin_plots/isoquartet_nonstrange_fermionic_colin/rebin20/single_hadrons/tmin_fit_isotriplet-S0-P000-A1um-PSS0-0_30000A1um-P[SS0]-0T2-25-20_0.agr
-            - /latticeQCD/raid3/sarahski/lqcd/D200_R000/isoquartet_nonstrange_fermionic_bootstrap/.sigmond/plots/spectrum/tmin_plots/isoquartet_nonstrange_fermionic_colin/rebin20/single_hadrons/tmin_fit_isotriplet-S0-P000-A1um-PSS0-0_30000A1um-P[SS0]-0T2-25-20_4.agr
-        outfilestub: pi0_tmin_all
-        ylabel: '"am\\s\\xp"'
+    out_type: xmgrace
+#     out_type: python
+    particles:
+        N:
+            files:
+                - /latticeQCD/raid3/sarahski/lqcd/D200_R000/isoquartet_nonstrange_fermionic_bootstrap/.sigmond/plots/spectrum/tmin_plots/isoquartet_nonstrange_fermionic_colin/rebin20/single_hadrons/tmin_fit_isodoublet-S0-P000-G1g-NSS0-0_20000G1g-N[SS0]-0T2-25-20_0.agr
+                - /latticeQCD/raid3/sarahski/lqcd/D200_R000/isoquartet_nonstrange_fermionic_bootstrap/.sigmond/plots/spectrum/tmin_plots/isoquartet_nonstrange_fermionic_colin/rebin20/single_hadrons/tmin_fit_isodoublet-S0-P000-G1g-NSS0-0_20000G1g-N[SS0]-0T2-25-20_4.agr
+                - /latticeQCD/raid3/sarahski/lqcd/D200_R000/isoquartet_nonstrange_fermionic_bootstrap/.sigmond/plots/spectrum/tmin_plots/isoquartet_nonstrange_fermionic_colin/rebin20/single_hadrons/tmin_fit_isodoublet-S0-P000-G1g-NSS0-0_20000G1g-N[SS0]-0T2-25-15_8.agr
+            outfilestub: N0_tmin_all
+
+        pi:
+            files:
+                - /latticeQCD/raid3/sarahski/lqcd/D200_R000/isoquartet_nonstrange_fermionic_bootstrap/.sigmond/plots/spectrum/tmin_plots/isoquartet_nonstrange_fermionic_colin/rebin20/single_hadrons/tmin_fit_isotriplet-S0-P000-A1um-PSS0-0_30000A1um-P[SS0]-0T2-25-20_0.agr
+                - /latticeQCD/raid3/sarahski/lqcd/D200_R000/isoquartet_nonstrange_fermionic_bootstrap/.sigmond/plots/spectrum/tmin_plots/isoquartet_nonstrange_fermionic_colin/rebin20/single_hadrons/tmin_fit_isotriplet-S0-P000-A1um-PSS0-0_30000A1um-P[SS0]-0T2-25-20_4.agr
+            outfilestub: pi0_tmin_all
         
 # spectrum_tmins:
 #     include_single_exp: True
