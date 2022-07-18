@@ -735,35 +735,31 @@ if __name__ == "__main__":
     
     yamlfile = open("sigmond_plots_config.yml","r")
     project_info = yaml.load(yamlfile, Loader=yaml.FullLoader)
-#     print(project_info)
     yamlfile.close()
-#     print(spec.infiles)
-    
-    create_rest_mass = False
     
     
-    if create_rest_mass:
-        #N
-        print("\nCreating nucleon rest mass tmin plot...")
-        if rest_mass_config.Nfilename3:
-            this_rest_mass_tmin_plot = rest_mass_tmin_plot(rest_mass_config.Nfilename1,rest_mass_config.Nfilename2,rest_mass_config.Nylabel,filename_3 = rest_mass_config.Nfilename3)
-        else:
-            this_rest_mass_tmin_plot = rest_mass_tmin_plot(rest_mass_config.Nfilename1,rest_mass_config.Nfilename2,rest_mass_config.Nylabel)
-        this_rest_mass_tmin_plot.write(rest_mass_config.Nofile+".agr")
-        print_to_svg(this_rest_mass_tmin_plot,rest_mass_config.Nofile)
+    if "rest_mass" in project_info.keys():
+        for particle in project_info["rest_mass"].keys():
+            print(f"\nCreating {particle} rest mass tmin plot...")
+            files = project_info["rest_mass"][particle]['files']
+            ylabel = project_info["rest_mass"][particle]['ylabel']
+            if len(files)==3:
+                this_rest_mass_tmin_plot = rest_mass_tmin_plot(files[0],files[1],ylabel,filename_3 = files[2])
+            elif len(files)==2:
+                this_rest_mass_tmin_plot = rest_mass_tmin_plot(files[0],files[1],ylabel)
+            else:
+                print(f"No rest mass plot generated for {particle}. Requires 2-3 tmin plots to combine.")
+                      
+            outfilestub = project_info["rest_mass"][particle]['outfilestub']
+            this_rest_mass_tmin_plot.write(outfilestub+".agr")
+            print_to_svg(this_rest_mass_tmin_plot,outfilestub)
         
-        #pi
-        print("\nCreating pion rest mass tmin plot...")
-        this_rest_mass_tmin_plot = rest_mass_tmin_plot(rest_mass_config.pifilename1,rest_mass_config.pifilename2,rest_mass_config.piylabel)
-        this_rest_mass_tmin_plot.write(rest_mass_config.piofile+".agr")
-        print_to_svg(this_rest_mass_tmin_plot,rest_mass_config.piofile)
-        
-    if "spectrum tmins" in project_info.keys():
-        for channel in project_info["spectrum tmins"]["infiles"]: #spec.infiles.keys():
+    if "spectrum_tmins" in project_info.keys():
+        for channel in project_info["spectrum_tmins"]["infiles"]: #spec.infiles.keys():
             print("\n",channel["name"])
-            if project_info["spectrum tmins"]["plot_format"] == 1:
+            if project_info["spectrum_tmins"]["plot_format"] == 1:
                 isodoublet_nonstrange_tmin_plots = spectrum_tmin_format1(find_tmin_spectrum_files(channel))
-            elif project_info["spectrum tmins"]["plot_format"] == 2:
+            elif project_info["spectrum_tmins"]["plot_format"] == 2:
                 isodoublet_nonstrange_tmin_plots = spectrum_tmin_format2(find_tmin_spectrum_files(channel))
             else:
                 isodoublet_nonstrange_tmin_plots = spectrum_tmin_format3(find_tmin_spectrum_files(channel))

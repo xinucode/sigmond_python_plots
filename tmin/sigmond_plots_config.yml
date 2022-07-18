@@ -1,8 +1,23 @@
-# ignore_me: yeah
-spectrum tmins:
-    include_single_exp: True
-    plot_format: 3
-    infiles:
+rest_mass:
+    N:
+        files:
+            - /latticeQCD/raid3/sarahski/lqcd/D200_R000/isoquartet_nonstrange_fermionic_bootstrap/.sigmond/plots/spectrum/tmin_plots/isoquartet_nonstrange_fermionic_colin/rebin20/single_hadrons/tmin_fit_isodoublet-S0-P000-G1g-NSS0-0_20000G1g-N[SS0]-0T2-25-20_0.agr
+            - /latticeQCD/raid3/sarahski/lqcd/D200_R000/isoquartet_nonstrange_fermionic_bootstrap/.sigmond/plots/spectrum/tmin_plots/isoquartet_nonstrange_fermionic_colin/rebin20/single_hadrons/tmin_fit_isodoublet-S0-P000-G1g-NSS0-0_20000G1g-N[SS0]-0T2-25-20_4.agr
+            - /latticeQCD/raid3/sarahski/lqcd/D200_R000/isoquartet_nonstrange_fermionic_bootstrap/.sigmond/plots/spectrum/tmin_plots/isoquartet_nonstrange_fermionic_colin/rebin20/single_hadrons/tmin_fit_isodoublet-S0-P000-G1g-NSS0-0_20000G1g-N[SS0]-0T2-25-15_8.agr
+        outfilestub: N0_tmin_all
+        ylabel: '"am\\sN"'
+        
+    pi:
+        files:
+            - /latticeQCD/raid3/sarahski/lqcd/D200_R000/isoquartet_nonstrange_fermionic_bootstrap/.sigmond/plots/spectrum/tmin_plots/isoquartet_nonstrange_fermionic_colin/rebin20/single_hadrons/tmin_fit_isotriplet-S0-P000-A1um-PSS0-0_30000A1um-P[SS0]-0T2-25-20_0.agr
+            - /latticeQCD/raid3/sarahski/lqcd/D200_R000/isoquartet_nonstrange_fermionic_bootstrap/.sigmond/plots/spectrum/tmin_plots/isoquartet_nonstrange_fermionic_colin/rebin20/single_hadrons/tmin_fit_isotriplet-S0-P000-A1um-PSS0-0_30000A1um-P[SS0]-0T2-25-20_4.agr
+        outfilestub: pi0_tmin_all
+        ylabel: '"am\\s\\xp"'
+        
+# spectrum_tmins:
+#     include_single_exp: True
+#     plot_format: 1
+#     infiles:
 #       - name: isodoublet_nonstrange_format1
 #         dir: /latticeQCD/raid3/sarahski/lqcd/D200_R000/isodoublet_nonstrange_bootstrap/.sigmond/plots/spectrum/tmin_plots/isodoublet_nonstrange_colin/rebin20
 #         omit:
@@ -66,5 +81,5 @@ spectrum tmins:
 #           - tmin_fit_isodoublet-S0-PSQ4-G1-ROT-2_20p4G1-ROT-2T2-25-20R_0_2.pdf
 #           - tmin_fit_isodoublet-S0-PSQ4-G1-ROT-2_20p4G1-ROT-2T2-25-20R_0_D_2.agr
 #           - tmin_fit_isodoublet-S0-PSQ4-G1-ROT-2_20p4G1-ROT-2T2-25-20R_0_D_2.pdf
-      - name: isoquartet_nonstrange_fermionic_format3
-        dir: /latticeQCD/raid3/sarahski/lqcd/D200_R000/isoquartet_nonstrange_fermionic_bootstrap/.sigmond/plots/spectrum/tmin_plots/isoquartet_nonstrange_fermionic_colin/rebin20
+#       - name: isoquartet_nonstrange_fermionic_format3
+#         dir: /latticeQCD/raid3/sarahski/lqcd/D200_R000/isoquartet_nonstrange_fermionic_bootstrap/.sigmond/plots/spectrum/tmin_plots/isoquartet_nonstrange_fermionic_colin/rebin20
