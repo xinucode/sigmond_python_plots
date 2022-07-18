@@ -461,12 +461,13 @@ for graph in graphs:
             plt.scatter(eindexes[dataset]+dd*(i-((len(evals.keys())-1)/2)),evals[dataset],color="darkgrey", marker="_",s=ni_width*ni_width,zorder=3)
 
 
+    latex_rest_mass = settings.latex_format[rest_mass].replace('$',"")
     if "yrange" in configdata[graph].keys():
         plt.ylim( configdata[graph]["yrange"][0],configdata[graph]["yrange"][1])
     if spectrum_type=='energy':
-        plt.ylabel(r"$E_{\textup{cm}}/$"+settings.latex_format["m"+rest_mass])
+        plt.ylabel(rf"$E_{{\textup{{cm}}}}/m_{{{latex_rest_mass}}}$")
     else:
-        plt.ylabel(r"$q^2_{\textup{cm}}/$"+settings.latex_format["m"+rest_mass+"2"])
+        plt.ylabel(rf"$q^2_{{\textup{{cm}}}}/m_{{{latex_rest_mass}}}^2$")
 
     if not remove_xlabel:
         plt.xlabel(r"$\Lambda(d^2)$")
