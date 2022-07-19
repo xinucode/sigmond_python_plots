@@ -506,7 +506,7 @@ xtick.labelsize:     medium  # fontsize of the tick labels
 ## ***************************************************************************
 ## * LEGEND                                                                  *
 ## ***************************************************************************
-legend.loc:            lower left
+legend.loc:            best
 #legend.frameon:       True     # if True, draw the legend on a background patch
 #legend.framealpha:    0.8      # legend patch transparency
 #legend.facecolor:     inherit  # inherit from axes.facecolor; or color spec
@@ -517,7 +517,7 @@ legend.shadow:        True    # if True, give background a shadow effect
 #legend.numpoints:     1        # the number of marker points in the legend line
 #legend.scatterpoints: 1        # number of scatter points
 #legend.markerscale:   1.0      # the relative size of legend markers vs. original
-legend.fontsize:      20.0
+legend.fontsize:      17.0
 legend.title_fontsize: 25.0    # None sets to the same as the default axes.
 
 ## Dimensions as fraction of fontsize:
