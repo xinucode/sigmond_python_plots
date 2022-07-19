@@ -20,7 +20,7 @@ channel: isoquartet_nonstrange_fermionic #name of channel and corresponding
                                             #subdirectory where relevant files are located
 scattering_particles: [N, pi] #list of scattering particle names
 rest_mass: pi #the particle used to normalize the energy values
-title: $I=\nicefrac{3}{2}$ #(optional) if unspecified, plot will not print a title in the legend.
+title: $I=\sfrac{3}{2}$ #(optional) if unspecified, plot will not print a title in the legend.
     #also no title will print if no legend
 thresholds: #(optional) dict of thersholds with the key being how you want the threshold 
                 #to appear on the graph (replaced with latex) and the value is a list of  
