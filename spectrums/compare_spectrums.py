@@ -398,8 +398,8 @@ for graph in graphs:
     
     minx = min(list(indexes[somekey])+list(indexes_used[somekey]))
     maxx = max(list(indexes[somekey])+list(indexes_used[somekey]))
-    dd=0.015*(maxx-minx)
-    ddd = 0.010*(maxx-minx)/len(files.keys())
+    dd=0.5*(maxx-minx+1)/len(files.keys())
+    ddd = 0.07*(maxx-minx+1)/len(files.keys())
     
     
     
@@ -470,7 +470,7 @@ for graph in graphs:
         plt.ylabel(rf"$q^2_{{\textup{{cm}}}}/m_{{{latex_rest_mass}}}^2$")
 
     if not remove_xlabel:
-        plt.xlabel(r"$\Lambda(d^2)$")
+        plt.xlabel(r"$\Lambda(d^2)$",color="white")
     latex_keys = [settings.latex_format[key.split('(')[0]]+"("+key.split('(')[1] for key in keys[somekey]+keys_used[somekey]]
     plt.xticks(utils.unique(list(indexes[somekey])+list(indexes_used[somekey])), utils.unique(latex_keys),size="small")
     plt.xlim(minx-0.5-dd*(len(vals.keys())/2),maxx+0.5+dd*(len(vals.keys())/2))
