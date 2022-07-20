@@ -829,12 +829,12 @@ if __name__ == "__main__":
                 if combine:
                     plt.subplot(np.ceil(n_particles/2), 2, i+1)
                     
-                print(i,n_particles,particle)
                 generate_python_rest_mass_plot( fit_data, tmin_data )
                 
                 plt.xlabel(r"$t_{\textup{min}}/a$")
                 plt.ylabel(rf"$am_{{{particle}}}$")
-#                 plt.legend()
+                plt.legend()
+#                 plt.ylim(fit_data[0]-3.0*(fit_data[1]-fit_data[0]), fit_data[2]+6.0*(fit_data[2]-fit_data[1]) )
                 
                 if not combine:
                     plt.tight_layout()
