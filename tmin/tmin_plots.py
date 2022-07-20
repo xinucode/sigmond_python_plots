@@ -731,19 +731,45 @@ def zip_channel( name,this_file_list ):
     
 def retrieve_xmgrace_data_xydydy( files ):
     datasets = {}
+
     for key in files.keys():
-        this_plot = xmgrace_parser.AgrFile(files[key],True) 
-        xydydy_data_indexes = get_data_by_type(this_plot,xydydy)
         t = np.array([])
         val = np.array([])
         err1 = np.array([])
         err2 = np.array([])
-        for (g,s) in xydydy_data_indexes:
-            this_t, this_val, this_err1, this_err2 = this_plot.get_dataset(g,s).get_data()
-            t = np.concatenate((t, this_t))
-            val = np.concatenate((val, this_val))
-            err1 = np.concatenate((err1, this_err1))
-            err2 = np.concatenate((err2, this_err2))
+        if type(files)==type(str):
+            this_plot = xmgrace_parser.AgrFile(files[key],True) 
+            xydydy_data_indexes = get_data_by_type(this_plot,xydydy)
+            for (g,s) in xydydy_data_indexes:
+                this_t, this_val, this_err1, this_err2 = this_plot.get_dataset(g,s).get_data()
+                t = np.concatenate((t, this_t))
+                val = np.concatenate((val, this_val))
+                err1 = np.concatenate((err1, this_err1))
+                err2 = np.concatenate((err2, this_err2))
+            
+        else:
+            for file in files[key]:
+                this_plot = xmgrace_parser.AgrFile(file,True) 
+                xydydy_data_indexes = get_data_by_type(this_plot,xydydy)
+                for (g,s) in xydydy_data_indexes:
+                    this_t, this_val, this_err1, this_err2 = this_plot.get_dataset(g,s).get_data()
+                    if this_t.shape:
+                        t = np.concatenate((t, this_t))
+                        val = np.concatenate((val, this_val))
+                        err1 = np.concatenate((err1, this_err1))
+                        err2 = np.concatenate((err2, this_err2))
+                    else:
+                        if len(t):
+                            np.insert(t, -1, this_t)
+                            np.insert(val, -1, this_val)
+                            np.insert(err1, -1, this_err1)
+                            np.insert(err2, -1, this_err2)
+                        else:
+                            t = np.array([this_t])
+                            val = np.array([this_val])
+                            err1 = np.array([this_err1])
+                            err2 = np.array([this_err2])
+                    
         datasets[key] = pd.DataFrame()
         datasets[key].insert(0,0,t)
         datasets[key].insert(1,1,val)
@@ -847,16 +873,31 @@ if __name__ == "__main__":
                 
         
     if "spectrum_tmins" in project_info.keys():
-        for channel in project_info["spectrum_tmins"]["infiles"]: #spec.infiles.keys():
-            print("\n",channel["name"])
-            if project_info["spectrum_tmins"]["plot_format"] == 1:
-                isodoublet_nonstrange_tmin_plots = spectrum_tmin_format1(find_tmin_spectrum_files(channel))
-            elif project_info["spectrum_tmins"]["plot_format"] == 2:
-                isodoublet_nonstrange_tmin_plots = spectrum_tmin_format2(find_tmin_spectrum_files(channel))
-            else:
-                isodoublet_nonstrange_tmin_plots = spectrum_tmin_format3(find_tmin_spectrum_files(channel))
-            for basis in isodoublet_nonstrange_tmin_plots.keys():
-                isodoublet_nonstrange_tmin_plots[basis].write(basis+".agr")
-                print_to_svg(isodoublet_nonstrange_tmin_plots[basis],basis)
-            zip_channel(channel["name"], isodoublet_nonstrange_tmin_plots)
+        if project_info["spectrum_tmins"]['out_type']=="xmgrace":
+            for channel in project_info["spectrum_tmins"]["infiles"]:
+                print("\n",channel["name"])
+
+                if project_info["spectrum_tmins"]["plot_format"] == 1:
+                    tmin_plots = spectrum_tmin_format1(find_tmin_spectrum_files(channel))
+                elif project_info["spectrum_tmins"]["plot_format"] == 2:
+                    tmin_plots = spectrum_tmin_format2(find_tmin_spectrum_files(channel))
+                else:
+                    tmin_plots = spectrum_tmin_format3(find_tmin_spectrum_files(channel))
+
+                for basis in tmin_plots.keys():
+                    tmin_plots[basis].write(basis+".agr")
+                    print_to_svg(tmin_plots[basis],basis)
+                zip_channel(channel["name"], tmin_plots)
+                
+        if project_info["spectrum_tmins"]['out_type']=="python":
+            for channel in project_info["spectrum_tmins"]["infiles"]:
+                print("\n",channel["name"])
+                tmin_plots = find_tmin_spectrum_files(channel)
+                if project_info["spectrum_tmins"]["plot_format"] == 1:
+                    for basis in tmin_plots.keys():
+                        for fit in tmin_plots[basis]:
+                            print( retrieve_xmgrace_data_xydydy(tmin_plots[basis]) )
+#                             for file in tmin_plots[basis][fit]:
+#                                 print(basis, fit, file)
+                
             
