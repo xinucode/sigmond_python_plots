@@ -910,10 +910,12 @@ if __name__ == "__main__":
                 if combine:
                     plt.subplot(np.ceil(n_particles/2), 2, i+1)
                     
-                generate_python_rest_mass_plot( fit_data, tmin_data )
+#                 print(fit_data,tmin_data)
+                generate_python_rest_mass_plot( fit_data[list(fit_data.keys())[0]], tmin_data )
                 
                 plt.xlabel(r"$t_{\textup{min}}/a$")
-                plt.ylabel(rf"$am_{{{particle}}}$")
+                latex_rest_mass = settings.latex_format[particle].replace('$',"")
+                plt.ylabel(rf"$am_{{{latex_rest_mass}}}$")
                 plt.legend()
 #                 plt.ylim(fit_data[0]-3.0*(fit_data[1]-fit_data[0]), fit_data[2]+6.0*(fit_data[2]-fit_data[1]) )
                 
