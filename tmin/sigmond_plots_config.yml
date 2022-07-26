@@ -23,8 +23,31 @@ spectrum_tmins:
 #     out_type: xmgrace
     infiles:
       - name: isodoublet_nonstrange_format1
+        max_level: 10
         dir: /latticeQCD/raid3/sarahski/lqcd/D200_R000/isodoublet_nonstrange_bootstrap/.sigmond/plots/spectrum/tmin_plots/isodoublet_nonstrange_colin/rebin20
         omit:
+          - geometric fit
+          - geometric ratio fit
+          - isodoublet_S0_G1_P1_single_pivot_n4_m4_d8_c50
+          - isodoublet_S0_G1u_P0_single_pivot_n7_m7_d14_c50
+          - isodoublet_S0_G1_P1_single_pivot_n7_m7_d14_c50
+          - isodoublet_S0_G_P2_single_pivot_n7_m7_d14_c50
+          - isodoublet_S0_G_P3_single_pivot_n7_m7_d14_c50
+          - isodoublet_S0_G1_P4_single_pivot_n7_m7_d14_c50
+          - isodoublet_S0_G1_P1_single_pivot_n6_m6_d12_c50
+          - isodoublet_S0_G_P3_single_pivot_n6_m6_d12_c50
+          - isodoublet_S0_G1u_P0_single_pivot_n4_m4_d8_c50
+          - isodoublet_S0_G_P2_single_pivot_n4_m4_d8_c50
+          - isodoublet_S0_G_P3_single_pivot_n4_m4_d8_c50
+          - isodoublet_S0_G1_P4_single_pivot_n4_m4_d8_c50
+          - isodoublet_S0_G1u_P0_single_pivot_n6_m6_d12_c50
+          - isodoublet_S0_G_P2_single_pivot_n6_m6_d12_c50
+          - isodoublet_S0_G1_P4_single_pivot_n6_m6_d12_c50
+          - isodoublet_S0_G1_P1_t_single_pivot_n8_m8_d16_c50
+          - isodoublet_S0_G_P2_t_single_pivot_n8_m8_d16_c50
+          - isodoublet_S0_G_P3_t_single_pivot_n8_m8_d16_c50
+          - isodoublet_S0_G1_P4_t_single_pivot_n8_m8_d16_c50
+          - isodoublet_S0_G1u_P0
           - tmin_fit_isodoublet-S0-PSQ2-G-ROT-3_20p2G-ROT-3T10-25-20_0_3.agr
           - tmin_fit_isodoublet-S0-PSQ2-G-ROT-3_20p2G-ROT-3T10-25-20_0_3.pdf
           - tmin_fit_isodoublet-S0-PSQ2-G-ROT-3_20p2G-ROT-3T10-25-20_0_D_3.agr

@@ -556,10 +556,7 @@ def spectrum_tmin_format3(tmin_files):
 def find_tmin_spectrum_files(channel_name):
     this_channel = {}
     
-    if type(channel_name)==str:
-        this_directory = spec.infiles[channel_name]
-        omissions_list = []
-    elif type(channel_name)==dict:
+    if type(channel_name)==dict:
         this_directory = channel_name['dir']
         if 'omit' in channel_name.keys():
             omissions_list = channel_name['omit']
@@ -587,6 +584,30 @@ def find_tmin_spectrum_files(channel_name):
                         this_channel[i]["single"].append(os.path.join(this_directory,i,file))
                     elif file.endswith(f"_4_{level}.agr"):
                         this_channel[i]["double"].append(os.path.join(this_directory,i,file))
+    return this_channel
+
+def find_tmin_spectrum_files_python(channel_name):
+    this_channel = {}
+    this_directory = channel_name['dir']
+    if 'omit' in channel_name.keys():
+        omissions_list = channel_name['omit']
+    else:
+        omissions_list = []
+    for basis in os.listdir(this_directory):
+        if (basis!='single_hadrons') and (basis not in omissions_list):
+            this_channel[basis] = {}
+            for level in range(0,channel_name['max_level']):
+                this_channel[basis][level] = {}
+                for file in os.listdir(os.path.join(this_directory,basis)):
+                    if file not in omissions_list:
+                        if file.endswith(f"_{level}.agr"):
+                            file2 = file.replace(f"_{level}.agr",".agr")
+                            if file2[-5:] in settings.tmin_file_tags:
+                                fit_type = settings.tmin_file_tags[file2[-5:]]
+                                if file2[:-5].endswith("R_"):
+                                    fit_type = fit_type.replace("fit","ratio fit")
+                                if fit_type not in omissions_list:
+                                    this_channel[basis][level][fit_type] = os.path.join(this_directory,basis,file)
     return this_channel
 
 def expand_world(world_1,world_2):
@@ -737,15 +758,27 @@ def retrieve_xmgrace_data_xydydy( files ):
         val = np.array([])
         err1 = np.array([])
         err2 = np.array([])
-        if type(files)==type(str):
+        if type(files[key])==str:
             this_plot = xmgrace_parser.AgrFile(files[key],True) 
             xydydy_data_indexes = get_data_by_type(this_plot,xydydy)
             for (g,s) in xydydy_data_indexes:
                 this_t, this_val, this_err1, this_err2 = this_plot.get_dataset(g,s).get_data()
-                t = np.concatenate((t, this_t))
-                val = np.concatenate((val, this_val))
-                err1 = np.concatenate((err1, this_err1))
-                err2 = np.concatenate((err2, this_err2))
+                if this_t.shape:
+                    t = np.concatenate((t, this_t))
+                    val = np.concatenate((val, this_val))
+                    err1 = np.concatenate((err1, this_err1))
+                    err2 = np.concatenate((err2, this_err2))
+                else:
+                    if len(t):
+                        np.insert(t, -1, this_t)
+                        np.insert(val, -1, this_val)
+                        np.insert(err1, -1, this_err1)
+                        np.insert(err2, -1, this_err2)
+                    else:
+                        t = np.array([this_t])
+                        val = np.array([this_val])
+                        err1 = np.array([this_err1])
+                        err2 = np.array([this_err2])
             
         else:
             for file in files[key]:
@@ -778,31 +811,55 @@ def retrieve_xmgrace_data_xydydy( files ):
     return datasets
 
 def retrieve_xmgrace_data_xy( files ):
-    t = np.array([])
-    val = np.array([])
+    fits_all = {}
     for key in files.keys():
-        this_plot = xmgrace_parser.AgrFile(files[key],True) 
-        xy_data_indexes = get_data_by_type(this_plot,xy)
-        for (g,s) in xy_data_indexes:
-            this_t, this_val = this_plot.get_dataset(g,s).get_data()
-            t = np.concatenate((t, this_t))
-            val = np.concatenate((val, this_val))
+        if type(files[key])==str:
+            val = np.array([])
+            this_plot = xmgrace_parser.AgrFile(files[key],True) 
+            xy_data_indexes = get_data_by_type(this_plot,xy)
+            for (g,s) in xy_data_indexes:
+                this_t, this_val = this_plot.get_dataset(g,s).get_data()
+                val = np.concatenate((val, this_val))
+            sorted_values = list(set(val))
+            sorted_values.sort()
+            fits = sorted_values[1]
+            errs = [sorted_values[0],sorted_values[2]]
+            
+        else:
+            fits = []
+            errs = []
+            for file in files[key]:
+                val = np.array([])
+                this_plot = xmgrace_parser.AgrFile(file,True) 
+                xy_data_indexes = get_data_by_type(this_plot,xy)
+                for (g,s) in xy_data_indexes:
+                    this_t, this_val = this_plot.get_dataset(g,s).get_data()
+                    val = np.concatenate((val, this_val))
+                sorted_values = list(set(val))
+                sorted_values.sort()
+                fits.append(sorted_values[1])
+                errs.append([sorted_values[0],sorted_values[2]])
         
-    sorted_values = list(set(val))
-    sorted_values.sort()
-    return sorted_values
+        fits_all[key] = {"fit":fits,"err":errs}
+    return fits_all
 
-def generate_python_rest_mass_plot( fits, tmins ):
+def generate_python_rest_mass_plot( fits, tmins, no_legend=False ):
     minx = 10
     maxx = 10
     for i,label in enumerate(list(tmins.keys())):
-        minx = min(min(np.array(tmins[label][0])),minx)
-        maxx = max(max(np.array(tmins[label][0])),maxx)
-        plt.errorbar(np.array(tmins[label][0]),np.array(tmins[label][1]),np.concatenate([[np.array(tmins[label][3])],[np.array(tmins[label][2])]]),  capsize=5, color=settings.colors[i], marker=settings.markers[i],linestyle="", linewidth=0.0, elinewidth=1.5,label=label)
+        if not tmins[label].empty:
+            minx = min(min(np.array(tmins[label][0])),minx)
+            maxx = max(max(np.array(tmins[label][0])),maxx)
+            if no_legend:
+                this_label = None
+            else:
+                this_label = label
+                
+            plt.errorbar(np.array(tmins[label][0]),np.array(tmins[label][1]),np.concatenate([[np.array(tmins[label][3])],[np.array(tmins[label][2])]]),  capsize=5, color=settings.colors[i], marker=settings.markers[i],linestyle="", linewidth=0.0, elinewidth=1.5,label=this_label)
     
-    plt.hlines(fits[1],minx,maxx,color="black")
-    plt.hlines(fits[0],minx,maxx,color="black",ls="--")
-    plt.hlines(fits[2],minx,maxx,color="black",ls="--")
+    plt.hlines(fits['fit'],minx,maxx,color="black")
+    plt.hlines(fits['err'][0],minx,maxx,color="black",ls="--")
+    plt.hlines(fits['err'][1],minx,maxx,color="black",ls="--")
 
         
 #run plots
@@ -837,14 +894,12 @@ if __name__ == "__main__":
             elif project_info["rest_mass"]['out_type']=="python":
                 combine = False
                 n_particles = len(project_info["rest_mass"]['particles'].keys())
-                if 'combine' in project_info["rest_mass"].keys():
+                if ('combine' in project_info["rest_mass"].keys()) and (n_particles > 1):
                     combine = project_info["rest_mass"]['combine']
-                    if n_particles <= 1:
-                        combine = False
                     
                 #retrieve data
                 tmin_data = retrieve_xmgrace_data_xydydy(organized_files)
-                fit_data = retrieve_xmgrace_data_xy(organized_files)
+                fit_data = retrieve_xmgrace_data_xy(organized_files) #update the parsing for the new changes
                 
                 #plot data
                 if (combine and not i) or not combine:
@@ -892,12 +947,26 @@ if __name__ == "__main__":
         if project_info["spectrum_tmins"]['out_type']=="python":
             for channel in project_info["spectrum_tmins"]["infiles"]:
                 print("\n",channel["name"])
-                tmin_plots = find_tmin_spectrum_files(channel)
+                tmin_plots = find_tmin_spectrum_files_python(channel)
+#                 
                 if project_info["spectrum_tmins"]["plot_format"] == 1:
-                    for basis in tmin_plots.keys():
-                        for fit in tmin_plots[basis]:
-                            print( retrieve_xmgrace_data_xydydy(tmin_plots[basis]) )
-#                             for file in tmin_plots[basis][fit]:
-#                                 print(basis, fit, file)
-                
+                    f = plt.figure()
+                    f.set_figwidth(8)
+                    f.set_figheight(8)
+                for basis in tmin_plots.keys():
+                    print(basis)
+                    for level in tmin_plots[basis].keys():
+                        if tmin_plots[basis][level]:
+#                             print(tmin_plots[basis][level].keys())
+                            tmin_data = retrieve_xmgrace_data_xydydy(tmin_plots[basis][level])
+                            fit_data = retrieve_xmgrace_data_xy(tmin_plots[basis][level])
+                            generate_python_rest_mass_plot( fit_data[list(fit_data.keys())[0]], tmin_data, level)
+                            
+                    if project_info["spectrum_tmins"]["plot_format"] == 1:
+                        plt.xlabel(r"$t_{\textup{min}}/a$")
+                        plt.ylabel(r"$aE_{\textup{fit}}$")
+                        plt.legend()
+                        plt.tight_layout()
+                        plt.savefig(f'{basis}_tmin.pdf')
+                        plt.clf()
             
