@@ -18,4 +18,4 @@ latex_format = {'A1g':r"$A_{1g}$", 'F1':r"$F_1$", 'F2':r"$F_2$", 'G': r'$G$', 'G
 xmgrace_format = {'N': 'N', 'pi': '\\xp'}
 
 #sigmond scripts tmin plot end tags
-tmin_file_tags = {'0.agr':'single','4.agr':'double','8.agr':'geometric'}
+tmin_file_tags = {'0.agr':'single-exponential fit','4.agr':'double-exponential fit','8.agr':'geometric fit'}
