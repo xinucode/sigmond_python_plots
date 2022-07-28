@@ -213,9 +213,11 @@ for graph in graphs:
         graph_unused_levels = configdata[graph]["graph_unused_levels"]
 
     expected_keys = ['PSQ0', 'PSQ1', 'PSQ2', 'PSQ3', 'PSQ4']
-    possible_irreps = ['G1u', 'Hg', 'G1', 'G2', 'F1', 'F2', 'G','A1g','G1g','Hu', 'T1g']
+    possible_irreps = ['G1u', 'Hg', 'G1', 'G2', 'F1', 'F2', 'G','A1g','G1g','Hu', 'T1g','A1u','A2u','Eg','Eu',
+                       'T1u','T2g','T2u','A1','A2','B1','B2','E']
     if spectrum_type=="mom":
-        energy_keys = ['q2cm_0_ref', 'q2cm_1_ref', 'q2cm_2_ref', 'q2cm_3_ref', 'q2cm_4_ref', 'q2cm_5_ref', 'q2cm_6_ref', 'q2cm_7_ref', 'q2cm_8_ref', 'q2cm_9_ref', 'q2cm_10_ref']
+        energy_keys = ['q2cm_0_ref', 'q2cm_1_ref', 'q2cm_2_ref', 'q2cm_3_ref', 'q2cm_4_ref', 'q2cm_5_ref', 
+                       'q2cm_6_ref', 'q2cm_7_ref', 'q2cm_8_ref', 'q2cm_9_ref', 'q2cm_10_ref']
     elif spectrum_type=="energy":
         if remove_ref:
             energy_keys = ['ecm_0', 'ecm_1', 'ecm_2', 'ecm_3', 'ecm_4', 'ecm_5', 'ecm_6', 'ecm_7', 'ecm_8', 'ecm_9', 'ecm_10']
@@ -398,8 +400,8 @@ for graph in graphs:
     
     minx = min(list(indexes[somekey])+list(indexes_used[somekey]))
     maxx = max(list(indexes[somekey])+list(indexes_used[somekey]))
-    dd=0.5*(maxx-minx+1)/len(files.keys())
-    ddd = 0.07*(maxx-minx+1)/len(files.keys())
+    dd=0.4/len(files.keys())
+    ddd = 0.1*dd
     
     
     
@@ -470,7 +472,7 @@ for graph in graphs:
         plt.ylabel(rf"$q^2_{{\textup{{cm}}}}/m_{{{latex_rest_mass}}}^2$")
 
     if not remove_xlabel:
-        plt.xlabel(r"$\Lambda(d^2)$",color="white")
+        plt.xlabel(r"$\Lambda(d^2)$")
     latex_keys = [settings.latex_format[key.split('(')[0]]+"("+key.split('(')[1] for key in keys[somekey]+keys_used[somekey]]
     plt.xticks(utils.unique(list(indexes[somekey])+list(indexes_used[somekey])), utils.unique(latex_keys),size="small")
     plt.xlim(minx-0.5-dd*(len(vals.keys())/2),maxx+0.5+dd*(len(vals.keys())/2))
