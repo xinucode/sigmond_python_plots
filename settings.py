@@ -1,7 +1,7 @@
 single_had_key = 'single_hadrons'
 
 #designates colors and markers for plotting
-colors = ['green','blue','orange','purple','black','red','brown','gray']
+colors = ['green','blue','orange','purple','lightblue','red','brown','gray','yellow','pink']
 markers = ['o','s','D','v','^','*','x','+']
 zigzag_shifts = [-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1,-1,1]
 

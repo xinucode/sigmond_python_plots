@@ -843,19 +843,31 @@ def retrieve_xmgrace_data_xy( files ):
         fits_all[key] = {"fit":fits,"err":errs}
     return fits_all
 
-def generate_python_rest_mass_plot( fits, tmins, no_legend=False ):
+def generate_python_rest_mass_plot( fits, tmins, level=None, plot_format=1 ):
     minx = 10
     maxx = 10
     for i,label in enumerate(list(tmins.keys())):
         if not tmins[label].empty:
             minx = min(min(np.array(tmins[label][0])),minx)
             maxx = max(max(np.array(tmins[label][0])),maxx)
-            if no_legend:
-                this_label = None
-            else:
-                this_label = label
+            
                 
-            plt.errorbar(np.array(tmins[label][0]),np.array(tmins[label][1]),np.concatenate([[np.array(tmins[label][3])],[np.array(tmins[label][2])]]),  capsize=5, color=settings.colors[i], marker=settings.markers[i],linestyle="", linewidth=0.0, elinewidth=1.5,label=this_label)
+            if plot_format==1:
+                this_color=settings.colors[i]
+                if level:
+                    this_label = None
+                else:
+                    this_label = label
+            else:
+                this_color=settings.colors[level]
+                if level:
+                    this_label = None
+                else:
+                    this_label = None
+                    plt.errorbar([],[], capsize=5, color="black", marker=settings.markers[i], linewidth=0.0, elinewidth=1.5,label=label)
+            
+            
+            plt.errorbar(np.array(tmins[label][0]),np.array(tmins[label][1]),np.concatenate([[np.array(tmins[label][3])],[np.array(tmins[label][2])]]),  capsize=5, color=this_color, marker=settings.markers[i], linewidth=0.0, elinewidth=1.5 ,label=this_label)
     
     plt.hlines(fits['fit'],minx,maxx,color="black")
     plt.hlines(fits['err'][0],minx,maxx,color="black",ls="--")
@@ -930,13 +942,14 @@ if __name__ == "__main__":
                 
         
     if "spectrum_tmins" in project_info.keys():
+        plot_format = project_info["spectrum_tmins"]["plot_format"]
         if project_info["spectrum_tmins"]['out_type']=="xmgrace":
             for channel in project_info["spectrum_tmins"]["infiles"]:
                 print("\n",channel["name"])
 
-                if project_info["spectrum_tmins"]["plot_format"] == 1:
+                if plot_format == 1:
                     tmin_plots = spectrum_tmin_format1(find_tmin_spectrum_files(channel))
-                elif project_info["spectrum_tmins"]["plot_format"] == 2:
+                elif plot_format == 2:
                     tmin_plots = spectrum_tmin_format2(find_tmin_spectrum_files(channel))
                 else:
                     tmin_plots = spectrum_tmin_format3(find_tmin_spectrum_files(channel))
@@ -951,7 +964,7 @@ if __name__ == "__main__":
                 print("\n",channel["name"])
                 tmin_plots = find_tmin_spectrum_files_python(channel)
 #                 
-                if (project_info["spectrum_tmins"]["plot_format"] == 1) or (project_info["spectrum_tmins"]["plot_format"] == 3):
+                if (plot_format >= 1) or (plot_format <= 3):
                     f = plt.figure()
                     f.set_figwidth(8)
                     f.set_figheight(8)
@@ -964,12 +977,12 @@ if __name__ == "__main__":
 #                             print(tmin_plots[basis][level].keys())
                             tmin_data = retrieve_xmgrace_data_xydydy(tmin_plots[basis][level])
                             fit_data = retrieve_xmgrace_data_xy(tmin_plots[basis][level])
-                        if project_info["spectrum_tmins"]["plot_format"] == 3:
+                        if plot_format == 3:
                             generate_python_rest_mass_plot( fit_data[list(fit_data.keys())[0]], tmin_data)
                         else:
-                            generate_python_rest_mass_plot( fit_data[list(fit_data.keys())[0]], tmin_data, level)
+                            generate_python_rest_mass_plot( fit_data[list(fit_data.keys())[0]], tmin_data, level, plot_format)
                             
-                        if project_info["spectrum_tmins"]["plot_format"] == 3:
+                        if plot_format == 3:
                             plt.xlabel(r"$t_{\textup{min}}/a$")
                             plt.ylabel(r"$aE_{\textup{fit}}$")
                             plt.legend()
@@ -977,7 +990,7 @@ if __name__ == "__main__":
                             plt.savefig(f'{basis}_tmin_ROT{level}.pdf')
                             plt.clf()
                             
-                    if project_info["spectrum_tmins"]["plot_format"] == 1:
+                    if (plot_format == 1) or (plot_format == 2):
                         plt.xlabel(r"$t_{\textup{min}}/a$")
                         plt.ylabel(r"$aE_{\textup{fit}}$")
                         plt.legend()
