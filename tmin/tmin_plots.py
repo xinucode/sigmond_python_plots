@@ -914,7 +914,7 @@ if __name__ == "__main__":
                 generate_python_rest_mass_plot( fit_data[list(fit_data.keys())[0]], tmin_data )
                 
                 plt.xlabel(r"$t_{\textup{min}}/a$")
-                latex_rest_mass = settings.latex_format[particle].replace('$',"")
+                latex_rest_mass = settings.latex_format[particle].replace('$','')
                 plt.ylabel(rf"$am_{{{latex_rest_mass}}}$")
                 plt.legend()
 #                 plt.ylim(fit_data[0]-3.0*(fit_data[1]-fit_data[0]), fit_data[2]+6.0*(fit_data[2]-fit_data[1]) )
@@ -951,10 +951,12 @@ if __name__ == "__main__":
                 print("\n",channel["name"])
                 tmin_plots = find_tmin_spectrum_files_python(channel)
 #                 
-                if project_info["spectrum_tmins"]["plot_format"] == 1:
+                if (project_info["spectrum_tmins"]["plot_format"] == 1) or (project_info["spectrum_tmins"]["plot_format"] == 3):
                     f = plt.figure()
                     f.set_figwidth(8)
                     f.set_figheight(8)
+                else:
+                    break
                 for basis in tmin_plots.keys():
                     print(basis)
                     for level in tmin_plots[basis].keys():
@@ -962,7 +964,18 @@ if __name__ == "__main__":
 #                             print(tmin_plots[basis][level].keys())
                             tmin_data = retrieve_xmgrace_data_xydydy(tmin_plots[basis][level])
                             fit_data = retrieve_xmgrace_data_xy(tmin_plots[basis][level])
+                        if project_info["spectrum_tmins"]["plot_format"] == 3:
+                            generate_python_rest_mass_plot( fit_data[list(fit_data.keys())[0]], tmin_data)
+                        else:
                             generate_python_rest_mass_plot( fit_data[list(fit_data.keys())[0]], tmin_data, level)
+                            
+                        if project_info["spectrum_tmins"]["plot_format"] == 3:
+                            plt.xlabel(r"$t_{\textup{min}}/a$")
+                            plt.ylabel(r"$aE_{\textup{fit}}$")
+                            plt.legend()
+                            plt.tight_layout()
+                            plt.savefig(f'{basis}_tmin_ROT{level}.pdf')
+                            plt.clf()
                             
                     if project_info["spectrum_tmins"]["plot_format"] == 1:
                         plt.xlabel(r"$t_{\textup{min}}/a$")
