@@ -291,6 +291,8 @@ for graph in graphs:
 
                     if val1 is not None and err1 is not None:
                         irrep_key = f"{irrep}({mom.replace('PSQ','')})"
+                        if irrep_key in omit:
+                            continue
                         ekeys[dataset].append(irrep_key)
                         evals[dataset].append(val1)
                         eerrs[dataset].append(err1)
