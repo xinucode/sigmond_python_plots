@@ -743,11 +743,17 @@ def print_to_svg(plot_handle,filestub):
                 print("SUcceess")
                 break
                 
-def zip_channel( name,this_file_list ):
+def zip_channel( name,this_file_list, this_type = ".svg" ):
     file = name+".zip"
     this_zip = ZipFile(file,'w')
-    for basis in this_file_list.keys():
-        this_zip.write(basis+".svg")
+    
+    if type(this_file_list)==dict:
+        this_list = this_file_list.keys()
+    else:
+        this_list = this_file_list
+    
+    for basis in this_list:
+        this_zip.write(basis+this_type)
     this_zip.close()
     
 def retrieve_xmgrace_data_xydydy( files ):
@@ -960,6 +966,7 @@ if __name__ == "__main__":
                 zip_channel(channel["name"], tmin_plots)
                 
         if project_info["spectrum_tmins"]['out_type']=="python":
+            files_to_zip = []
             for channel in project_info["spectrum_tmins"]["infiles"]:
                 print("\n",channel["name"])
                 tmin_plots = find_tmin_spectrum_files_python(channel)
@@ -988,6 +995,7 @@ if __name__ == "__main__":
                             plt.legend()
                             plt.tight_layout()
                             plt.savefig(f'{basis}_tmin_ROT{level}.pdf')
+                            files_to_zip.append(f'{basis}_tmin_ROT{level}.pdf')
                             plt.clf()
                             
                     if (plot_format == 1) or (plot_format == 2):
@@ -996,5 +1004,7 @@ if __name__ == "__main__":
                         plt.legend()
                         plt.tight_layout()
                         plt.savefig(f'{basis}_tmin.pdf')
+                        files_to_zip.append(f'{basis}_tmin.pdf')
                         plt.clf()
             
+                zip_channel(channel["name"],files_to_zip,"")

@@ -18,7 +18,7 @@
         
 spectrum_tmins:
     include_single_exp: True
-    plot_format: 3
+    plot_format: 2
     out_type: python
 #     out_type: xmgrace
     infiles:
@@ -108,5 +108,6 @@ spectrum_tmins:
           - tmin_fit_isodoublet-S0-PSQ4-G1-ROT-2_20p4G1-ROT-2T2-25-20R_0_2.pdf
           - tmin_fit_isodoublet-S0-PSQ4-G1-ROT-2_20p4G1-ROT-2T2-25-20R_0_D_2.agr
           - tmin_fit_isodoublet-S0-PSQ4-G1-ROT-2_20p4G1-ROT-2T2-25-20R_0_D_2.pdf
-#       - name: isoquartet_nonstrange_fermionic_format3
-#         dir: /latticeQCD/raid3/sarahski/lqcd/D200_R000/isoquartet_nonstrange_fermionic_bootstrap/.sigmond/plots/spectrum/tmin_plots/isoquartet_nonstrange_fermionic_colin/rebin20
+      - name: isoquartet_nonstrange_fermionic_format3
+        max_level: 15
+        dir: /latticeQCD/raid3/sarahski/lqcd/D200_R000/isoquartet_nonstrange_fermionic_bootstrap/.sigmond/plots/spectrum/tmin_plots/isoquartet_nonstrange_fermionic_colin/rebin20
