@@ -566,24 +566,25 @@ def find_tmin_spectrum_files(channel_name):
         print("ERROR: Incorrect spectrum config channel")
         return {}
     for file in os.listdir(this_directory):
-        if file!='single_hadrons':
+        if (file!='single_hadrons') and (file not in omissions_list):
             this_channel[file] = {}
     for i in this_channel.keys():
-        this_channel[i]["singleR"] = []
-        this_channel[i]["doubleR"] = []
-        this_channel[i]["single"] = []
-        this_channel[i]["double"] = []
-        for level in range(0,20):
-            for file in os.listdir(os.path.join(this_directory,i)):
-                if file not in omissions_list:
-                    if file.endswith(f"R_0_{level}.agr"):
-                        this_channel[i]["singleR"].append(os.path.join(this_directory,i,file))
-                    elif file.endswith(f"R_4_{level}.agr"):
-                        this_channel[i]["doubleR"].append(os.path.join(this_directory,i,file))
-                    elif file.endswith(f"_0_{level}.agr"):
-                        this_channel[i]["single"].append(os.path.join(this_directory,i,file))
-                    elif file.endswith(f"_4_{level}.agr"):
-                        this_channel[i]["double"].append(os.path.join(this_directory,i,file))
+        if i not in omissions_list:
+            this_channel[i]["singleR"] = []
+            this_channel[i]["doubleR"] = []
+            this_channel[i]["single"] = []
+            this_channel[i]["double"] = []
+            for level in range(0,20):
+                for file in os.listdir(os.path.join(this_directory,i)):
+                    if file not in omissions_list:
+                        if file.endswith(f"R_0_{level}.agr"):
+                            this_channel[i]["singleR"].append(os.path.join(this_directory,i,file))
+                        elif file.endswith(f"R_4_{level}.agr"):
+                            this_channel[i]["doubleR"].append(os.path.join(this_directory,i,file))
+                        elif file.endswith(f"_0_{level}.agr"):
+                            this_channel[i]["single"].append(os.path.join(this_directory,i,file))
+                        elif file.endswith(f"_4_{level}.agr"):
+                            this_channel[i]["double"].append(os.path.join(this_directory,i,file))
     return this_channel
 
 def find_tmin_spectrum_files_python(channel_name):
@@ -743,7 +744,7 @@ def print_to_svg(plot_handle,filestub):
                 print("SUcceess")
                 break
                 
-def zip_channel( name,this_file_list, this_type = ".svg" ):
+def zip_channel( name,this_file_list, this_type = ".svg", sub_dir = None):
     file = name+".zip"
     this_zip = ZipFile(file,'w')
     
@@ -751,9 +752,12 @@ def zip_channel( name,this_file_list, this_type = ".svg" ):
         this_list = this_file_list.keys()
     else:
         this_list = this_file_list
-    
+        
     for basis in this_list:
-        this_zip.write(basis+this_type)
+        if sub_dir:
+            this_zip.write(os.path.join(sub_dir,basis)+this_type)
+        else:
+            this_zip.write(basis+this_type)
     this_zip.close()
     
 def retrieve_xmgrace_data_xydydy( files ):
@@ -957,7 +961,9 @@ if __name__ == "__main__":
         plot_format = project_info["spectrum_tmins"]["plot_format"]
         if project_info["spectrum_tmins"]['out_type']=="xmgrace":
             for channel in project_info["spectrum_tmins"]["channels"]:
-                out_dir = project_info["spectrum_tmins"]['out_dir']
+                out_dir = channel['out_dir']
+                if not os.path.exists(out_dir):
+                    os.mkdir(out_dir)
                 print("\n",channel["name"])
 
                 if plot_format == 1:
@@ -968,14 +974,17 @@ if __name__ == "__main__":
                     tmin_plots = spectrum_tmin_format3(find_tmin_spectrum_files(channel))
 
                 for basis in tmin_plots.keys():
-                    tmin_plots[basis].write(basis+".agr")
-                    print_to_svg(tmin_plots[basis],basis)
-                zip_channel(channel["name"], tmin_plots)
+                    file_stub = os.path.join(out_dir,basis)
+                    tmin_plots[basis].write(file_stub+".agr")
+                    print_to_svg(tmin_plots[basis],file_stub)
+                zip_channel(channel["name"]+f'_format{plot_format}', tmin_plots, sub_dir = out_dir)
                 
         if project_info["spectrum_tmins"]['out_type']=="python":
-            files_to_zip = []
             for channel in project_info["spectrum_tmins"]["channels"]:
-                out_dir = project_info["spectrum_tmins"]['out_dir']
+                files_to_zip = []
+                out_dir = channel['out_dir']
+                if not os.path.exists(out_dir):
+                    os.mkdir(out_dir)
                 print("\n",channel["name"])
                 tmin_plots = find_tmin_spectrum_files_python(channel)
 #                 
@@ -987,6 +996,7 @@ if __name__ == "__main__":
                     break
                 for basis in tmin_plots.keys():
                     print(basis)
+                    file_stub = os.path.join(out_dir,basis)
                     for level in tmin_plots[basis].keys():
                         if tmin_plots[basis][level]:
 #                             print(tmin_plots[basis][level].keys())
@@ -1002,7 +1012,7 @@ if __name__ == "__main__":
                             plt.ylabel(r"$aE_{\textup{fit}}$")
                             plt.legend()
                             plt.tight_layout()
-                            plt.savefig(f'{basis}_tmin_ROT{level}.pdf')
+                            plt.savefig(f'{file_stub}_tmin_ROT{level}.pdf')
                             files_to_zip.append(f'{basis}_tmin_ROT{level}.pdf')
                             plt.clf()
                             
@@ -1011,8 +1021,8 @@ if __name__ == "__main__":
                         plt.ylabel(r"$aE_{\textup{fit}}$")
                         plt.legend()
                         plt.tight_layout()
-                        plt.savefig(f'{basis}_tmin.pdf')
+                        plt.savefig(f'{file_stub}_tmin.pdf')
                         files_to_zip.append(f'{basis}_tmin.pdf')
                         plt.clf()
             
-                zip_channel(channel["name"],files_to_zip,"")
+                zip_channel(channel["name"]+f'_format{plot_format}',files_to_zip,"", sub_dir = out_dir)
