@@ -22,3 +22,5 @@ xmgrace_format = {'N': 'N', 'pi': '\\xp'}
 
 #sigmond scripts tmin plot end tags
 tmin_file_tags = {'0.agr':'single-exponential fit','4.agr':'double-exponential fit','8.agr':'geometric fit'}
+fit_nicknames = {'single-exponential fit':'single','double-exponential fit':'double','geometric fit':'geometric'}
+fit_longnames = {'single':'single-exponential fit','double':'double-exponential fit','geometric':'geometric fit'}

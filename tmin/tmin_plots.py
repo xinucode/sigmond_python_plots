@@ -888,13 +888,15 @@ if __name__ == "__main__":
     yamlfile.close()
     
     if "rest_mass" in project_info.keys():
+        out_dir = project_info["rest_mass"]['out_dir']
+        if not os.path.exists(out_dir):
+            os.mkdir(out_dir)
         for i,particle in enumerate(project_info["rest_mass"]['particles'].keys()):
             print(f"\nCreating {particle} rest mass tmin plot...")
             files = project_info["rest_mass"]['particles'][particle]['files']
             organized_files = {}
             for file in files:
                 organized_files[settings.tmin_file_tags[file[-5:]]] = file #assumes no ratio (single hadrons should not have ratio fits)
-                
             if project_info["rest_mass"]['out_type']=="xmgrace":
                 ylabel = f'"am\\s{settings.xmgrace_format[particle]}"'
                 if ('single' in organized_files.keys()) and ('double' in organized_files.keys()):
@@ -902,10 +904,15 @@ if __name__ == "__main__":
                         this_rest_mass_tmin_plot = rest_mass_tmin_plot(organized_files['single'],organized_files['double'],ylabel,filename_3 = organized_files['geometric'])
                     else:
                         this_rest_mass_tmin_plot = rest_mass_tmin_plot(organized_files['single'],organized_files['double'],ylabel)
+                elif (settings.fit_longnames['single'] in organized_files.keys()) and (settings.fit_longnames['double'] in organized_files.keys()):
+                    if settings.fit_longnames['geometric'] in organized_files.keys():
+                        this_rest_mass_tmin_plot = rest_mass_tmin_plot(organized_files[settings.fit_longnames['single']],organized_files[settings.fit_longnames['double']],ylabel,filename_3 = organized_files[settings.fit_longnames['geometric']])
+                    else:
+                        this_rest_mass_tmin_plot = rest_mass_tmin_plot(organized_files[settings.fit_longnames['single']],organized_files[settings.fit_longnames['double']],ylabel)
                 else:
                     print(f"The xmgrace plots are only configured for 'single' and 'double' and/or 'geometric'.")
 
-                outfilestub = project_info["rest_mass"]['particles'][particle]['outfilestub']
+                outfilestub = os.path.join(out_dir,project_info["rest_mass"]['particles'][particle]['outfilestub'])
                 this_rest_mass_tmin_plot.write(outfilestub+".agr")
                 print_to_svg(this_rest_mass_tmin_plot,outfilestub)
                 
@@ -928,7 +935,6 @@ if __name__ == "__main__":
                 if combine:
                     plt.subplot(np.ceil(n_particles/2), 2, i+1)
                     
-#                 print(fit_data,tmin_data)
                 generate_python_rest_mass_plot( fit_data[list(fit_data.keys())[0]], tmin_data )
                 
                 plt.xlabel(r"$t_{\textup{min}}/a$")
@@ -939,18 +945,19 @@ if __name__ == "__main__":
                 
                 if not combine:
                     plt.tight_layout()
-                    plt.savefig(f'{particle}_tmin.pdf')
+                    plt.savefig( os.path.join(out_dir,f'{particle}_tmin.pdf'))
                     plt.clf()
         
         if project_info["rest_mass"]['out_type']=="python" and combine:
             plt.tight_layout()
-            plt.savefig('rest_mass_tmin.pdf')
+            plt.savefig( os.path.join(out_dir,'rest_mass_tmin.pdf'))
                 
         
     if "spectrum_tmins" in project_info.keys():
         plot_format = project_info["spectrum_tmins"]["plot_format"]
         if project_info["spectrum_tmins"]['out_type']=="xmgrace":
-            for channel in project_info["spectrum_tmins"]["infiles"]:
+            for channel in project_info["spectrum_tmins"]["channels"]:
+                out_dir = project_info["spectrum_tmins"]['out_dir']
                 print("\n",channel["name"])
 
                 if plot_format == 1:
@@ -967,7 +974,8 @@ if __name__ == "__main__":
                 
         if project_info["spectrum_tmins"]['out_type']=="python":
             files_to_zip = []
-            for channel in project_info["spectrum_tmins"]["infiles"]:
+            for channel in project_info["spectrum_tmins"]["channels"]:
+                out_dir = project_info["spectrum_tmins"]['out_dir']
                 print("\n",channel["name"])
                 tmin_plots = find_tmin_spectrum_files_python(channel)
 #                 
