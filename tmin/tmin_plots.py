@@ -5,20 +5,12 @@ import os, sys
 import yaml
 import pandas as pd
 import matplotlib.pyplot as plt
+import argparse
 
 sys.path.insert(0,'../')
 import xmgrace_parser
 import settings
 plt.style.use('../spectrum.mplstyle')
-
-#settings for sigmond plots
-#legend_setting = "0.25, 0.92" #string of x,y location where legend should be located on graph
-legend_setting = "0.7, 0.92" #string of x,y location where legend should be located on graph
-standard_graph_width = 11.64 #graphs produced by sigmond scripts have these widths
-standard_y_min = 2.33 #graphs produced by sigmond typically have this size of gap below them for axis labels and such
-standard_graph_height = 12.42 #graphs produced by sigmond scripts have these heights
-standard_xmax_gap = 15.52-standard_graph_width-3.1 #graphs produced by sigmond scripts have this right hand vertical gap
-max_number_of_ticks = 6 #max number of labels on the y axis
 
 #xmgrace info
 symbol_pattern_tag = "symbol_fill_pattern"
@@ -40,8 +32,6 @@ square_index = 2
 circle_index = 1
 diamond_index = 3
 triangle_index = 4
-spectrum_color_indices = [4,6,9,10,11,12,15,5,3,7]
-y_label = '"aE\\s\Qfit"'
 
 """rest_mass_tmin_plot(filename_1,filename_2,label,legend_labels)
        filename_1 - filepath of single exponential fit tmin plot
@@ -211,7 +201,7 @@ def rest_mass_tmin_plot(filename_1,filename_2,label,good_labels = [False,False,F
         geom_legend_label = ""
     
     
-    good_labels[0],labelled_data = format_data(single_exp_plot,se_xydydy,blue_index,circle_index,se_legend_label,legend_setting,label)
+    good_labels[0],labelled_data = format_data(single_exp_plot,se_xydydy,blue_index,circle_index,se_legend_label,settings.legend_setting,label)
     good_labels[1],labelled_data = format_data(double_exp_plot,de_xydydy,green_index,square_index,de_legend_label)
     if filename_3:
         good_labels[2],labelled_data = format_data(geometric_plot,geom_xydydy,purple_index,diamond_index,geom_legend_label)
@@ -255,7 +245,7 @@ def rest_mass_tmin_plot(filename_1,filename_2,label,good_labels = [False,False,F
         single_exp_plot.graphs[0].update_properties(world=new_world_str)
     
         #ticks
-        spacing = round((new_world[3]-new_world[1])/max_number_of_ticks,3)
+        spacing = round((new_world[3]-new_world[1])/settings.max_number_of_ticks,3)
         single_exp_plot.graphs[0].update_properties(yaxis_tick_major=spacing)
         
     return single_exp_plot
@@ -272,7 +262,7 @@ def spectrum_tmin_format1(tmin_files):
                 plots_to_combine[basis].append(xmgrace_parser.AgrFile(file,True))
                 this_xydydy = get_data_by_type(plots_to_combine[basis][-1],xydydy)
                 if level ==0:
-                    good_label, labelled_data = format_data(plots_to_combine[basis][-1],this_xydydy,blue_index,circle_index,"1-exp ratio fit",legend_setting,y_label)
+                    good_label, labelled_data = format_data(plots_to_combine[basis][-1],this_xydydy,blue_index,circle_index,"1-exp ratio fit",settings.legend_setting,settings.y_label)
                     labelled_level = level
                 else:
                     if good_label:
@@ -291,7 +281,7 @@ def spectrum_tmin_format1(tmin_files):
                 plots_to_combine[basis].append(xmgrace_parser.AgrFile(file,True))
                 this_xydydy = get_data_by_type(plots_to_combine[basis][-1],xydydy)
                 if level ==0:
-                    good_label, labelled_data = format_data(plots_to_combine[basis][-1],this_xydydy,green_index,square_index,"2-exp ratio fit",legend_setting,y_label)
+                    good_label, labelled_data = format_data(plots_to_combine[basis][-1],this_xydydy,green_index,square_index,"2-exp ratio fit",settings.legend_setting,settings.y_label)
                     labelled_level = 0
                 else:
                     if good_label:
@@ -309,7 +299,7 @@ def spectrum_tmin_format1(tmin_files):
                 plots_to_combine[basis].append(xmgrace_parser.AgrFile(file,True))
                 this_xydydy = get_data_by_type(plots_to_combine[basis][-1],xydydy)
                 if level ==0:
-                    good_label, labelled_data = format_data(plots_to_combine[basis][-1],this_xydydy,purple_index,diamond_index,"1-exp fit",legend_setting,y_label)
+                    good_label, labelled_data = format_data(plots_to_combine[basis][-1],this_xydydy,purple_index,diamond_index,"1-exp fit",settings.legend_setting,settings.y_label)
                     labelled_level = level
                 else:
                     if good_label:
@@ -327,7 +317,7 @@ def spectrum_tmin_format1(tmin_files):
                 plots_to_combine[basis].append(xmgrace_parser.AgrFile(file,True))
                 this_xydydy = get_data_by_type(plots_to_combine[basis][-1],xydydy)
                 if level ==0:
-                    good_label, labelled_data = format_data(plots_to_combine[basis][-1],this_xydydy,yellow_index,triangle_index,"2-exp fit",legend_setting,y_label)
+                    good_label, labelled_data = format_data(plots_to_combine[basis][-1],this_xydydy,yellow_index,triangle_index,"2-exp fit",settings.legend_setting,settings.y_label)
                     labelled_level = level
                 else:
                     if good_label:
@@ -366,7 +356,7 @@ def spectrum_tmin_format1(tmin_files):
                 spectrum_plots[basis].graphs[0].update_properties(world=new_world_str)
                 
         #ticks
-        spacing = round((new_world[3]-new_world[1])/max_number_of_ticks,3)
+        spacing = round((new_world[3]-new_world[1])/settings.max_number_of_ticks,3)
         spectrum_plots[basis].graphs[0].update_properties(yaxis_tick_major=spacing)
                 
         strip_unnecessary_data(spectrum_plots[basis], (new_world[3]-new_world[1]))
@@ -385,17 +375,17 @@ def spectrum_tmin_format2(tmin_files):
                 plots_to_combine[basis].append(xmgrace_parser.AgrFile(file,True))
                 this_xydydy = get_data_by_type(plots_to_combine[basis][-1],xydydy)
                 if level==0:
-                    good_label, labelled_data = format_data(plots_to_combine[basis][-1],this_xydydy,spectrum_color_indices[level],circle_index,"1-exp ratio fit",legend_setting,y_label)
+                    good_label, labelled_data = format_data(plots_to_combine[basis][-1],this_xydydy,settings.spectrum_color_indices[level],circle_index,"1-exp ratio fit",settings.legend_setting,settings.y_label)
                     labelled_level = level
                 else:
                     if good_label:
-                        format_data(plots_to_combine[basis][-1],this_xydydy,spectrum_color_indices[level],circle_index)
+                        format_data(plots_to_combine[basis][-1],this_xydydy,settings.spectrum_color_indices[level],circle_index)
                     elif labelled_data:
                         plots_to_combine[basis][labelled_level].get_set(labelled_data[0],labelled_data[1]).update_properties(legend="")
-                        good_label, labelled_data = format_data(plots_to_combine[basis][-1],this_xydydy,spectrum_color_indices[level],circle_index,"1-exp ratio fit")
+                        good_label, labelled_data = format_data(plots_to_combine[basis][-1],this_xydydy,settings.spectrum_color_indices[level],circle_index,"1-exp ratio fit")
                         labelled_level = level
                     else:
-                        good_label, labelled_data = format_data(plots_to_combine[basis][-1],this_xydydy,spectrum_color_indices[level],circle_index,"1-exp ratio fit")
+                        good_label, labelled_data = format_data(plots_to_combine[basis][-1],this_xydydy,settings.spectrum_color_indices[level],circle_index,"1-exp ratio fit")
                         labelled_level = level
                         
                 
@@ -404,17 +394,17 @@ def spectrum_tmin_format2(tmin_files):
                 plots_to_combine[basis].append(xmgrace_parser.AgrFile(file,True))
                 this_xydydy = get_data_by_type(plots_to_combine[basis][-1],xydydy)
                 if level ==0:
-                    good_label, labelled_data = format_data(plots_to_combine[basis][-1],this_xydydy,spectrum_color_indices[level],square_index,"2-exp ratio fit",legend_setting,y_label)
+                    good_label, labelled_data = format_data(plots_to_combine[basis][-1],this_xydydy,settings.spectrum_color_indices[level],square_index,"2-exp ratio fit",settings.legend_setting,settings.y_label)
                     labelled_level = 0
                 else:
                     if good_label:
-                        format_data(plots_to_combine[basis][-1],this_xydydy,spectrum_color_indices[level],square_index)
+                        format_data(plots_to_combine[basis][-1],this_xydydy,settings.spectrum_color_indices[level],square_index)
                     elif labelled_data:
                         plots_to_combine[basis][labelled_level].get_set(labelled_data[0],labelled_data[1]).update_properties(legend="")
-                        good_label, labelled_data = format_data(plots_to_combine[basis][-1],this_xydydy,spectrum_color_indices[level],square_index,"2-exp ratio fit")
+                        good_label, labelled_data = format_data(plots_to_combine[basis][-1],this_xydydy,settings.spectrum_color_indices[level],square_index,"2-exp ratio fit")
                         labelled_level = level
                     else:
-                        good_label, labelled_data = format_data(plots_to_combine[basis][-1],this_xydydy,spectrum_color_indices[level],square_index,"2-exp ratio fit")
+                        good_label, labelled_data = format_data(plots_to_combine[basis][-1],this_xydydy,settings.spectrum_color_indices[level],square_index,"2-exp ratio fit")
                         labelled_level = level
                 
         if tmin_files[basis]["single"]:
@@ -422,17 +412,17 @@ def spectrum_tmin_format2(tmin_files):
                 plots_to_combine[basis].append(xmgrace_parser.AgrFile(file,True))
                 this_xydydy = get_data_by_type(plots_to_combine[basis][-1],xydydy)
                 if level ==0:
-                    good_label, labelled_data = format_data(plots_to_combine[basis][-1],this_xydydy,spectrum_color_indices[level],diamond_index,"1-exp fit",legend_setting,y_label)
+                    good_label, labelled_data = format_data(plots_to_combine[basis][-1],this_xydydy,settings.spectrum_color_indices[level],diamond_index,"1-exp fit",settings.legend_setting,settings.y_label)
                     labelled_level = level
                 else:
                     if good_label:
-                        format_data(plots_to_combine[basis][-1],this_xydydy,spectrum_color_indices[level],diamond_index)
+                        format_data(plots_to_combine[basis][-1],this_xydydy,settings.spectrum_color_indices[level],diamond_index)
                     elif labelled_data:
                         plots_to_combine[basis][labelled_level].get_set(labelled_data[0],labelled_data[1]).update_properties(legend="")
-                        good_label, labelled_data = format_data(plots_to_combine[basis][-1],this_xydydy,spectrum_color_indices[level],diamond_index,"1-exp fit")
+                        good_label, labelled_data = format_data(plots_to_combine[basis][-1],this_xydydy,settings.spectrum_color_indices[level],diamond_index,"1-exp fit")
                         labelled_level = level
                     else:
-                        good_label, labelled_data = format_data(plots_to_combine[basis][-1],this_xydydy,spectrum_color_indices[level],diamond_index,"1-exp fit")
+                        good_label, labelled_data = format_data(plots_to_combine[basis][-1],this_xydydy,settings.spectrum_color_indices[level],diamond_index,"1-exp fit")
                         labelled_level = level
                 
         if tmin_files[basis]["double"]:
@@ -440,17 +430,17 @@ def spectrum_tmin_format2(tmin_files):
                 plots_to_combine[basis].append(xmgrace_parser.AgrFile(file,True))
                 this_xydydy = get_data_by_type(plots_to_combine[basis][-1],xydydy)
                 if level==0:
-                    good_label, labelled_data = format_data(plots_to_combine[basis][-1],this_xydydy,spectrum_color_indices[level],4,"2-exp fit",legend_setting,y_label)
+                    good_label, labelled_data = format_data(plots_to_combine[basis][-1],this_xydydy,settings.spectrum_color_indices[level],4,"2-exp fit",settings.legend_setting,settings.y_label)
                     labelled_level = level
                 else:
                     if good_label:
-                        format_data(plots_to_combine[basis][-1],this_xydydy,spectrum_color_indices[level],4)
+                        format_data(plots_to_combine[basis][-1],this_xydydy,settings.spectrum_color_indices[level],4)
                     elif labelled_data:
                         plots_to_combine[basis][labelled_level].get_set(labelled_data[0],labelled_data[1]).update_properties(legend="")
-                        good_label, labelled_data = format_data(plots_to_combine[basis][-1],this_xydydy,spectrum_color_indices[level],4,"2-exp fit")
+                        good_label, labelled_data = format_data(plots_to_combine[basis][-1],this_xydydy,settings.spectrum_color_indices[level],4,"2-exp fit")
                         labelled_level = level
                     else:
-                        good_label, labelled_data = format_data(plots_to_combine[basis][-1],this_xydydy,spectrum_color_indices[level],4,"2-exp fit")
+                        good_label, labelled_data = format_data(plots_to_combine[basis][-1],this_xydydy,settings.spectrum_color_indices[level],4,"2-exp fit")
                         labelled_level = level
                 
                 
@@ -479,7 +469,7 @@ def spectrum_tmin_format2(tmin_files):
                 spectrum_plots[basis].graphs[0].update_properties(world=new_world_str)
                 
         #ticks
-        spacing = round((new_world[3]-new_world[1])/max_number_of_ticks,3)
+        spacing = round((new_world[3]-new_world[1])/settings.max_number_of_ticks,3)
         spectrum_plots[basis].graphs[0].update_properties(yaxis_tick_major=spacing)
                 
         strip_unnecessary_data(spectrum_plots[basis], (new_world[3]-new_world[1]))
@@ -498,25 +488,25 @@ def spectrum_tmin_format3(tmin_files):
                 plots_to_combine[basis].append([])
                 plots_to_combine[basis][level].append(xmgrace_parser.AgrFile(file,True))
                 this_xydydy = get_data_by_type(plots_to_combine[basis][level][-1],xydydy)
-                format_data(plots_to_combine[basis][level][-1],this_xydydy,blue_index,circle_index,"1-exp ratio fit",legend_setting,y_label)
+                format_data(plots_to_combine[basis][level][-1],this_xydydy,blue_index,circle_index,"1-exp ratio fit",settings.legend_setting,settings.y_label)
                 
         if tmin_files[basis]["doubleR"]:
             for level,file in enumerate(tmin_files[basis]["doubleR"]):
                 plots_to_combine[basis][level].append(xmgrace_parser.AgrFile(file,True))
                 this_xydydy = get_data_by_type(plots_to_combine[basis][level][-1],xydydy)
-                format_data(plots_to_combine[basis][level][-1],this_xydydy,green_index,square_index,"2-exp ratio fit",legend_setting,y_label)
+                format_data(plots_to_combine[basis][level][-1],this_xydydy,green_index,square_index,"2-exp ratio fit",settings.legend_setting,settings.y_label)
                 
         if tmin_files[basis]["double"]:
             for level,file in enumerate(tmin_files[basis]["double"]):
                 plots_to_combine[basis][level].append(xmgrace_parser.AgrFile(file,True))
                 this_xydydy = get_data_by_type(plots_to_combine[basis][level][-1],xydydy)
-                format_data(plots_to_combine[basis][level][-1],this_xydydy,11,4,"2-exp fit",legend_setting,y_label)
+                format_data(plots_to_combine[basis][level][-1],this_xydydy,11,4,"2-exp fit",settings.legend_setting,settings.y_label)
                 
         if tmin_files[basis]["single"]:
             for level,file in enumerate(tmin_files[basis]["single"]):
                 plots_to_combine[basis][level].append(xmgrace_parser.AgrFile(file,True))
                 this_xydydy = get_data_by_type(plots_to_combine[basis][level][-1],xydydy)
-                format_data(plots_to_combine[basis][level][-1],this_xydydy,purple_index,diamond_index,"1-exp fit",legend_setting,y_label)
+                format_data(plots_to_combine[basis][level][-1],this_xydydy,purple_index,diamond_index,"1-exp fit",settings.legend_setting,settings.y_label)
                        
         #combine all plots
         for level,plots in enumerate(plots_to_combine[basis]):
@@ -547,7 +537,7 @@ def spectrum_tmin_format3(tmin_files):
 
             if new_world:
                 #ticks
-                spacing = round((new_world[3]-new_world[1])/max_number_of_ticks,3)
+                spacing = round((new_world[3]-new_world[1])/settings.max_number_of_ticks,3)
                 spectrum_plots[plot_title].graphs[0].update_properties(yaxis_tick_major=spacing)
                 strip_unnecessary_data(spectrum_plots[plot_title], (new_world[3]-new_world[1]))
                 
@@ -738,7 +728,7 @@ def print_to_svg(plot_handle,filestub):
                 current_size = list(plot_handle.get_size())
                 current_size[0] = current_size[0]+0.2
                 plot_handle.set_size(current_size[0],current_size[1])
-                plot_handle.set_graph_view(0, x_max=current_size[0]-standard_xmax_gap, width=standard_graph_width, y_min=standard_y_min, height=standard_graph_height)
+                plot_handle.set_graph_view(0, x_max=current_size[0]-settings.standard_xmax_gap, width=settings.standard_graph_width, y_min=settings.standard_y_min, height=settings.standard_graph_height)
                 this_output = plot_handle.hardcopy(filestub+".svg")
             else:
                 print("SUcceess")
@@ -887,9 +877,12 @@ def generate_python_rest_mass_plot( fits, tmins, level=None, plot_format=1 ):
 #run plots
 if __name__ == "__main__":
     
-    yamlfile = open("sigmond_plots_config.yml","r")
-    project_info = yaml.load(yamlfile, Loader=yaml.FullLoader)
-    yamlfile.close()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("config", help="config file")
+    args = parser.parse_args()
+
+    with open(args.config, "r") as yamlfile:
+        project_info = yaml.load(yamlfile, Loader=yaml.FullLoader)
     
     if "rest_mass" in project_info.keys():
         out_dir = project_info["rest_mass"]['out_dir']

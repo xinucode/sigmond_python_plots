@@ -17,10 +17,24 @@ alphabetical = {'A1g':0.01107,'F1':0.0601,'F2':0.0602,'G': 0.07,'G1': 0.0701,'G1
 #latex format of all irreps and particles
 latex_format = {'A1g':r"$A_{1g}$", 'F1':r"$F_1$", 'F2':r"$F_2$", 'G': r'$G$', 'G1':r"$G_1$", 'G1g':r"$G_{1g}$", 'G1u':r"$G_{1u}$", 'G2':r"$G_2$", 'Hg':r"$H_g$", 'Hu':r"$H_u$", 'N': r'$N$', 'pi':r"$\pi$", 'T1g':r"$T_{1g}$", 'A1u':r"$A_{1u}$", 'A2u':r"$A_{2u}$", 'Eg':r"$E_{g}$", 'Eu':r"$E_{u}$", 'T1u':r"$T_{1u}$", 'T2g':r"$T_{2g}$", 'T2u':r"$T_{2u}$", 'A1':r"$A_1$", 'A2':r"$A_2$", 'B1':r"$B_1$", 'B2':r"$B_2$", 'E':r"$E$"}
 
-#xmgrace label format for particles #insert link here to help
-xmgrace_format = {'N': 'N', 'pi': '\\xp'}
-
 #sigmond scripts tmin plot end tags
 tmin_file_tags = {'0.agr':'single-exponential fit','4.agr':'double-exponential fit','8.agr':'geometric fit'}
 fit_nicknames = {'single-exponential fit':'single','double-exponential fit':'double','geometric fit':'geometric'}
 fit_longnames = {'single':'single-exponential fit','double':'double-exponential fit','geometric':'geometric fit'}
+
+########## xmgrace ################
+
+#xmgrace label format for particles #insert link here to help
+xmgrace_format = {'N': 'N', 'pi': '\\xp'}
+
+#settings for xmgrace plots
+#legend_setting = "0.25, 0.92" #string of x,y location where legend should be located on graph
+legend_setting = "0.7, 0.92" #string of x,y location where legend should be located on graph
+standard_graph_width = 11.64 #graphs produced by sigmond scripts have these widths
+standard_y_min = 2.33 #graphs produced by sigmond typically have this size of gap below them for axis labels and such
+standard_graph_height = 12.42 #graphs produced by sigmond scripts have these heights
+standard_xmax_gap = 15.52-standard_graph_width-3.1 #graphs produced by sigmond scripts have this right hand vertical gap
+max_number_of_ticks = 6 #max number of labels on the y axis
+
+spectrum_color_indices = [4,6,9,10,11,12,15,5,3,7]
+y_label = '"aE\\s\Qfit"'
