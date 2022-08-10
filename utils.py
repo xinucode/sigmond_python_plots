@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import h5py
 import os, sys
+from zipfile import ZipFile
 
 import settings
 
@@ -236,3 +237,110 @@ def unpack_file( filename, spectrum_type):
 def find_rest_mass( dataset, rest_mass_name ):
     tagname = rest_mass_name+'(0)_ref'
     return select_val(dataset, None, None, tagname)
+
+
+"""find_tmin_spectrum_files(channel_name)
+        channel_name - a key in the dict given in the spectrum config file
+        
+        for the given channel name, uses the directory path given in the spectrum
+        config file to create a list of the filepaths to all of the tmin plots 
+        in that given directory and label them based on their channel and basis
+        This function relies of the directory tree structure produced by sigmond 
+        scripts https://github.com/andrewhanlon/sigmond_scripts.
+        
+        if there is 'omit' tag under the channel name it will omit any basis name
+        or filename in the omissions list from the plotting lists.
+"""
+def find_tmin_spectrum_files(channel_name):
+    this_channel = {}
+    
+    if type(channel_name)==dict:
+        this_directory = channel_name['dir']
+        if 'omit' in channel_name.keys():
+            omissions_list = channel_name['omit']
+        else:
+            omissions_list = []
+    else:
+        print("ERROR: Incorrect spectrum config channel")
+        return {}
+    for file in os.listdir(this_directory):
+        if (file!='single_hadrons') and (file not in omissions_list):
+            this_channel[file] = {}
+    for i in this_channel.keys():
+        if i not in omissions_list:
+            this_channel[i]["singleR"] = []
+            this_channel[i]["doubleR"] = []
+            this_channel[i]["single"] = []
+            this_channel[i]["double"] = []
+            for level in range(0,20):
+                for file in os.listdir(os.path.join(this_directory,i)):
+                    if file not in omissions_list:
+                        if file.endswith(f"R_0_{level}.agr"):
+                            this_channel[i]["singleR"].append(os.path.join(this_directory,i,file))
+                        elif file.endswith(f"R_4_{level}.agr"):
+                            this_channel[i]["doubleR"].append(os.path.join(this_directory,i,file))
+                        elif file.endswith(f"_0_{level}.agr"):
+                            this_channel[i]["single"].append(os.path.join(this_directory,i,file))
+                        elif file.endswith(f"_4_{level}.agr"):
+                            this_channel[i]["double"].append(os.path.join(this_directory,i,file))
+    return this_channel
+
+"""find_tmin_spectrum_files_python(channel_name)
+        channel_name - a dict from the yaml config file that contains the key
+            'dir' with a directory path
+        
+        returns a dict with levels [basis][level][fit_type], with the xmgrace tmin 
+        filenames from the directorys organized by the categories. if basis, fit_type, 
+        or an individual name of a file are contained in omissions list, then they will
+        not be included in the output dict.
+"""
+def find_tmin_spectrum_files_python(channel_name):
+    this_channel = {}
+    this_directory = channel_name['dir']
+    if 'omit' in channel_name.keys():
+        omissions_list = channel_name['omit']
+    else:
+        omissions_list = []
+    for basis in os.listdir(this_directory):
+        if (basis!='single_hadrons') and (basis not in omissions_list):
+            this_channel[basis] = {}
+            for level in range(0,channel_name['max_level']):
+                this_channel[basis][level] = {}
+                for file in os.listdir(os.path.join(this_directory,basis)):
+                    if file not in omissions_list:
+                        if file.endswith(f"_{level}.agr"):
+                            file2 = file.replace(f"_{level}.agr",".agr")
+                            if file2[-5:] in settings.tmin_file_tags:
+                                fit_type = settings.tmin_file_tags[file2[-5:]]
+                                if file2[:-5].endswith("R_"):
+                                    fit_type = fit_type.replace("fit","ratio fit")
+                                if fit_type not in omissions_list:
+                                    this_channel[basis][level][fit_type] = os.path.join(this_directory,basis,file)
+    return this_channel
+
+"""zip_channel( name,this_file_list, this_type = ".svg", sub_dir = None) -> move to utils
+        name - name of the ouput zip file (name.zip)
+        this_file_list - dict where the keys refer to the filestubs
+            of all of the svg files to be zipped (default: key.svg) 
+        this_type - the file type to attach to the end of the key names
+        sub_dir - if specified, looks in this directory name for files rather than the local
+            directory.
+            
+        uses this_file_list.keys() to find all the files to be zipped and puts
+        them in name.zip
+"""
+def zip_channel( name,this_file_list, this_type = ".svg", sub_dir = None):
+    file = name+".zip"
+    this_zip = ZipFile(file,'w')
+    
+    if type(this_file_list)==dict:
+        this_list = this_file_list.keys()
+    else:
+        this_list = this_file_list
+        
+    for basis in this_list:
+        if sub_dir:
+            this_zip.write(os.path.join(sub_dir,basis)+this_type)
+        else:
+            this_zip.write(basis+this_type)
+    this_zip.close()

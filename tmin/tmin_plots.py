@@ -1,6 +1,5 @@
 import numpy as np
 import copy
-from zipfile import ZipFile
 import os, sys
 import yaml
 import pandas as pd
@@ -10,6 +9,7 @@ import argparse
 sys.path.insert(0,'../')
 import xmgrace_parser
 import settings
+import utils
 plt.style.use('../spectrum.mplstyle')
 
 #xmgrace info
@@ -33,6 +33,7 @@ circle_index = 1
 diamond_index = 3
 triangle_index = 4
 
+###################### xmgrace functions ##############################
 """rest_mass_tmin_plot(filename_1,filename_2,label,legend_labels)
        filename_1 - filepath of single exponential fit tmin plot
        filename_2 - filepath of double exponential fit tmin plot
@@ -72,16 +73,6 @@ triangle_index = 4
         
         Format1 and format3 color based on the fit type. Format 2 colors based on
         the energy level.
-"""
-
-"""find_tmin_spectrum_files(channel_name)
-        channel_name - a key in the dict given in the spectrum config file
-        
-        for the given channel name, uses the directory path given in the spectrum
-        config file to create a list of the filepaths to all of the tmin plots 
-        in that given directory and label them based on their channel and basis
-        This function relies of the directory tree structure produced by sigmond 
-        scripts https://github.com/andrewhanlon/sigmond_scripts. 
 """
 
 """expand_world(world_1,world_2)
@@ -165,15 +156,40 @@ triangle_index = 4
         prints the plot_handle to svg file (filestub.svg)
 """
 
-"""zip_channel( name,this_file_list )
-        name - name of the ouput zip file (name.zip)
-        this_file_list - dict where the keys refer to the filestubs
-            of all of the svg files to be zipped (key.svg)
+"""retrieve_xmgrace_data_xydydy( files )
+        files - a dict of files where the values can be a single string of a 
+            filename or a list of filename strings.
             
-        uses this_file_list.keys() to find all the files to be zipped and puts
-        them in name.zip
+        Takes the dict of files and makes a dict of dataframes with all the same 
+        keys and pulls the xydydy type data from the file(s) and puts those values
+        into the dataframe with columns: time, value, error bar 1, error bar 2.
 """
 
+"""retrieve_xmgrace_data_xy( files )
+        files - a dict of files where the values can be a single string of a 
+            filename or a list of filename strings.
+            
+        Takes the dict of files and makes a dict of dicts with all the same 
+        keys and pulls the xy type data from the file(s) and puts those values
+        into the dict with keys: fits, errs.
+"""
+
+################## python functions ##########################################
+
+"""generate_python_rest_mass_plot( fits, tmins, level=None, plot_format=1 )
+        fits - a dict with keys 'fits' and 'errs' where 'errs' is list of length two
+        tmins - a dict of dataframes with keys for each fit type and the columns:
+            time, value, error bar 1, error bar 2.
+        level - this spectrum basis level num (if it's important)
+        plot_format - plot format value (1-3) used for formatting the tmin plots in the
+            same manner as the xmgrace tmin plots.
+        
+        generates or contributes to a tmin plot by plotting the fits, tmins, and uses the
+        level and plot_format to properly color and label the plot according the chosen
+        plot format.
+"""
+
+######################### utility functions ##################################
 
 def rest_mass_tmin_plot(filename_1,filename_2,label,good_labels = [False,False,False],legend_labels="regular", filename_3 = None):
     single_exp_plot = xmgrace_parser.AgrFile(filename_1,True) 
@@ -543,64 +559,6 @@ def spectrum_tmin_format3(tmin_files):
                 
     return spectrum_plots
 
-def find_tmin_spectrum_files(channel_name):
-    this_channel = {}
-    
-    if type(channel_name)==dict:
-        this_directory = channel_name['dir']
-        if 'omit' in channel_name.keys():
-            omissions_list = channel_name['omit']
-        else:
-            omissions_list = []
-    else:
-        print("ERROR: Incorrect spectrum config channel")
-        return {}
-    for file in os.listdir(this_directory):
-        if (file!='single_hadrons') and (file not in omissions_list):
-            this_channel[file] = {}
-    for i in this_channel.keys():
-        if i not in omissions_list:
-            this_channel[i]["singleR"] = []
-            this_channel[i]["doubleR"] = []
-            this_channel[i]["single"] = []
-            this_channel[i]["double"] = []
-            for level in range(0,20):
-                for file in os.listdir(os.path.join(this_directory,i)):
-                    if file not in omissions_list:
-                        if file.endswith(f"R_0_{level}.agr"):
-                            this_channel[i]["singleR"].append(os.path.join(this_directory,i,file))
-                        elif file.endswith(f"R_4_{level}.agr"):
-                            this_channel[i]["doubleR"].append(os.path.join(this_directory,i,file))
-                        elif file.endswith(f"_0_{level}.agr"):
-                            this_channel[i]["single"].append(os.path.join(this_directory,i,file))
-                        elif file.endswith(f"_4_{level}.agr"):
-                            this_channel[i]["double"].append(os.path.join(this_directory,i,file))
-    return this_channel
-
-def find_tmin_spectrum_files_python(channel_name):
-    this_channel = {}
-    this_directory = channel_name['dir']
-    if 'omit' in channel_name.keys():
-        omissions_list = channel_name['omit']
-    else:
-        omissions_list = []
-    for basis in os.listdir(this_directory):
-        if (basis!='single_hadrons') and (basis not in omissions_list):
-            this_channel[basis] = {}
-            for level in range(0,channel_name['max_level']):
-                this_channel[basis][level] = {}
-                for file in os.listdir(os.path.join(this_directory,basis)):
-                    if file not in omissions_list:
-                        if file.endswith(f"_{level}.agr"):
-                            file2 = file.replace(f"_{level}.agr",".agr")
-                            if file2[-5:] in settings.tmin_file_tags:
-                                fit_type = settings.tmin_file_tags[file2[-5:]]
-                                if file2[:-5].endswith("R_"):
-                                    fit_type = fit_type.replace("fit","ratio fit")
-                                if fit_type not in omissions_list:
-                                    this_channel[basis][level][fit_type] = os.path.join(this_directory,basis,file)
-    return this_channel
-
 def expand_world(world_1,world_2):
     world1 = [float(i) for i in world_1.split(",")]
     world2 = [float(i) for i in world_2.split(",")]
@@ -733,22 +691,6 @@ def print_to_svg(plot_handle,filestub):
             else:
                 print("SUcceess")
                 break
-                
-def zip_channel( name,this_file_list, this_type = ".svg", sub_dir = None):
-    file = name+".zip"
-    this_zip = ZipFile(file,'w')
-    
-    if type(this_file_list)==dict:
-        this_list = this_file_list.keys()
-    else:
-        this_list = this_file_list
-        
-    for basis in this_list:
-        if sub_dir:
-            this_zip.write(os.path.join(sub_dir,basis)+this_type)
-        else:
-            this_zip.write(basis+this_type)
-    this_zip.close()
     
 def retrieve_xmgrace_data_xydydy( files ):
     datasets = {}
@@ -960,17 +902,17 @@ if __name__ == "__main__":
                 print("\n",channel["name"])
 
                 if plot_format == 1:
-                    tmin_plots = spectrum_tmin_format1(find_tmin_spectrum_files(channel))
+                    tmin_plots = spectrum_tmin_format1(utils.find_tmin_spectrum_files(channel))
                 elif plot_format == 2:
-                    tmin_plots = spectrum_tmin_format2(find_tmin_spectrum_files(channel))
+                    tmin_plots = spectrum_tmin_format2(utils.find_tmin_spectrum_files(channel))
                 else:
-                    tmin_plots = spectrum_tmin_format3(find_tmin_spectrum_files(channel))
+                    tmin_plots = spectrum_tmin_format3(utils.find_tmin_spectrum_files(channel))
 
                 for basis in tmin_plots.keys():
                     file_stub = os.path.join(out_dir,basis)
                     tmin_plots[basis].write(file_stub+".agr")
                     print_to_svg(tmin_plots[basis],file_stub)
-                zip_channel(channel["name"]+f'_format{plot_format}', tmin_plots, sub_dir = out_dir)
+                utils.zip_channel(channel["name"]+f'_format{plot_format}', tmin_plots, sub_dir = out_dir)
                 
         if project_info["spectrum_tmins"]['out_type']=="python":
             for channel in project_info["spectrum_tmins"]["channels"]:
@@ -979,7 +921,7 @@ if __name__ == "__main__":
                 if not os.path.exists(out_dir):
                     os.mkdir(out_dir)
                 print("\n",channel["name"])
-                tmin_plots = find_tmin_spectrum_files_python(channel)
+                tmin_plots = utils.find_tmin_spectrum_files_python(channel)
 #                 
                 if (plot_format >= 1) or (plot_format <= 3):
                     f = plt.figure()
@@ -1018,4 +960,4 @@ if __name__ == "__main__":
                         files_to_zip.append(f'{basis}_tmin.pdf')
                         plt.clf()
             
-                zip_channel(channel["name"]+f'_format{plot_format}',files_to_zip,"", sub_dir = out_dir)
+                utils.zip_channel(channel["name"]+f'_format{plot_format}',files_to_zip,"", sub_dir = out_dir)
