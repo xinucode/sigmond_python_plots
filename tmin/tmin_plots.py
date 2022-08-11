@@ -33,6 +33,7 @@ circle_index = 1
 diamond_index = 3
 triangle_index = 4
 
+
 ###################### xmgrace functions ##############################
 """rest_mass_tmin_plot(filename_1,filename_2,label,legend_labels)
        filename_1 - filepath of single exponential fit tmin plot
@@ -48,149 +49,6 @@ triangle_index = 4
        for one level, applies relevant settings for rest masses,
        and returns the resulting xmgrace_parser.AgrFile object. 
 """
-
-"""spectrum_tmin_format*(tmin_files)
-        tmin_files - a list of files in dict format
-            { basis1: {"single":[level1_filepath,level2_filepath...],
-                "singleR":[level1_filepath,level2_filepath...],
-                "doubleR":[level1_filepath,level2_filepath...]},
-                basis2... }
-            where the basisN refer to a basis within a channel. Each basis 
-            has a dict with keys "single","singleR", and "doubleR". 
-                "single" - single exponential non ratio fit
-                "double" - double exp non ration fit
-                "singleR" - single exponential ratio fit
-                "doubleR" - double exponential ratio fit
-            Of course a non ratio double exponential is possible though
-            non included here as the double exponental is more fickle
-            than the single exponential and the non ratio single is also
-            fickle so decided not to include.
-            
-        Format1 and format2 take all of the tmin plots (all levels and fit types)
-        in a basis and merges them into a combined spectrum tmin plot. 
-        Format3 only combines the different fit types for each level. Every level
-        will have a different plot.
-        
-        Format1 and format3 color based on the fit type. Format 2 colors based on
-        the energy level.
-"""
-
-"""expand_world(world_1,world_2)
-        world_1 - string of the world parameters for a given xmgrace plot
-            "xmin, ymin, xmax, ymax"
-        world_2 - same structure as world_1
-        
-        returns a list of values [xmin,ymin,xmax,ymax] of a world that includes both
-        the world_1 and world_2
-"""
-
-"""stretch_estimate_lines( plot_handle, xmin, xmax)
-        plot_handle - xmgrace parser plot object 
-        xmin - new xmin for all estimate lines
-        xmax - new xmax for all estimate lines
-        
-        sigmond scripts produces tmin plots that contain many varying fits compared
-        to the currently chosen fit for the final spectrum plot. When combining the
-        tmin plots, there is often different tmin ranges and so these estimate lines
-        need to be extended to the new xrange. This function goes through and finds
-        all of the estimate lines (type xy) and modifies their range. It returns the
-        miny and maxy of the estimates.
-"""
-
-"""strip_unnecessary_data( plot_handle, yrange)
-        plot_handle - xmgrace parser plot object 
-        yrange - max size for error bars 
-        
-        in a given plot, goes through and removes all data points with error bars 
-        larger than the yrange.
-"""
-
-"""transfer_data( plothandle_source, datasets, plothandle_target)
-        plothandle_source - xmgrace parser plot object including the datasets to be
-            copied
-        datasets - list of the indexes for datasets in the plothandle_source object
-            to be copied ([[g0,s0],[g0,s1],...])
-        plothandle_target - xmgrace parser plot object that will recieve the datasets
-        
-        Copies the dataset objects from the plothandle_source and inserts them into
-        plothandle_target with indices that do not conflict with plothandle_target's
-        datasets. 
-"""
-
-"""get_data_by_type(plot_handle,this_type)
-        plot_handle - xmgrace parser plot object 
-        this_type - xmgrace data type (xy, xydydy...)
-        
-        returns a list of the dataset indexes in plot_handle of the data type this_type
-        ([[g0,s0],[g0,s1],...])
-"""
-
-"""format_data(plot_handle, xydydy_list, this_color_index, symbol_index, 
-    legend_label="", this_legend_setting=None, this_label=None)
-        plot_handle - xmgrace parser plot object 
-        xydydy_list - list of dataset indices ([[g0,s0],[g0,s1],...]) to be formatted
-        this_color_index - xmgrace color index that the datasets will be recolored to
-        symbol_index - xmgrace symbol index that the datasets will be converted to
-        legend_label - legend label for given datasets. Default is no label.
-        this_legend_setting - string of "x,y" location on plot for the legend to be 
-            located. Default is original sigmond script output setting
-        this_label - new yaxis label. Original sigmond script output is default
-        
-        formats the datasets given by xydydy_list in plot_handle and returns a boolean
-        on whether the labelling was successful and the indices of the dataset that
-        was labelled (empty list if not labelled). (return boolean, [g,s])
-"""
-
-"""recolor_data( plot_handle1, this_list, color_index)
-        plot_handle1 - xmgrace parser plot object 
-        this_list - list of dataset indices ([[g0,s0],[g0,s1],...]) to be recolored
-        color_index - xmgrace color index that the datasets will be recolored to
-        
-        recolors the datasets to color_index in plot_handle1
-"""
-
-"""print_to_svg(plot_handle,filestub)
-        plot_handle - xmgrace parser plot object
-        filestub - string for naming output file (filestub.svg)
-        
-        prints the plot_handle to svg file (filestub.svg)
-"""
-
-"""retrieve_xmgrace_data_xydydy( files )
-        files - a dict of files where the values can be a single string of a 
-            filename or a list of filename strings.
-            
-        Takes the dict of files and makes a dict of dataframes with all the same 
-        keys and pulls the xydydy type data from the file(s) and puts those values
-        into the dataframe with columns: time, value, error bar 1, error bar 2.
-"""
-
-"""retrieve_xmgrace_data_xy( files )
-        files - a dict of files where the values can be a single string of a 
-            filename or a list of filename strings.
-            
-        Takes the dict of files and makes a dict of dicts with all the same 
-        keys and pulls the xy type data from the file(s) and puts those values
-        into the dict with keys: fits, errs.
-"""
-
-################## python functions ##########################################
-
-"""generate_python_rest_mass_plot( fits, tmins, level=None, plot_format=1 )
-        fits - a dict with keys 'fits' and 'errs' where 'errs' is list of length two
-        tmins - a dict of dataframes with keys for each fit type and the columns:
-            time, value, error bar 1, error bar 2.
-        level - this spectrum basis level num (if it's important)
-        plot_format - plot format value (1-3) used for formatting the tmin plots in the
-            same manner as the xmgrace tmin plots.
-        
-        generates or contributes to a tmin plot by plotting the fits, tmins, and uses the
-        level and plot_format to properly color and label the plot according the chosen
-        plot format.
-"""
-
-######################### utility functions ##################################
-
 def rest_mass_tmin_plot(filename_1,filename_2,label,good_labels = [False,False,False],legend_labels="regular", filename_3 = None):
     single_exp_plot = xmgrace_parser.AgrFile(filename_1,True) 
     double_exp_plot = xmgrace_parser.AgrFile(filename_2,True)
@@ -266,6 +124,31 @@ def rest_mass_tmin_plot(filename_1,filename_2,label,good_labels = [False,False,F
         
     return single_exp_plot
 
+"""spectrum_tmin_format*(tmin_files)
+        tmin_files - a list of files in dict format
+            { basis1: {"single":[level1_filepath,level2_filepath...],
+                "singleR":[level1_filepath,level2_filepath...],
+                "doubleR":[level1_filepath,level2_filepath...]},
+                basis2... }
+            where the basisN refer to a basis within a channel. Each basis 
+            has a dict with keys "single","singleR", and "doubleR". 
+                "single" - single exponential non ratio fit
+                "double" - double exp non ration fit
+                "singleR" - single exponential ratio fit
+                "doubleR" - double exponential ratio fit
+            Of course a non ratio double exponential is possible though
+            non included here as the double exponental is more fickle
+            than the single exponential and the non ratio single is also
+            fickle so decided not to include.
+            
+        Format1 and format2 take all of the tmin plots (all levels and fit types)
+        in a basis and merges them into a combined spectrum tmin plot. 
+        Format3 only combines the different fit types for each level. Every level
+        will have a different plot.
+        
+        Format1 and format3 color based on the fit type. Format 2 colors based on
+        the energy level.
+"""
 def spectrum_tmin_format1(tmin_files):
     plots_to_combine = {}
     spectrum_plots = {}
@@ -559,12 +442,32 @@ def spectrum_tmin_format3(tmin_files):
                 
     return spectrum_plots
 
+"""expand_world(world_1,world_2)
+        world_1 - string of the world parameters for a given xmgrace plot
+            "xmin, ymin, xmax, ymax"
+        world_2 - same structure as world_1
+        
+        returns a list of values [xmin,ymin,xmax,ymax] of a world that includes both
+        the world_1 and world_2
+"""
 def expand_world(world_1,world_2):
     world1 = [float(i) for i in world_1.split(",")]
     world2 = [float(i) for i in world_2.split(",")]
     return [min(world1[0],world2[0]),min(world1[1],world2[1]),max(world1[2],world2[2]),max(world1[3],world2[3])]
 
     
+"""stretch_estimate_lines( plot_handle, xmin, xmax)
+        plot_handle - xmgrace parser plot object 
+        xmin - new xmin for all estimate lines
+        xmax - new xmax for all estimate lines
+        
+        sigmond scripts produces tmin plots that contain many varying fits compared
+        to the currently chosen fit for the final spectrum plot. When combining the
+        tmin plots, there is often different tmin ranges and so these estimate lines
+        need to be extended to the new xrange. This function goes through and finds
+        all of the estimate lines (type xy) and modifies their range. It returns the
+        miny and maxy of the estimates.
+"""
 def stretch_estimate_lines( plot_handle, xmin, xmax):
     miny = 300.0
     maxy = -300.0
@@ -584,6 +487,13 @@ def stretch_estimate_lines( plot_handle, xmin, xmax):
         plot_handle.datasets[s].set_data(np.transpose(this_line))
     return miny,maxy
 
+"""strip_unnecessary_data( plot_handle, yrange)
+        plot_handle - xmgrace parser plot object 
+        yrange - max size for error bars 
+        
+        in a given plot, goes through and removes all data points with error bars 
+        larger than the yrange.
+"""
 def strip_unnecessary_data( plot_handle, yrange):
     xydydy_data = get_data_by_type(plot_handle,xydydy)
     for g,s in reversed(xydydy_data):
@@ -604,6 +514,17 @@ def strip_unnecessary_data( plot_handle, yrange):
             if (this_line[2]+this_line[3])>=yrange:
                 plot_handle.kill_set(g,s)
 
+"""transfer_data( plothandle_source, datasets, plothandle_target)
+        plothandle_source - xmgrace parser plot object including the datasets to be
+            copied
+        datasets - list of the indexes for datasets in the plothandle_source object
+            to be copied ([[g0,s0],[g0,s1],...])
+        plothandle_target - xmgrace parser plot object that will recieve the datasets
+        
+        Copies the dataset objects from the plothandle_source and inserts them into
+        plothandle_target with indices that do not conflict with plothandle_target's
+        datasets. 
+"""
 def transfer_data( plothandle_source, datasets, plothandle_target):
     for g,s in datasets:
         this_set = copy.deepcopy(plothandle_source.get_set(g,s))
@@ -614,6 +535,13 @@ def transfer_data( plothandle_source, datasets, plothandle_target):
         plothandle_target.datasets[-1]._force_index(g, this_index)
         plothandle_target.graphs[g].sets[-1]._force_index(this_index)
         
+"""get_data_by_type(plot_handle,this_type)
+        plot_handle - xmgrace parser plot object 
+        this_type - xmgrace data type (xy, xydydy...)
+        
+        returns a list of the dataset indexes in plot_handle of the data type this_type
+        ([[g0,s0],[g0,s1],...])
+"""
 def get_data_by_type(plot_handle,this_type):
     xydydy_data = []
     for data in plot_handle.datasets:
@@ -621,6 +549,21 @@ def get_data_by_type(plot_handle,this_type):
             xydydy_data.append(data.get_g_s())
     return xydydy_data
     
+"""format_data(plot_handle, xydydy_list, this_color_index, symbol_index, 
+    legend_label="", this_legend_setting=None, this_label=None)
+        plot_handle - xmgrace parser plot object 
+        xydydy_list - list of dataset indices ([[g0,s0],[g0,s1],...]) to be formatted
+        this_color_index - xmgrace color index that the datasets will be recolored to
+        symbol_index - xmgrace symbol index that the datasets will be converted to
+        legend_label - legend label for given datasets. Default is no label.
+        this_legend_setting - string of "x,y" location on plot for the legend to be 
+            located. Default is original sigmond script output setting
+        this_label - new yaxis label. Original sigmond script output is default
+        
+        formats the datasets given by xydydy_list in plot_handle and returns a boolean
+        on whether the labelling was successful and the indices of the dataset that
+        was labelled (empty list if not labelled). (return boolean, [g,s])
+"""
 def format_data(plot_handle, xydydy_list, this_color_index, symbol_index, legend_label="", this_legend_setting=None, this_label=None):
     #fill all holes in single exponential plot
     for g,s in xydydy_list:
@@ -671,6 +614,13 @@ def format_data(plot_handle, xydydy_list, this_color_index, symbol_index, legend
         plot_handle.graphs[0].update_properties(yaxis_label=this_label)
     return labelled,labelled_data
 
+"""recolor_data( plot_handle1, this_list, color_index)
+        plot_handle1 - xmgrace parser plot object 
+        this_list - list of dataset indices ([[g0,s0],[g0,s1],...]) to be recolored
+        color_index - xmgrace color index that the datasets will be recolored to
+        
+        recolors the datasets to color_index in plot_handle1
+"""
 def recolor_data( plot_handle1, this_list, color_index):
     #recolor all data to this color
     for g,s in this_list:
@@ -678,6 +628,12 @@ def recolor_data( plot_handle1, this_list, color_index):
         plot_handle1.get_set(g,s).update_properties(symbol_fill_color=color_index)
         plot_handle1.get_set(g,s).update_properties(errorbar_color=color_index)
         
+"""print_to_svg(plot_handle,filestub)
+        plot_handle - xmgrace parser plot object
+        filestub - string for naming output file (filestub.svg)
+        
+        prints the plot_handle to svg file (filestub.svg)
+"""
 def print_to_svg(plot_handle,filestub):
     this_output = plot_handle.hardcopy(filestub+".svg")
     if "truncated" in this_output:
@@ -692,6 +648,14 @@ def print_to_svg(plot_handle,filestub):
                 print("SUcceess")
                 break
     
+"""retrieve_xmgrace_data_xydydy( files )
+        files - a dict of files where the values can be a single string of a 
+            filename or a list of filename strings.
+            
+        Takes the dict of files and makes a dict of dataframes with all the same 
+        keys and pulls the xydydy type data from the file(s) and puts those values
+        into the dataframe with columns: time, value, error bar 1, error bar 2.
+"""
 def retrieve_xmgrace_data_xydydy( files ):
     datasets = {}
 
@@ -752,6 +716,14 @@ def retrieve_xmgrace_data_xydydy( files ):
         datasets[key].insert(3,3,err2)
     return datasets
 
+"""retrieve_xmgrace_data_xy( files )
+        files - a dict of files where the values can be a single string of a 
+            filename or a list of filename strings.
+            
+        Takes the dict of files and makes a dict of dicts with all the same 
+        keys and pulls the xy type data from the file(s) and puts those values
+        into the dict with keys: fits, errs.
+"""
 def retrieve_xmgrace_data_xy( files ):
     fits_all = {}
     for key in files.keys():
@@ -785,6 +757,22 @@ def retrieve_xmgrace_data_xy( files ):
         fits_all[key] = {"fit":fits,"err":errs}
     return fits_all
 
+
+
+################## python functions ##########################################
+
+"""generate_python_rest_mass_plot( fits, tmins, level=None, plot_format=1 )
+        fits - a dict with keys 'fits' and 'errs' where 'errs' is list of length two
+        tmins - a dict of dataframes with keys for each fit type and the columns:
+            time, value, error bar 1, error bar 2.
+        level - this spectrum basis level num (if it's important)
+        plot_format - plot format value (1-3) used for formatting the tmin plots in the
+            same manner as the xmgrace tmin plots.
+        
+        generates or contributes to a tmin plot by plotting the fits, tmins, and uses the
+        level and plot_format to properly color and label the plot according the chosen
+        plot format.
+"""
 def generate_python_rest_mass_plot( fits, tmins, level=None, plot_format=1 ):
     minx = 10
     maxx = 10
@@ -815,6 +803,40 @@ def generate_python_rest_mass_plot( fits, tmins, level=None, plot_format=1 ):
     plt.hlines(fits['err'][0],minx,maxx,color="black",ls="--")
     plt.hlines(fits['err'][1],minx,maxx,color="black",ls="--")
 
+        
+"""
+Sample Yaml Config file
+------
+rest_mass: #(optional) generates rest mass plot(s)
+    out_dir: single_hadrons #output directory where the software will save the final plots
+    out_type: python #options are "python" or "xmgrace". Type of plot to generate
+    combine: true #(optional) if out_type==python, puts plots side by side in one file in order of input. default: false
+    particles: #dict of the particles to plot Ex: pi, N, K...
+        pi: #dict that specifies the 'files' and 'outfilestub' for the given particle
+            files: #list of filepaths xmgrace tmin plots to be combined into one tmin plot (assumed to have been 
+                generated by sigmond_scripts)
+                - /latticeQCD/raid3/sarahski/lqcd/D200_R000/isoquartet_nonstrange_fermionic_bootstrap/.sigmond/plots/spectrum/tmin_plots/isoquartet_nonstrange_fermionic_colin/rebin20/single_hadrons/tmin_fit_isotriplet-S0-P000-A1um-PSS0-0_30000A1um-P[SS0]-0T2-25-20_0.agr
+                - /latticeQCD/raid3/sarahski/lqcd/D200_R000/isoquartet_nonstrange_fermionic_bootstrap/.sigmond/plots/spectrum/tmin_plots/isoquartet_nonstrange_fermionic_colin/rebin20/single_hadrons/tmin_fit_isotriplet-S0-P000-A1um-PSS0-0_30000A1um-P[SS0]-0T2-25-20_4.agr
+            outfilestub: pi0_tmin_all #name attached to output files
+
+        
+spectrum_tmins: #(optional) generates conbined tmin plot(s) for spectra
+    plot_format: 2 #options are integers 1,2,3. Used to specify format of output plot. 1 - each level gets their own plot; 
+        2 - all levels in a basis are graphed in one plot and each level is colored differently; 
+        3 - all levels in a basis are graphed in one plot and each fit type is colored differently
+    out_type:  #options are "python" or "xmgrace". Type of plot to generate
+    channels: #list of channels to generate plots for
+      - name: isodoublet_nonstrange #name of the channel (will be used in output filenames)
+        out_dir: isodoublet_npi #name of output directory where all out files will be stored
+        max_level: 10 #max expected level in any given basis. Can be a higher value than max. If less, then those 
+            values will not be included
+        dir: /latticeQCD/raid3/sarahski/lqcd/D200_R000/isodoublet_nonstrange_bootstrap/.sigmond/plots/spectrum/tmin_plots/isodoublet_nonstrange_colin/rebin20 #directory of input xmgrace files (assumed to have been generated by sigmond_scripts)
+        omit: #(optional) list of fits, bases, and files to exclude from final plots (the whole file path of files
+            should not be included)
+          - geometric ratio fit
+          - isodoublet_S0_G1_P1_single_pivot_n4_m4_d8_c50
+          - tmin_fit_isodoublet-S0-PSQ2-G-DROT-3_20p2G-ROT-3T10-25-20_0_3.agr
+"""        
         
 #run plots
 if __name__ == "__main__":
