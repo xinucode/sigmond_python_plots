@@ -1,0 +1,52 @@
+channels:
+  - name: isodoublet_nonstrange
+    out_dir: isodoublet_npi_stability
+    max_level: 10
+    dir: /latticeQCD/raid3/sarahski/lqcd/D200_R000/isodoublet_nonstrange_bootstrap/.sigmond/plots/spectrum/tmin_plots/isodoublet_nonstrange_colin/rebin20
+    omit:
+      - geometric fit
+      - geometric ratio fit
+      - single-exponential fit
+      - double-exponential fit
+      - double-exponential ratio fit
+    bases:
+      - isodoublet_S0_G1_P1
+      - isodoublet_S0_G1u_P0
+      - isodoublet_S0_G_P2
+      - isodoublet_S0_G_P3
+      - isodoublet_S0_G1_P4
+#       - name: isoquartet_nonstrange_fermionic
+#         out_dir: isoquartet_npi
+#         max_level: 15
+#         omit:
+#           - isoquartet_S0_G1_P4_single_pivot_n7_m7_d14_c50
+#           - isoquartet_S0_F1_P3_single_pivot_n6_m6_d12_c50
+#           - isoquartet_S0_G2_P1_single_pivot_n4_m4_d8_c50
+#           - isoquartet_S0_G_P2_single_pivot_n4_m4_d8_c50
+#           - isoquartet_S0_G2_P4_single_pivot_n4_m4_d8_c50
+#           - isoquartet_S0_G1_P1_single_pivot_n4_m4_d8_c50
+#           - isoquartet_S0_Hg_P0_single_pivot_n4_m4_d8_c50
+#           - isoquartet_S0_G1_P4_single_pivot_n6_m6_d12_c50
+#           - isoquartet_S0_Hg_P0_single_pivot_n6_m6_d12_c50
+#           - isoquartet_S0_G1_P1_single_pivot_n6_m6_d12_c50
+#           - isoquartet_S0_G_P2_single_pivot_n6_m6_d12_c50
+#           - isoquartet_S0_G1u_P0_single_pivot_n4_m4_d8_c50
+#           - isoquartet_S0_G_P3_single_pivot_n4_m4_d8_c50
+#           - isoquartet_S0_G1_P4_single_pivot_n4_m4_d8_c50
+#           - isoquartet_S0_G1u_P0_single_pivot_n6_m6_d12_c50
+#           - isoquartet_S0_G2_P1_single_pivot_n6_m6_d12_c50
+#           - isoquartet_S0_G1u_P0_single_pivot_n7_m7_d14_c50
+#           - isoquartet_S0_Hg_P0_single_pivot_n7_m7_d14_c50
+#           - isoquartet_S0_G1_P1_single_pivot_n7_m7_d14_c50
+#           - isoquartet_S0_G2_P1_single_pivot_n7_m7_d14_c50
+#           - isoquartet_S0_G_P2_single_pivot_n7_m7_d14_c50
+#           - isoquartet_S0_F1_P3_single_pivot_n7_m7_d14_c50
+#           - isoquartet_S0_F2_P3_single_pivot_n7_m7_d14_c50
+#           - isoquartet_S0_G_P3_single_pivot_n7_m7_d14_c50
+#           - isoquartet_S0_G2_P4_single_pivot_n7_m7_d14_c50
+#           - isoquartet_S0_F1_P3_single_pivot_n4_m4_d8_c50
+#           - isoquartet_S0_F2_P3_single_pivot_n4_m4_d8_c50
+#           - isoquartet_S0_F2_P3_single_pivot_n6_m6_d12_c50
+#           - isoquartet_S0_G2_P4_single_pivot_n6_m6_d12_c50
+#           - isoquartet_S0_G_P3_single_pivot_n6_m6_d12_c50
+#         dir: /latticeQCD/raid3/sarahski/lqcd/D200_R000/isoquartet_nonstrange_fermionic_bootstrap/.sigmond/plots/spectrum/tmin_plots/isoquartet_nonstrange_fermionic_colin/rebin20
