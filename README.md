@@ -14,6 +14,8 @@ spectrums/compare_spectrums.py - python script to generate various spectrum plot
 
 tmins/tmin_plots.py - python script that generate rest mass or spectra tmin plots in both
     xmgrace and python formats
+    
+tmins/stability_tmin_plots.py - python script to combine the tmin plots of several pivots
 
 m_delta/ - m_delta comparison plot in development
 
@@ -31,6 +33,13 @@ python tmin/tmin_plots.py some_config.yml
 ```
 In order to run, `some_config.yml` will need to be replaced by a config file using the 
 specification for the tmin config file below
+
+to run the stability tmin plots script
+```
+python tmin/stability_tmin_plots.py some_config.yml
+```
+In order to run, `some_config.yml` will need to be replaced by a config file using the 
+specification for the stability tmin config file below
 
 ## Sample config files
 ### Sample spectrums config file
@@ -141,6 +150,21 @@ spectrum_tmins: #(optional) generates conbined tmin plot(s) for spectra
           - geometric ratio fit
           - isodoublet_S0_G1_P1_single_pivot_n4_m4_d8_c50
           - tmin_fit_isodoublet-S0-PSQ2-G-DROT-3_20p2G-ROT-3T10-25-20_0_3.agr
+```
+### Sample stability tmin config file
+```
+Example input
+--------------
+channels: #list of the tmin plot batches to generate, ideally all that are associated with a specific scattering channel
+  - name: isotriplet_nonstrange_nucleonnucleon #name of the channel, also name of the output file
+    out_dir: isotriplet_nonstrange_nucleonnucleon_stability #subdirectory to place the batch of tmin plots
+    max_level: 15 #max expected level number for any given basis
+    dir: /latticeQCD/raid3/sarahski/lqcd/D200_R000/isotriplet_nonstrange_nucleonnucleon/.sigmond/plots/spectrum/tmin_plots/isotriplet_nonstrange_nucleonnucleon/rebin20 #directory where the xmgrace tmin plots are stored
+    omit: #(optional) list of omissions from the batch, can be the fit type long name (settings.py) or the basis_pivot name
+      - geometric fit
+      - isotriplet_S0_A1g_P0_single_pivot_n8_m8_d16_c50
+    bases: #list of the name of bases to combine. Must be a common substring of the intended tmin plots to combine
+      - isotriplet_S0_A1g_P0
 ```
 
 ## Input data

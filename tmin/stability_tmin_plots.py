@@ -13,6 +13,22 @@ import settings
 import utils
 plt.style.use('../spectrum.mplstyle')
 
+"""
+Example input
+--------------
+channels: #list of the tmin plot batches to generate, ideally all that are associated with a specific scattering channel
+  - name: isotriplet_nonstrange_nucleonnucleon #name of the channel, also name of the output file
+    out_dir: isotriplet_nonstrange_nucleonnucleon_stability #subdirectory to place the batch of tmin plots
+    max_level: 15 #max expected level number for any given basis
+    dir: /latticeQCD/raid3/sarahski/lqcd/D200_R000/isotriplet_nonstrange_nucleonnucleon/.sigmond/plots/spectrum/tmin_plots/isotriplet_nonstrange_nucleonnucleon/rebin20 #directory where the xmgrace tmin plots are stored
+    omit: #(optional) list of omissions from the batch, can be the fit type long name (settings.py) or the basis_pivot name
+      - geometric fit
+      - isotriplet_S0_A1g_P0_single_pivot_n8_m8_d16_c50
+    bases: #list of the name of bases to combine. Must be a common substring of the intended tmin plots to combine
+      - isotriplet_S0_A1g_P0
+      
+      
+"""
     
 
 if __name__ == "__main__":
@@ -49,6 +65,10 @@ if __name__ == "__main__":
         
         #generate plots for each bases level and fit
         files_to_zip = []
+        
+        f = plt.figure()
+        f.set_figwidth(8)
+        f.set_figheight(8)
         for basis in plots_by_bases:
             for level in plots_by_bases[basis]:
                 for fit in plots_by_bases[basis][level]:
@@ -56,9 +76,6 @@ if __name__ == "__main__":
                     print(file_stub)
                     data = tmin_plots.retrieve_xmgrace_data_xydydy( plots_by_bases[basis][level][fit] )
                     
-                    f = plt.figure()
-                    f.set_figwidth(8)
-                    f.set_figheight(8)
                     
                     for i,this_label in enumerate(data.keys()):
                         print(f"\t{this_label}")
@@ -71,6 +88,10 @@ if __name__ == "__main__":
                     plt.ylabel(r"$aE_{\textup{fit}}$")
                     plt.legend()
                     plt.tight_layout()
+                    plt.savefig(f'{os.path.join(out_dir,file_stub)}_tmin.png')
+                    files_to_zip.append(f'{file_stub}_tmin.png')
                     plt.savefig(f'{os.path.join(out_dir,file_stub)}_tmin.pdf')
                     files_to_zip.append(f'{file_stub}_tmin.pdf')
                     plt.clf()
+                    
+        utils.zip_channel( channel["name"], files_to_zip, "", out_dir)
