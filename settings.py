@@ -19,6 +19,8 @@ latex_format = {'A1g':r"$A_{1g}$", 'F1':r"$F_1$", 'F2':r"$F_2$", 'G': r'$G$', 'G
 
 #sigmond scripts tmin plot end tags
 tmin_file_tags = {'0.agr':'single-exponential fit','4.agr':'double-exponential fit','8.agr':'geometric fit'}
+dtmin_file_tags = {'0_D.agr':'single-exponential fit','4_D.agr':'double-exponential fit','8_D.agr':'geometric fit'}
+
 fit_nicknames = {'single-exponential fit':'single','double-exponential fit':'double','geometric fit':'geometric','single-exponential ratio fit':'singleR','double-exponential ratio fit':'doubleR','geometric ratio fit':'geometricR'}
 fit_longnames = {'single':'single-exponential fit','double':'double-exponential fit','geometric':'geometric fit','singleR':'single-exponential ratio fit','doubleR':'double-exponential ratio fit','geometricR':'geometric ratio fit'}
 

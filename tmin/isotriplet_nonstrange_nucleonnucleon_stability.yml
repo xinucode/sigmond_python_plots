@@ -2,6 +2,7 @@ channels:
   - name: isotriplet_nonstrange_nucleonnucleon
     out_dir: isotriplet_nonstrange_nucleonnucleon_stability
     max_level: 15
+    graph_type: 'dE'
     dir: /latticeQCD/raid3/sarahski/lqcd/D200_R000/isotriplet_nonstrange_nucleonnucleon/.sigmond/plots/spectrum/tmin_plots/isotriplet_nonstrange_nucleonnucleon/rebin20
     omit:
       - geometric fit

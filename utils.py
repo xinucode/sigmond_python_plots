@@ -251,9 +251,14 @@ def find_rest_mass( dataset, rest_mass_name ):
         if there is 'omit' tag under the channel name it will omit any basis name
         or filename in the omissions list from the plotting lists.
 """
-def find_tmin_spectrum_files(channel_name):
+def find_tmin_spectrum_files(channel_name): 
     this_channel = {}
-    
+        
+    if 'graph_type' in channel_name.keys():
+        graph_type = channel_name['graph_type']
+    else:
+        graph_type = 'E'
+        
     if type(channel_name)==dict:
         this_directory = channel_name['dir']
         if 'omit' in channel_name.keys():
@@ -275,14 +280,26 @@ def find_tmin_spectrum_files(channel_name):
             for level in range(0,20):
                 for file in os.listdir(os.path.join(this_directory,i)):
                     if file not in omissions_list:
-                        if file.endswith(f"R_0_{level}.agr"):
-                            this_channel[i]["singleR"].append(os.path.join(this_directory,i,file))
-                        elif file.endswith(f"R_4_{level}.agr"):
-                            this_channel[i]["doubleR"].append(os.path.join(this_directory,i,file))
-                        elif file.endswith(f"_0_{level}.agr"):
-                            this_channel[i]["single"].append(os.path.join(this_directory,i,file))
-                        elif file.endswith(f"_4_{level}.agr"):
-                            this_channel[i]["double"].append(os.path.join(this_directory,i,file))
+                        if graph_type=='E':
+                            if file.endswith(f"R_0_{level}.agr"):
+                                this_channel[i]["singleR"].append(os.path.join(this_directory,i,file))
+                            elif file.endswith(f"R_4_{level}.agr"):
+                                this_channel[i]["doubleR"].append(os.path.join(this_directory,i,file))
+                            elif file.endswith(f"_0_{level}.agr"):
+                                this_channel[i]["single"].append(os.path.join(this_directory,i,file))
+                            elif file.endswith(f"_4_{level}.agr"):
+                                this_channel[i]["double"].append(os.path.join(this_directory,i,file))
+                        elif graph_type=='dE':
+                            if file.endswith(f"R_0_D_{level}.agr"):
+                                this_channel[i]["singleR"].append(os.path.join(this_directory,i,file))
+                            elif file.endswith(f"R_4_D_{level}.agr"):
+                                this_channel[i]["doubleR"].append(os.path.join(this_directory,i,file))
+                            elif file.endswith(f"_0_D_{level}.agr"):
+                                this_channel[i]["single"].append(os.path.join(this_directory,i,file))
+                            elif file.endswith(f"_4_D_{level}.agr"):
+                                this_channel[i]["double"].append(os.path.join(this_directory,i,file))
+                        else:
+                            print("invalid graph_type in find_tmin_spectrum_files(). use 'E' or 'dE'")
     return this_channel
 
 """find_tmin_spectrum_files_python(channel_name)
@@ -301,6 +318,21 @@ def find_tmin_spectrum_files_python(channel_name):
         omissions_list = channel_name['omit']
     else:
         omissions_list = []
+        
+    if 'graph_type' in channel_name.keys():
+        graph_type = channel_name['graph_type']
+    else:
+        graph_type = 'E'
+        
+    if graph_type=='E':
+        tag_size = -5
+        tmin_tags = settings.tmin_file_tags
+    elif graph_type=='dE':
+        tag_size = -7
+        tmin_tags = settings.dtmin_file_tags
+    else:
+        print("invalid graph_type in find_tmin_spectrum_files(). use 'E' or 'dE'")
+        
     for basis in os.listdir(this_directory):
         if (basis!='single_hadrons') and (basis not in omissions_list):
             this_channel[basis] = {}
@@ -310,9 +342,9 @@ def find_tmin_spectrum_files_python(channel_name):
                     if file not in omissions_list:
                         if file.endswith(f"_{level}.agr"):
                             file2 = file.replace(f"_{level}.agr",".agr")
-                            if file2[-5:] in settings.tmin_file_tags:
-                                fit_type = settings.tmin_file_tags[file2[-5:]]
-                                if file2[:-5].endswith("R_"):
+                            if file2[tag_size:] in tmin_tags:
+                                fit_type = tmin_tags[file2[tag_size:]]
+                                if file2[:tag_size].endswith("R_"):
                                     fit_type = fit_type.replace("fit","ratio fit")
                                 if fit_type not in omissions_list:
                                     this_channel[basis][level][fit_type] = os.path.join(this_directory,basis,file)

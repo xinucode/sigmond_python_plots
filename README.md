@@ -159,6 +159,8 @@ channels: #list of the tmin plot batches to generate, ideally all that are assoc
   - name: isotriplet_nonstrange_nucleonnucleon #name of the channel, also name of the output file
     out_dir: isotriplet_nonstrange_nucleonnucleon_stability #subdirectory to place the batch of tmin plots
     max_level: 15 #max expected level number for any given basis
+    graph_type: 'E' #(optional) default 'E'. can have values 'E' or 'dE'.  determines what graph type to be plotted: 
+                        #the energy or the difference between the energy level and the non interacting level. 
     dir: /latticeQCD/raid3/sarahski/lqcd/D200_R000/isotriplet_nonstrange_nucleonnucleon/.sigmond/plots/spectrum/tmin_plots/isotriplet_nonstrange_nucleonnucleon/rebin20 #directory where the xmgrace tmin plots are stored
     omit: #(optional) list of omissions from the batch, can be the fit type long name (settings.py) or the basis_pivot name
       - geometric fit
