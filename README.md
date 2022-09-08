@@ -21,6 +21,8 @@ m_delta/ - m_delta comparison plot in development
 
 scat_length/ - scattering length plot in development
 
+rebin/ - rebin analysis in development
+
 ## basic commands
 to run example spectrum plot:
 ```
