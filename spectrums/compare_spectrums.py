@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from matplotlib import image as mpimg
 import yaml
 import argparse
+import itertools
 
 sys.path.append('../')
 import utils
@@ -125,13 +126,18 @@ if len(particle_names)==1:
     for i in range(max_mom):
         for j in range(max_mom):
             elastic_scat_keys.append( f"{particle_names[0]}({i}){particle_names[0]}({j})_ref" )
-if len(particle_names)==2:
+elif len(particle_names)==2:
     for i in range(max_mom):
         for j in range(max_mom):
             elastic_scat_keys.append( f"{particle_names[0]}({i}){particle_names[1]}({j})_ref" )
     for i in range(max_mom):
         for j in range(max_mom):
             elastic_scat_keys.append( f"{particle_names[1]}({i}){particle_names[0]}({j})_ref" )
+else:
+    for combo in itertools.product(particle_names,particle_names):
+        for i in range(max_mom):
+            for j in range(max_mom):
+                elastic_scat_keys.append( f"{combo[0]}({i}){combo[1]}({j})_ref" )
 
 channel = configdata['channel']
 rest_mass = configdata['rest_mass']
@@ -217,12 +223,12 @@ for graph in graphs:
                        'T1u','T2g','T2u','A1','A2','B1','B2','E']
     if spectrum_type=="mom":
         energy_keys = ['q2cm_0_ref', 'q2cm_1_ref', 'q2cm_2_ref', 'q2cm_3_ref', 'q2cm_4_ref', 'q2cm_5_ref', 
-                       'q2cm_6_ref', 'q2cm_7_ref', 'q2cm_8_ref', 'q2cm_9_ref', 'q2cm_10_ref']
+                       'q2cm_6_ref', 'q2cm_7_ref', 'q2cm_8_ref', 'q2cm_9_ref', 'q2cm_10_ref', 'q2cm_11_ref', 'q2cm_12_ref', 'q2cm_13_ref', 'q2cm_14_ref', 'q2cm_15_ref']
     elif spectrum_type=="energy":
         if remove_ref:
-            energy_keys = ['ecm_0', 'ecm_1', 'ecm_2', 'ecm_3', 'ecm_4', 'ecm_5', 'ecm_6', 'ecm_7', 'ecm_8', 'ecm_9', 'ecm_10']
+            energy_keys = ['ecm_0', 'ecm_1', 'ecm_2', 'ecm_3', 'ecm_4', 'ecm_5', 'ecm_6', 'ecm_7', 'ecm_8', 'ecm_9', 'ecm_10', 'ecm_10', 'ecm_11', 'ecm_12', 'ecm_13', 'ecm_14', 'ecm_15']
         else:
-            energy_keys = ['ecm_0_ref', 'ecm_1_ref', 'ecm_2_ref', 'ecm_3_ref', 'ecm_4_ref', 'ecm_5_ref', 'ecm_6_ref', 'ecm_7_ref', 'ecm_8_ref', 'ecm_9_ref', 'ecm_10_ref', 'ecm_11_ref']
+            energy_keys = ['ecm_0_ref', 'ecm_1_ref', 'ecm_2_ref', 'ecm_3_ref', 'ecm_4_ref', 'ecm_5_ref', 'ecm_6_ref', 'ecm_7_ref', 'ecm_8_ref', 'ecm_9_ref', 'ecm_10_ref', 'ecm_11_ref', 'ecm_12_ref', 'ecm_13_ref', 'ecm_14_ref', 'ecm_15_ref']
     else:
         print("Bad spectrum type")
 
