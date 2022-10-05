@@ -944,7 +944,6 @@ if __name__ == "__main__":
                     os.mkdir(out_dir)
                 print("\n",channel["name"])
                 tmin_plots = utils.find_tmin_spectrum_files_python(channel)
-#                 
                 if (plot_format >= 1) or (plot_format <= 3):
                     f = plt.figure()
                     f.set_figwidth(8)
@@ -959,19 +958,21 @@ if __name__ == "__main__":
 #                             print(tmin_plots[basis][level].keys())
                             tmin_data = retrieve_xmgrace_data_xydydy(tmin_plots[basis][level])
                             fit_data = retrieve_xmgrace_data_xy(tmin_plots[basis][level])
-                        if plot_format == 3:
-                            generate_python_rest_mass_plot( fit_data[list(fit_data.keys())[0]], tmin_data)
-                        else:
-                            generate_python_rest_mass_plot( fit_data[list(fit_data.keys())[0]], tmin_data, level, plot_format)
-                            
-                        if plot_format == 3:
-                            plt.xlabel(r"$t_{\textup{min}}/a$")
-                            plt.ylabel(r"$aE_{\textup{fit}}$")
-                            plt.legend()
-                            plt.tight_layout()
-                            plt.savefig(f'{file_stub}_tmin_ROT{level}.pdf')
-                            files_to_zip.append(f'{basis}_tmin_ROT{level}.pdf')
-                            plt.clf()
+                            if plot_format == 3:
+                                generate_python_rest_mass_plot( fit_data[list(fit_data.keys())[0]], tmin_data)
+                            else:
+                                generate_python_rest_mass_plot( fit_data[list(fit_data.keys())[0]], tmin_data, level, plot_format)
+
+                            if plot_format == 3:
+                                plt.xlabel(r"$t_{\textup{min}}/a$")
+                                plt.ylabel(r"$aE_{\textup{fit}}$")
+                                plt.legend()
+                                plt.tight_layout()
+                                plt.savefig(f'{file_stub}_tmin_ROT{level}.pdf')
+                                files_to_zip.append(f'{basis}_tmin_ROT{level}.pdf')
+                                plt.savefig(f'{file_stub}_tmin_ROT{level}.png')
+                                files_to_zip.append(f'{basis}_tmin_ROT{level}.png')
+                                plt.clf()
                             
                     if (plot_format == 1) or (plot_format == 2):
                         plt.xlabel(r"$t_{\textup{min}}/a$")
@@ -980,6 +981,8 @@ if __name__ == "__main__":
                         plt.tight_layout()
                         plt.savefig(f'{file_stub}_tmin.pdf')
                         files_to_zip.append(f'{basis}_tmin.pdf')
+                        plt.savefig(f'{file_stub}_tmin.png')
+                        files_to_zip.append(f'{basis}_tmin.png')
                         plt.clf()
             
                 utils.zip_channel(channel["name"]+f'_format{plot_format}',files_to_zip,"", sub_dir = out_dir)

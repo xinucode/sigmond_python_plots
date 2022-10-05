@@ -53,6 +53,10 @@ if __name__ == "__main__":
         graph_type = 'E'
         if 'graph_type' in channel:
             graph_type = channel['graph_type']
+            
+        combine_fit_forms = False
+        if 'combine_fit_forms' in channel:
+            combine_fit_forms = channel['combine_fit_forms']
         
         #reorganize plots by basis, level, fit, then pivot
         these_tmin_plots = utils.find_tmin_spectrum_files_python(channel)
@@ -75,11 +79,14 @@ if __name__ == "__main__":
         f = plt.figure()
         f.set_figwidth(8)
         f.set_figheight(8)
+#         print(plots_by_bases)
         for basis in plots_by_bases:
             for level in plots_by_bases[basis]:
+                file_stub = f"{basis}_ROT{level}"
                 for fit in plots_by_bases[basis][level]:
-                    file_stub = f"{basis}_ROT{level}_{settings.fit_nicknames[fit]}"
-                    print(file_stub)
+                    if not combine_fit_forms:
+                        file_stub += f"_{settings.fit_nicknames[fit]}"
+                    
                     data = tmin_plots.retrieve_xmgrace_data_xydydy( plots_by_bases[basis][level][fit] )
                     
                     
@@ -90,6 +97,22 @@ if __name__ == "__main__":
                         
                         plt.errorbar(np.array(data[this_label][0]),np.array(data[this_label][1]),np.concatenate([[np.array(data[this_label][3])],[np.array(data[this_label][2])]]),  capsize=5, color=settings.colors[i], marker=settings.markers[i], linewidth=0.0, elinewidth=1.5,label = legend_label)
                     
+                    if not combine_fit_forms:
+                        print(file_stub)
+                        plt.xlabel(r"$t_{\textup{min}}/a$")
+                        plt.ylabel(r"$aE_{\textup{fit}}$")
+                        if graph_type == 'dE':
+                            plt.ylabel(r"$adE_{\textup{fit}}$")
+                        plt.legend()
+                        plt.tight_layout()
+                        plt.savefig(f'{os.path.join(out_dir,file_stub)}_tmin.png')
+                        files_to_zip.append(f'{file_stub}_tmin.png')
+                        plt.savefig(f'{os.path.join(out_dir,file_stub)}_tmin.pdf')
+                        files_to_zip.append(f'{file_stub}_tmin.pdf')
+                        plt.clf()
+                        
+                if combine_fit_forms and plots_by_bases[basis][level]:
+                    print(file_stub)
                     plt.xlabel(r"$t_{\textup{min}}/a$")
                     plt.ylabel(r"$aE_{\textup{fit}}$")
                     if graph_type == 'dE':
