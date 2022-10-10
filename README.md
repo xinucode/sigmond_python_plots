@@ -91,8 +91,14 @@ compare_spectrums: #(optional) generates graph that compares several spectrums w
                                     #omitted
     fig_width: 14 #(optional) sets width of this figure, supercedes the setting for all figures
     fig_height: 6 #(optional) sets height of this figure, supercedes the setting for all figures
-    shift: ['Hg(0)','G1(1)','G2(1)','G(2)','G(3)','F1(3)','G1(4)','G2(4)'] #(optional) list of irreps(d^2) to zigzag
-                                                                            #shift the levels so they don't overlap
+    zshift: ['Hg(0)','G1(1)'] #(optional) list of irreps(d^2) to zigzag (2 in a row)
+                                #shift the levels so they don't overlap
+    sshift: ['G2(1)','G(2)'] #(optional) list of irreps(d^2) to stripe (3 in a row)
+                               #shift the levels so they don't overlap #takes precidence over shifts above
+    s4shift: ['G(3)','F1(3)'] #(optional) list of irreps(d^2) to stripe (4 in a row)
+                               #shift the levels so they don't overlap #takes precidence over shifts above
+    s5shift: ['G1(4)','G2(4)'] #(optional) list of irreps(d^2) to stripe (5 in a row)
+                               #shift the levels so they don't overlap #takes precidence over shifts above
     omit: [G1g(0),Hu(0)] #(optional) list of irreps(d^2) to omit; otherwise, it graphs all irreps
     yrange: [0.0,2.5] #(optional) manually select the yrange, otherwise matplotlib automatically sets it
     plot_ni_levels: true #(optional) default false; plots the non interacting levels for each spectrum
@@ -106,8 +112,14 @@ final_spectrum: #(optional) generates graph that plots just one spectrum
                             #is labelled
     file_directory: final #subdirectory inside "channel" where the data can be found and the graph will be produced
     file: energy_estimates_isoquartet_nonstrange_fermionic_colin_rebin20_Bootstrap_8-16.csv #file with data
-    shift: ['Hg(0)','G1(1)','G2(1)','G(2)','G(3)','F1(3)','G1(4)','G2(4)'] #(optional) list of irreps(d^2) to zigzag
-                                                                            #shift the levels so they don't overlap
+    zshift: ['Hg(0)','G1(1)'] #(optional) list of irreps(d^2) to zigzag (2 in a row)
+                                #shift the levels so they don't overlap
+    sshift: ['G2(1)','G(2)'] #(optional) list of irreps(d^2) to stripe (3 in a row)
+                               #shift the levels so they don't overlap #takes precidence over shifts above
+    s4shift: ['G(3)','F1(3)'] #(optional) list of irreps(d^2) to stripe (4 in a row)
+                               #shift the levels so they don't overlap #takes precidence over shifts above
+    s5shift: ['G1(4)','G2(4)'] #(optional) list of irreps(d^2) to stripe (5 in a row)
+                               #shift the levels so they don't overlap #takes precidence over shifts above
     ni_width: 40 #(optional) default 80; sets the width of the non-interacting levels
     best_legend_loc: lower left #(optional) put legend where desired. If omitted, no legend. If legend is
                                 #desired but unsure where, put "best"

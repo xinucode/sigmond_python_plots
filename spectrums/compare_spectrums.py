@@ -62,8 +62,14 @@ compare_spectrums: #(optional) generates graph that compares several spectrums w
                                     #omitted
     fig_width: 14 #(optional) sets width of this figure, supercedes the setting for all figures
     fig_height: 6 #(optional) sets height of this figure, supercedes the setting for all figures
-    shift: ['Hg(0)','G1(1)','G2(1)','G(2)','G(3)','F1(3)','G1(4)','G2(4)'] #(optional) list of irreps(d^2) to zigzag
-                                                                            #shift the levels so they don't overlap
+    zshift: ['Hg(0)','G1(1)'] #(optional) list of irreps(d^2) to zigzag (2 in a row)
+                                #shift the levels so they don't overlap
+    sshift: ['G2(1)','G(2)'] #(optional) list of irreps(d^2) to stripe (3 in a row)
+                               #shift the levels so they don't overlap #takes precidence over shifts above
+    s4shift: ['G(3)','F1(3)'] #(optional) list of irreps(d^2) to stripe (4 in a row)
+                               #shift the levels so they don't overlap #takes precidence over shifts above
+    s5shift: ['G1(4)','G2(4)'] #(optional) list of irreps(d^2) to stripe (5 in a row)
+                               #shift the levels so they don't overlap #takes precidence over shifts above
     omit: [G1g(0),Hu(0)] #(optional) list of irreps(d^2) to omit; otherwise, it graphs all irreps
     yrange: [0.0,2.5] #(optional) manually select the yrange, otherwise matplotlib automatically sets it
     plot_ni_levels: true #(optional) default false; plots the non interacting levels for each spectrum
@@ -77,8 +83,14 @@ final_spectrum: #(optional) generates graph that plots just one spectrum
                             #is labelled
     file_directory: final #subdirectory inside "channel" where the data can be found and the graph will be produced
     file: energy_estimates_isoquartet_nonstrange_fermionic_colin_rebin20_Bootstrap_8-16.csv #file with data
-    shift: ['Hg(0)','G1(1)','G2(1)','G(2)','G(3)','F1(3)','G1(4)','G2(4)'] #(optional) list of irreps(d^2) to zigzag
-                                                                            #shift the levels so they don't overlap
+    zshift: ['Hg(0)','G1(1)'] #(optional) list of irreps(d^2) to zigzag (2 in a row)
+                                #shift the levels so they don't overlap
+    sshift: ['G2(1)','G(2)'] #(optional) list of irreps(d^2) to stripe (3 in a row)
+                               #shift the levels so they don't overlap #takes precidence over shifts above
+    s4shift: ['G(3)','F1(3)'] #(optional) list of irreps(d^2) to stripe (4 in a row)
+                               #shift the levels so they don't overlap #takes precidence over shifts above
+    s5shift: ['G1(4)','G2(4)'] #(optional) list of irreps(d^2) to stripe (5 in a row)
+                               #shift the levels so they don't overlap #takes precidence over shifts above
     ni_width: 40 #(optional) default 80; sets the width of the non-interacting levels
     best_legend_loc: lower left #(optional) put legend where desired. If omitted, no legend. If legend is
                                 #desired but unsure where, put "best"
@@ -409,7 +421,6 @@ for graph in graphs:
     minx = min(list(indexes[somekey])+list(indexes_used[somekey]))
     maxx = max(list(indexes[somekey])+list(indexes_used[somekey]))
     dd=0.4/len(files.keys())
-    ddd = 0.1*dd
     
     
     
@@ -437,10 +448,44 @@ for graph in graphs:
         shifted_array = 0.0 
         used_shifted_array = 0.0 
 #         if ('compare_spectrums' in configdata.keys()) and (graph=='compare_spectrums'):
-        if 'shift' in configdata[graph].keys():
-            if configdata[graph]['shift']:
-                shifted_array = np.array([settings.zigzag_shifts[lev] if keys[dataset][i] in configdata[graph]['shift'] else 0.0 for i,lev in enumerate(levs[dataset])])
-                used_shifted_array = np.array([settings.zigzag_shifts[lev] if keys_used[dataset][i] in configdata[graph]['shift'] else 0.0 for i,lev in enumerate(levs_used[dataset])])
+        if 'zshift' in configdata[graph].keys() or 'sshift' in configdata[graph].keys() or 's4shift' in configdata[graph].keys() or 's5shift' in configdata[graph].keys():
+            shifted_array = []
+            for j,lev in enumerate(levs[dataset]):
+                this_shift = 0.0
+                if 'zshift' in configdata[graph].keys():
+                    if keys[dataset][j] in configdata[graph]['zshift']:
+                        this_shift = 0.1*dd*settings.zigzag_shifts[lev]
+                if 'sshift' in configdata[graph].keys():
+                    if keys[dataset][j] in configdata[graph]['sshift']:
+                        this_shift = 0.2*dd*settings.stripe_shifts[lev]
+                if 's4shift' in configdata[graph].keys():
+                    if keys[dataset][j] in configdata[graph]['s4shift']:
+                        this_shift = 0.3*dd*settings.stripe4_shifts[lev]
+                if 's5shift' in configdata[graph].keys():
+                    if keys[dataset][j] in configdata[graph]['s5shift']:
+                        this_shift = 0.2*dd*settings.stripe5_shifts[lev]
+                shifted_array.append(this_shift)
+                
+            used_shifted_array = []
+            for j,lev in enumerate(levs_used[dataset]):
+                this_used_shift = 0.0
+                if 'zshift' in configdata[graph].keys():
+                    if keys_used[dataset][j] in configdata[graph]['zshift']:
+                        this_used_shift = 0.1*dd*settings.zigzag_shifts[lev]
+                if 'sshift' in configdata[graph].keys():
+                    if keys_used[dataset][j] in configdata[graph]['sshift']:
+                        this_used_shift = 0.2*dd*settings.stripe_shifts[lev]
+                if 's4shift' in configdata[graph].keys():
+                    if keys_used[dataset][j] in configdata[graph]['s4shift']:
+                        this_used_shift = 0.3*dd*settings.stripe4_shifts[lev]
+                if 's5shift' in configdata[graph].keys():
+                    if keys_used[dataset][j] in configdata[graph]['s5shift']:
+                        this_used_shift = 0.2*dd*settings.stripe5_shifts[lev]
+                used_shifted_array.append(this_used_shift)
+                
+            shifted_array = np.array(shifted_array)
+            used_shifted_array = np.array(used_shifted_array)
+                
         if used_levels:
             marker_color = 'white'
         else:
@@ -455,15 +500,15 @@ for graph in graphs:
         
         if (not used_levels) or (used_levels and graph_unused_levels):
             if len(np.nonzero(errs[dataset])[0]):
-                plt.errorbar(indexes[dataset]+dd*splitting_factor+ddd*shifted_array, vals[dataset], np.array(errs[dataset]),  capsize=5, color=settings.colors[i], marker=settings.markers[i],linestyle="", linewidth=0.0, elinewidth=1.5,mfc=marker_color,zorder=4,label=unused_label)
+                plt.errorbar(indexes[dataset]+dd*splitting_factor+shifted_array, vals[dataset], np.array(errs[dataset]),  capsize=5, color=settings.colors[i], marker=settings.markers[i],linestyle="", linewidth=0.0, elinewidth=1.5,mfc=marker_color,zorder=4,label=unused_label)
             else:
-                plt.scatter(indexes[dataset]+dd*splitting_factor+ddd*shifted_array, vals[dataset], color=settings.colors[i], marker=settings.markers[i],linewidth=0.0, zorder=4,label=unused_label)
+                plt.scatter(indexes[dataset]+dd*splitting_factor+shifted_array, vals[dataset], color=settings.colors[i], marker=settings.markers[i],linewidth=0.0, zorder=4,label=unused_label)
         
         if used_levels:
             if len(np.nonzero(errs_used[dataset])[0]):
-                plt.errorbar(indexes_used[dataset]+dd*splitting_factor+ddd*used_shifted_array,vals_used[dataset], np.array(errs_used[dataset]),  capsize=5, color=settings.colors[i], marker=settings.markers[i],linestyle="", linewidth=0.0, elinewidth=1.5,mfc=settings.colors[i],zorder=4,label=dataset)
+                plt.errorbar(indexes_used[dataset]+dd*splitting_factor+used_shifted_array,vals_used[dataset], np.array(errs_used[dataset]),  capsize=5, color=settings.colors[i], marker=settings.markers[i],linestyle="", linewidth=0.0, elinewidth=1.5,mfc=settings.colors[i],zorder=4,label=dataset)
             else:
-                plt.scatter(indexes_used[dataset]+dd*splitting_factor+ddd*used_shifted_array,vals_used[dataset], color=settings.colors[i], marker=settings.markers[i], linewidth=0.0, zorder=4,label=dataset)
+                plt.scatter(indexes_used[dataset]+dd*splitting_factor+used_shifted_array,vals_used[dataset], color=settings.colors[i], marker=settings.markers[i], linewidth=0.0, zorder=4,label=dataset)
         
     if (graph=='final_spectrum') or plot_ni_levels:
         for i,dataset in enumerate(evals.keys()):
