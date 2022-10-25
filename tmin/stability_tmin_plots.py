@@ -22,14 +22,31 @@ channels: #list of the tmin plot batches to generate, ideally all that are assoc
     max_level: 15 #max expected level number for any given basis
     graph_type: 'E' #(optional) default 'E'. can have values 'E' or 'dE'.  determines what graph type to be plotted: 
                         #the energy or the difference between the energy level and the non interacting level. 
+    combine_fit_forms: false #(optional) default False. If false, the various fit forms will be graphed separately. If 
+                                #true, the various fit forms will be graphed together on one plot
     dir: /latticeQCD/raid3/sarahski/lqcd/D200_R000/isotriplet_nonstrange_nucleonnucleon/.sigmond/plots/spectrum/tmin_plots/isotriplet_nonstrange_nucleonnucleon/rebin20 #directory where the xmgrace tmin plots are stored
     omit: #(optional) list of omissions from the batch, can be the fit type long name (settings.py) or the basis_pivot name
       - geometric fit
       - isotriplet_S0_A1g_P0_single_pivot_n8_m8_d16_c50
     bases: #list of the name of bases to combine. Must be a common substring of the intended tmin plots to combine
       - isotriplet_S0_A1g_P0
-      
-      
+    select: #(optional) dict of pivot tags and a dict corresponding to their fit form+legend label combo
+                #when select is present, only the fit forms and the spicified tags are plotted, otherwise all available are plotted
+      _kN_single_pivot_n4_m4_d16_c150: 
+        fit form: legend label 
+        ...
+        single-exponential ratio fit: single-exponential $N\overline{K}$ ratio fit
+      _piS_single_pivot_n4_m4_d16_c150:
+        single-exponential ratio fit: single-exponential $S\pi$ ratio fit
+    fit_choices: #(optional but requires 'select' to work) dict of basis tags and a list of chosen fit forms that 
+                    #correspond to each level
+      isosinglet_Sm1_G1g_P0:
+          - single-exponential $S\pi$ ratio fit
+          - ...
+      isosinglet_Sm1_G1u_P0:
+          - single-exponential $S\pi$ ratio fit
+          - ...
+      ...
 """
     
 
@@ -57,6 +74,19 @@ if __name__ == "__main__":
         combine_fit_forms = False
         if 'combine_fit_forms' in channel:
             combine_fit_forms = channel['combine_fit_forms']
+            
+        selections = {} #if empty, all are selected
+        if 'select' in channel:
+            selections = channel['select']
+        selected_bases = {}
+        if selections:
+            for basis in channel['bases']:
+                for tag in selections.keys():
+                    selected_bases[basis+tag] = tag
+        
+        fit_choices = {}
+        if 'fit_choices' in channel:
+            fit_choices = channel['fit_choices']
         
         #reorganize plots by basis, level, fit, then pivot
         these_tmin_plots = utils.find_tmin_spectrum_files_python(channel)
@@ -65,10 +95,16 @@ if __name__ == "__main__":
             plots_by_bases[basis] = {}
             for pivot in these_tmin_plots.keys():
                 if basis in pivot:
+                    if selected_bases:
+                        if pivot not in list(selected_bases.keys()):
+                            continue
                     for level in these_tmin_plots[pivot].keys():
                         if level not in plots_by_bases[basis].keys():
                             plots_by_bases[basis][level] = {}
                         for fit in these_tmin_plots[pivot][level].keys():
+#                             if selections
+                            if fit not in list(selections[selected_bases[pivot]].keys()):
+                                continue
                             if fit not in plots_by_bases[basis][level].keys():
                                 plots_by_bases[basis][level][fit] = {}
                             plots_by_bases[basis][level][fit][pivot] = these_tmin_plots[pivot][level][fit]
@@ -79,23 +115,37 @@ if __name__ == "__main__":
         f = plt.figure()
         f.set_figwidth(8)
         f.set_figheight(8)
-#         print(plots_by_bases)
         for basis in plots_by_bases:
             for level in plots_by_bases[basis]:
                 file_stub = f"{basis}_ROT{level}"
+                i=0
                 for fit in plots_by_bases[basis][level]:
                     if not combine_fit_forms:
                         file_stub += f"_{settings.fit_nicknames[fit]}"
+                        i=0
                     
                     data = tmin_plots.retrieve_xmgrace_data_xydydy( plots_by_bases[basis][level][fit] )
+                    fits = tmin_plots.retrieve_xmgrace_data_xy( plots_by_bases[basis][level][fit] )
                     
-                    
-                    for i,this_label in enumerate(data.keys()):
+                    for this_label in data.keys():
                         print(f"\t{this_label}")
-                        legend_label = this_label.replace(basis,"")
-                        legend_label = legend_label.replace("_"," ")
+                        if selections:
+                            legend_label = selections[selected_bases[this_label]][fit]
+                            if fit_choices:
+                                if legend_label==fit_choices[basis][level]:
+                                    this_fit = fits[this_label]
+                                    plt.axhline(this_fit['fit'],color="black")
+                                    plt.axhline(this_fit['err'][0],color="black",ls="--")
+                                    plt.axhline(this_fit['err'][1],color="black",ls="--")
+                            legend_label = rf"{legend_label}"
+                        else:
+                            legend_label = this_label.replace(basis,"")
+                            legend_label = legend_label.replace("_"," ")
+                            if combine_fit_forms:
+                                legend_label += f" {settings.fit_nicknames[fit]}"
                         
                         plt.errorbar(np.array(data[this_label][0]),np.array(data[this_label][1]),np.concatenate([[np.array(data[this_label][3])],[np.array(data[this_label][2])]]),  capsize=5, color=settings.colors[i], marker=settings.markers[i], linewidth=0.0, elinewidth=1.5,label = legend_label)
+                        i+=1
                     
                     if not combine_fit_forms:
                         print(file_stub)
@@ -117,7 +167,7 @@ if __name__ == "__main__":
                     plt.ylabel(r"$aE_{\textup{fit}}$")
                     if graph_type == 'dE':
                         plt.ylabel(r"$adE_{\textup{fit}}$")
-                    plt.legend()
+                    plt.legend() #bbox_to_anchor=(1.0, 1.5)
                     plt.tight_layout()
                     plt.savefig(f'{os.path.join(out_dir,file_stub)}_tmin.png')
                     files_to_zip.append(f'{file_stub}_tmin.png')

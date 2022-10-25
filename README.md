@@ -181,6 +181,23 @@ channels: #list of the tmin plot batches to generate, ideally all that are assoc
       - isotriplet_S0_A1g_P0_single_pivot_n8_m8_d16_c50
     bases: #list of the name of bases to combine. Must be a common substring of the intended tmin plots to combine
       - isotriplet_S0_A1g_P0
+    select: #(optional) dict of pivot tags and a dict corresponding to their fit form+legend label combo
+                #when select is present, only the fit forms and the spicified tags are plotted, otherwise all available are plotted
+      _kN_single_pivot_n4_m4_d16_c150: 
+        fit form: legend label 
+        ...
+        single-exponential ratio fit: single-exponential $N\overline{K}$ ratio fit
+      _piS_single_pivot_n4_m4_d16_c150:
+        single-exponential ratio fit: single-exponential $S\pi$ ratio fit
+    fit_choices: #(optional but requires 'select' to work) dict of basis tags and a list of chosen fit forms that 
+                    #correspond to each level
+      isosinglet_Sm1_G1g_P0:
+          - single-exponential $S\pi$ ratio fit
+          - ...
+      isosinglet_Sm1_G1u_P0:
+          - single-exponential $S\pi$ ratio fit
+          - ...
+      ...
 ```
 
 ## Input data
