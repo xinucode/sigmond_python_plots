@@ -1,5 +1,5 @@
 channel: isodoublet_nonstrange
-# title: $I=\nicefrac{1}{2}$
+title: $I=\sfrac{1}{2}$
 scattering_particles:
   - N
   - pi
@@ -33,28 +33,29 @@ fig_height: 6
 #       (n,4a,8a): energy_estimates_isodoublet_nonstrange_colin_rebin20_Bootstrap_4-8.csv
 #     remove_xlabel: true
       
-final_spectrum:
-    spectrum_type: energy
-    best_legend_loc: lower left
-    file_directory: final_spectrum
-    file: energy_estimates_isodoublet_nonstrange_colin_rebin20_Bootstrap.csv
-    remove_xlabel: true
-    shift: ['G(2)','G(3)']
-
-# fig_width: 7
-# fig_height: 6
-# compare_spectrums:
-#     best_legend_loc: lower right
-#     do_scattering_particles: false
+# final_spectrum:
 #     spectrum_type: energy
-#     file_directory: example
-#     omit: [G1u(0),G1(1),G(2),G1(4)]
-#     shift: [G(3)]
-#     files:
-#       (3,8a,16a): energy_estimates_isodoublet_nonstrange_colin_trimmed_rebin20_Bootstrap.csv
-#       (4,8a,16a): energy_estimates_isodoublet_nonstrange_colin_rebin20_Bootstrap_8-16.csv
-#       (4,6a,12a): energy_estimates_isodoublet_nonstrange_colin_rebin20_Bootstrap_6-12.csv
-#       (4,4a,8a): energy_estimates_isodoublet_nonstrange_colin_rebin20_Bootstrap_4-8.csv
+#     best_legend_loc: lower left
+#     file_directory: final_spectrum
+#     file: energy_estimates_isodoublet_nonstrange_colin_rebin20_Bootstrap.csv
+#     remove_xlabel: true
+#     shift: ['G(2)','G(3)']
+
+fig_width: 7
+fig_height: 6
+compare_spectrums:
+    best_legend_loc: lower right
+    do_scattering_particles: false
+    spectrum_type: energy
+    file_directory: example
+    omit: [G1u(0),G1(1),G(2),G1(4)]
+#     remove_xlabel: true
+    shift: [G(3)]
+    files:
+      (3,8a,16a): energy_estimates_isodoublet_nonstrange_colin_trimmed_rebin20_Bootstrap.csv
+      (4,8a,16a): energy_estimates_isodoublet_nonstrange_colin_rebin20_Bootstrap_8-16.csv
+      (4,6a,12a): energy_estimates_isodoublet_nonstrange_colin_rebin20_Bootstrap_6-12.csv
+      (4,4a,8a): energy_estimates_isodoublet_nonstrange_colin_rebin20_Bootstrap_4-8.csv
 
 # compare_spectrums:
 #     best_legend_loc: upper left

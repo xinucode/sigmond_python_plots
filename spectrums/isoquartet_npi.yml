@@ -1,5 +1,5 @@
 channel: isoquartet_nonstrange_fermionic
-# title: $I=\nicefrac{3}{2}$
+title: $I=\sfrac{3}{2}$
 scattering_particles: [N, pi]
 thresholds:
   "Npi": [ N, pi ]
@@ -50,6 +50,9 @@ final_spectrum:
     spectrum_type: energy
     shift: ['Hg(0)','G1(1)','G2(1)','G(2)','G(3)','F1(3)','G1(4)','G2(4)']
     ni_width: 40
+#     fig_width: 7
+#     omit: ['G1(1)','G2(1)','G(2)','G(3)','F1(3)','F2(3)','G1(4)','G2(4)']
+#     omit: ['G1g(0)','G1u(0)','Hu(0)','G2(1)','F1(3)','F2(3)','G2(4)']
     best_legend_loc: lower left
     file_directory: final2
     file: energy_estimates_isoquartet_nonstrange_fermionic_colin_rebin20_Bootstrap_8-16.csv

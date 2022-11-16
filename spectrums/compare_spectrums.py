@@ -100,6 +100,7 @@ final_spectrum: #(optional) generates graph that plots just one spectrum
     remove_xlabel: true #(optional) default false; boolean to decide if print xlabel
     graph_unused_levels: false #(optional) default true; if unused_levels is specified and this tag is set to false, 
         #unused levels will not be graphed.
+    yrange: [0.0,2.5] #(optional) manually select the yrange, otherwise matplotlib automatically sets it
 """
 
 remove_ref = False
@@ -283,6 +284,9 @@ for graph in graphs:
                             continue
                         if k>max_level_num:
                             max_level_num=k
+                        if "yrange" in configdata[graph].keys():
+                            if (val1 < configdata[graph]["yrange"][0]) or (val1 > configdata[graph]["yrange"][1]):
+                                continue
                         used = False
                         if used_levels:
                             if used_levels[irrep_key]:
@@ -385,6 +389,28 @@ for graph in graphs:
             for i, unique_key in enumerate(this_list):
                 if ukey == unique_key:
                     eindexes[dataset][j] = i
+            
+    #plot spectrum
+    f = plt.figure()
+    if 'fig_width' in configdata.keys():
+        f.set_figwidth(configdata['fig_width'])
+    if 'fig_height' in configdata.keys():
+        f.set_figheight(configdata['fig_height'])
+    if 'fig_width' in configdata[graph].keys():
+        f.set_figwidth(configdata[graph]['fig_width'])
+    if 'fig_height' in configdata[graph].keys():
+        f.set_figheight(configdata[graph]['fig_height'])
+    if "yrange" in configdata[graph].keys():
+        plt.ylim( configdata[graph]["yrange"][0],configdata[graph]["yrange"][1])
+    
+    somekey = list(indexes.keys())[0]
+    minx = min(list(indexes[somekey])+list(indexes_used[somekey]))
+    maxx = max(list(indexes[somekey])+list(indexes_used[somekey]))
+    dd=0.4/len(files.keys())
+    plt.xlim(minx-0.5-dd*(len(vals.keys())/2),maxx+0.5+dd*(len(vals.keys())/2))
+    if not remove_ref and spectrum_type=="energy":
+        if configdata['thresholds']:
+            plt.xlim(minx-0.5-dd*(len(vals.keys())/2),(maxx+dd*(len(vals.keys())/2))*1.025+0.5)
                     
     if ('compare_spectrums' in configdata.keys()) and (graph=='compare_spectrums'):
         #plot scattering particles
@@ -404,27 +430,7 @@ for graph in graphs:
             plt.title(channel)
             plt.savefig(os.path.join(channel,configdata['compare_spectrums']['file_directory'],channel+"-ni_comparison_graph.pdf"))
             
-    somekey = list(indexes.keys())[0]
-            
-    #plot spectrum
-    f = plt.figure()
-    if 'fig_width' in configdata.keys():
-        f.set_figwidth(configdata['fig_width'])
-    if 'fig_height' in configdata.keys():
-        f.set_figheight(configdata['fig_height'])
-    if 'fig_width' in configdata[graph].keys():
-        f.set_figwidth(configdata[graph]['fig_width'])
-    if 'fig_height' in configdata[graph].keys():
-        f.set_figheight(configdata[graph]['fig_height'])
     
-    
-    minx = min(list(indexes[somekey])+list(indexes_used[somekey]))
-    maxx = max(list(indexes[somekey])+list(indexes_used[somekey]))
-    dd=0.4/len(files.keys())
-    
-    
-    
-
     if not remove_ref and spectrum_type=="energy":
         if configdata['thresholds']:
             for threshold in configdata['thresholds'].keys():
@@ -440,9 +446,9 @@ for graph in graphs:
     if spectrum_type=="mom":
         if "yrange" in configdata[graph].keys():
             if (0.0>configdata[graph]["yrange"][0]) and (0.0<configdata[graph]["yrange"][1]):
-                plt.hlines(0.0,minx-dd*(len(vals.keys())/2),maxx+dd*(len(vals.keys())/2),color='black', linestyle="--", zorder=1)
+                plt.hlines(0.0,minx-dd*(len(vals.keys())/2),maxx+dd*(len(vals.keys())/2),color='black', linestyle="--", zorder=1, linewidth=1.0)
         else:
-            plt.hlines(0.0,minx-dd*(len(vals.keys())/2),maxx+dd*(len(vals.keys())/2),color='black', linestyle="--", zorder=1)
+            plt.hlines(0.0,minx-dd*(len(vals.keys())/2),maxx+dd*(len(vals.keys())/2),color='black', linestyle="--", linewidth=1.0, zorder=1)
 
     for i,dataset in enumerate(vals.keys()):
         shifted_array = 0.0 
@@ -500,13 +506,13 @@ for graph in graphs:
         
         if (not used_levels) or (used_levels and graph_unused_levels):
             if len(np.nonzero(errs[dataset])[0]):
-                plt.errorbar(indexes[dataset]+dd*splitting_factor+shifted_array, vals[dataset], np.array(errs[dataset]),  capsize=5, color=settings.colors[i], marker=settings.markers[i],linestyle="", linewidth=0.0, elinewidth=1.5,mfc=marker_color,zorder=4,label=unused_label)
+                plt.errorbar(indexes[dataset]+dd*splitting_factor+shifted_array, vals[dataset], np.array(errs[dataset]),  capsize=5, color=settings.colors[i], marker=settings.markers[i], linewidth=0.0, elinewidth=1.5,mfc=marker_color,zorder=4,label=unused_label)
             else:
                 plt.scatter(indexes[dataset]+dd*splitting_factor+shifted_array, vals[dataset], color=settings.colors[i], marker=settings.markers[i],linewidth=0.0, zorder=4,label=unused_label)
         
         if used_levels:
             if len(np.nonzero(errs_used[dataset])[0]):
-                plt.errorbar(indexes_used[dataset]+dd*splitting_factor+used_shifted_array,vals_used[dataset], np.array(errs_used[dataset]),  capsize=5, color=settings.colors[i], marker=settings.markers[i],linestyle="", linewidth=0.0, elinewidth=1.5,mfc=settings.colors[i],zorder=4,label=dataset)
+                plt.errorbar(indexes_used[dataset]+dd*splitting_factor+used_shifted_array,vals_used[dataset], np.array(errs_used[dataset]),  capsize=5, color=settings.colors[i], marker=settings.markers[i], linewidth=0.0, elinewidth=1.5, mfc=settings.colors[i], zorder=4, label=dataset)
             else:
                 plt.scatter(indexes_used[dataset]+dd*splitting_factor+used_shifted_array,vals_used[dataset], color=settings.colors[i], marker=settings.markers[i], linewidth=0.0, zorder=4,label=dataset)
         
@@ -517,8 +523,6 @@ for graph in graphs:
 
 
     latex_rest_mass = settings.latex_format[rest_mass].replace('$',"")
-    if "yrange" in configdata[graph].keys():
-        plt.ylim( configdata[graph]["yrange"][0],configdata[graph]["yrange"][1])
     if spectrum_type=='energy':
         plt.ylabel(rf"$E_{{\textup{{cm}}}}/m_{{{latex_rest_mass}}}$")
     else:
@@ -528,10 +532,6 @@ for graph in graphs:
         plt.xlabel(r"$\Lambda(d^2)$")
     latex_keys = [settings.latex_format[key.split('(')[0]]+"("+key.split('(')[1] for key in keys[somekey]+keys_used[somekey]]
     plt.xticks(utils.unique(list(indexes[somekey])+list(indexes_used[somekey])), utils.unique(latex_keys),size="small")
-    plt.xlim(minx-0.5-dd*(len(vals.keys())/2),maxx+0.5+dd*(len(vals.keys())/2))
-    if not remove_ref and spectrum_type=="energy":
-        if configdata['thresholds']:
-            plt.xlim(minx-0.5-dd*(len(vals.keys())/2),(maxx+dd*(len(vals.keys())/2))*1.025+0.5)
             
     if (graph=='compare_spectrums'):
         if best_legend_loc and "title" in configdata.keys():
