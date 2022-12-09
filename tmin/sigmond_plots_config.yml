@@ -1,7 +1,7 @@
 rest_mass:
     out_dir: single_hadrons
-    out_type: xmgrace
-#     out_type: python
+#     out_type: xmgrace
+    out_type: python
 #     combine: true
     particles:
         pi:
@@ -20,8 +20,8 @@ rest_mass:
 spectrum_tmins:
     include_single_exp: True
     plot_format: 2
-#     out_type: python
-    out_type: xmgrace
+    out_type: python
+#     out_type: xmgrace
     channels:
       - name: isodoublet_nonstrange
         out_dir: isodoublet_npi
