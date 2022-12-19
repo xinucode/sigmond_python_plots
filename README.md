@@ -100,6 +100,7 @@ compare_spectrums: #(optional) generates graph that compares several spectrums w
     s5shift: ['G1(4)','G2(4)'] #(optional) list of irreps(d^2) to stripe (5 in a row)
                                #shift the levels so they don't overlap #takes precidence over shifts above
     omit: [G1g(0),Hu(0)] #(optional) list of irreps(d^2) to omit; otherwise, it graphs all irreps
+    xrange: [-0.3,0.705] #(optional) sets the xrange and prints out old versus new. Must be a list of two
     yrange: [0.0,2.5] #(optional) manually select the yrange, otherwise matplotlib automatically sets it
     plot_ni_levels: true #(optional) default false; plots the non interacting levels for each spectrum
     ni_width: 40 #(optional) default 80; sets the width of the non-interacting levels (if plot_ni_levels==true)
@@ -129,6 +130,8 @@ final_spectrum: #(optional) generates graph that plots just one spectrum
     remove_xlabel: true #(optional) default false; boolean to decide if print xlabel
     graph_unused_levels: false #(optional) default true; if unused_levels is specified and this tag is set to false, 
         #unused levels will not be graphed.
+    xrange: [-0.3,0.705] #(optional) sets the xrange and prints out old versus new. Must be a list of two
+    yrange: [0.0,2.5] #(optional) manually select the yrange, otherwise matplotlib automatically sets it
 ```
 
 ### Sample tmin config file

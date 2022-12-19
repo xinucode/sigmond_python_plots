@@ -120,9 +120,17 @@ def retrieve_sigmond_script_data_hdf5(file):
 #retrieves data from Fernando's print statements that I put into a
 # dat file
 def retrieve_sigmond_script_data_dat(file,spectrum_type):
-    dataframe_input = pd.read_csv(file,sep=" ",header=None,names=["obs-irrep","mom","qsqr","a","b","mass"])
+    f = open(file,"r")
+    line = f.readline().strip()
+    f.close()
+    if line!="energy" and line!="mom":
+        print("ERROR: spectrum type not sepcified at top of dat file. Please add 'energy' or 'mom' at the",
+              "first line of file.")
+        return None
+    
+    dataframe_input = pd.read_csv(file,sep=" ",header=0,names=["obs-irrep","mom","qsqr","a","b","mass"])
     irrep = np.array(dataframe_input["obs-irrep"])+np.array(dataframe_input["mom"],dtype="str")
-    obs_mom = ["PSQ"+str(x) for x in list(dataframe_input["mom"])]
+    obs_mom = ["PSQ"+str(int(x)) for x in list(dataframe_input["mom"])]
     levels = np.zeros( len(dataframe_input["obs-irrep"]) )
     mass = dataframe_input["mass"][0]
     for i,row in enumerate(irrep):
@@ -134,10 +142,13 @@ def retrieve_sigmond_script_data_dat(file,spectrum_type):
         levels2 = ["q2cm_"+str(int(level))+"_ref" for level in list(levels)]
     dataframe_input.insert(1, "obs-mom", obs_mom)
     dataframe_input.insert(2, "obs-level", levels2)
-    if spectrum_type=="energy":
+    if spectrum_type=="energy" and line=="mom":
         ecm = np.sqrt(1.0+np.array(dataframe_input["qsqr"]))+np.sqrt(mass*mass+np.array(dataframe_input["qsqr"]))
-    else: 
+    elif (spectrum_type=="mom" and line=="mom") or (spectrum_type=="energy" and line=="energy"):
         ecm = np.array(dataframe_input["qsqr"])
+    else:
+        print("Code this (utils.retrieve_sigmond_script_data_dat) if possible.")
+        return None
     dataframe_input.insert(3, "val", ecm)
     errs = np.zeros( len(dataframe_input["obs-irrep"]) )
     dataframe_input.insert(4, "err", errs)
