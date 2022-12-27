@@ -49,15 +49,15 @@ channels: #list of the tmin plot batches to generate, ideally all that are assoc
       ...
 """
     
-
+config_file = "isosinglet_strange.yml"
 if __name__ == "__main__":
-    
     parser = argparse.ArgumentParser()
     parser.add_argument("config", help="config file")
     args = parser.parse_args()
+    config_file = args.config
 
-    with open(args.config, "r") as yamlfile:
-        project_info = yaml.load(yamlfile, Loader=yaml.FullLoader)
+with open(config_file, "r") as yamlfile:
+    project_info = yaml.load(yamlfile, Loader=yaml.FullLoader)
         
     for channel in project_info["channels"]:
         print("\n",channel["name"])
@@ -112,9 +112,10 @@ if __name__ == "__main__":
         #generate plots for each bases level and fit
         files_to_zip = []
         
-        f = plt.figure()
-        f.set_figwidth(8)
-        f.set_figheight(8)
+        if __name__ == "__main__":
+            f = plt.figure()
+            f.set_figwidth(8)
+            f.set_figheight(8)
         for basis in plots_by_bases:
             for level in plots_by_bases[basis]:
                 file_stub = f"{basis}_ROT{level}"
@@ -154,11 +155,12 @@ if __name__ == "__main__":
                         if graph_type == 'dE':
                             plt.ylabel(r"$adE_{\textup{fit}}$")
                         plt.legend()
-                        plt.tight_layout()
-                        plt.savefig(f'{os.path.join(out_dir,file_stub)}_tmin.png')
-                        files_to_zip.append(f'{file_stub}_tmin.png')
-                        plt.savefig(f'{os.path.join(out_dir,file_stub)}_tmin.pdf')
-                        files_to_zip.append(f'{file_stub}_tmin.pdf')
+                        if __name__ == "__main__":
+                            plt.tight_layout()
+                            plt.savefig(f'{os.path.join(out_dir,file_stub)}_tmin.png')
+                            files_to_zip.append(f'{file_stub}_tmin.png')
+                            plt.savefig(f'{os.path.join(out_dir,file_stub)}_tmin.pdf')
+                            files_to_zip.append(f'{file_stub}_tmin.pdf')
                         plt.clf()
                         
                 if combine_fit_forms and plots_by_bases[basis][level]:
@@ -168,11 +170,13 @@ if __name__ == "__main__":
                     if graph_type == 'dE':
                         plt.ylabel(r"$adE_{\textup{fit}}$")
                     plt.legend() #bbox_to_anchor=(1.0, 1.5)
-                    plt.tight_layout()
-                    plt.savefig(f'{os.path.join(out_dir,file_stub)}_tmin.png')
-                    files_to_zip.append(f'{file_stub}_tmin.png')
-                    plt.savefig(f'{os.path.join(out_dir,file_stub)}_tmin.pdf')
-                    files_to_zip.append(f'{file_stub}_tmin.pdf')
+                    if __name__ == "__main__":
+                        plt.tight_layout()
+                        plt.savefig(f'{os.path.join(out_dir,file_stub)}_tmin.png')
+                        files_to_zip.append(f'{file_stub}_tmin.png')
+                        plt.savefig(f'{os.path.join(out_dir,file_stub)}_tmin.pdf')
+                        files_to_zip.append(f'{file_stub}_tmin.pdf')
                     plt.clf()
                     
-        utils.zip_channel( channel["name"], files_to_zip, "", out_dir)
+        if __name__ == "__main__":
+            utils.zip_channel( channel["name"], files_to_zip, "", out_dir)
