@@ -102,9 +102,9 @@ if __name__ == "__main__":
                         if level not in plots_by_bases[basis].keys():
                             plots_by_bases[basis][level] = {}
                         for fit in these_tmin_plots[pivot][level].keys():
-#                             if selections
-                            if fit not in list(selections[selected_bases[pivot]].keys()):
-                                continue
+                            if selections:
+                                if fit not in list(selections[selected_bases[pivot]].keys()):
+                                    continue
                             if fit not in plots_by_bases[basis][level].keys():
                                 plots_by_bases[basis][level][fit] = {}
                             plots_by_bases[basis][level][fit][pivot] = these_tmin_plots[pivot][level][fit]
@@ -114,7 +114,7 @@ if __name__ == "__main__":
         
         f = plt.figure()
         f.set_figwidth(8)
-        f.set_figheight(8)
+        f.set_figheight(6)
         for basis in plots_by_bases:
             for level in plots_by_bases[basis]:
                 file_stub = f"{basis}_ROT{level}"
