@@ -99,3 +99,194 @@ compare_spectrums:
     remove_xlabel: true
     omit: [Hu(0),G1g(0),G1(1),G2(1),G(2),G(3),F1(3),F2(3)]
     zshift: ['G1g(0)','G1u(0)','Hu(0)','G1(1)','F1(3)','F2(3)']
+
+#double vs geom vs ratio
+channels:
+  - name: isosinglet_strange_fit_form_stability
+    out_dir: isosinglet_strange_fit_form_stability
+    max_level: 1
+    graph_type: 'E'
+    combine_fit_forms: true
+    dir: /latticeQCD/raid3/sarahski/lqcd/D200_R000/isosinglet_strange_fermionic/.sigmond/plots/spectrum/tmin_plots/isosinglet_strange_fermionic/rebin10/
+    omit:
+#       - geometric fit
+      - geometric ratio fit
+      - single-exponential fit
+#       - double-exponential fit
+      - double-exponential ratio fit
+      - isosinglet_Sm1_G1g_P0_simon_single_pivot_n4_m4_d16_c150
+      - isosinglet_Sm1_G1g_P0_notsimon_single_pivot_n4_m4_d16_c150
+      - isosinglet_Sm1_G1u_P0_single_pivot_n8_m8_d16_c150
+      - isosinglet_Sm1_G1u_P0_rolling_pivot_n4_m4_d16_c150
+      - isosinglet_Sm1_G1u_P0_rolling_pivot_n8_m8_d16_c150
+      - isosinglet_Sm1_G1u_P0_notsimon_single_pivot_n4_m4_d16_c150
+      - isosinglet_Sm1_G1u_P0_simon_single_pivot_n4_m4_d16_c150
+      - isosinglet_Sm1_Hu_P0_notsimon_single_pivot_n4_m4_d16_c150
+      - isosinglet_Sm1_Hu_P0_simon_single_pivot_n4_m4_d16_c150
+      - isosinglet_Sm1_G1_P1_simon_single_pivot_n4_m4_d16_c150
+      - isosinglet_Sm1_G1_P1_notsimon_single_pivot_n4_m4_d16_c150
+      - isosinglet_Sm1_G2_P1_notsimon_single_pivot_n4_m4_d16_c150
+      - isosinglet_Sm1_G2_P1_simon_single_pivot_n4_m4_d16_c150
+      - isosinglet_Sm1_G_P2_notsimon_single_pivot_n4_m4_d16_c150
+      - isosinglet_Sm1_G_P2_simon_single_pivot_n4_m4_d16_c150
+      - isosinglet_Sm1_F1_P3_simon_single_pivot_n4_m4_d16_c150
+      - isosinglet_Sm1_F1_P3_notsimon_single_pivot_n4_m4_d16_c150
+      - isosinglet_Sm1_F2_P3_notsimon_single_pivot_n4_m4_d16_c150
+      - isosinglet_Sm1_F2_P3_simon_single_pivot_n4_m4_d16_c150
+      - isosinglet_Sm1_G_P3_notsimon_single_pivot_n4_m4_d16_c150
+      - isosinglet_Sm1_G_P3_simon_single_pivot_n4_m4_d16_c150
+#       - isosinglet_Sm1_G1g_P0_kN_single_pivot_n4_m4_d16_c150
+#       - isosinglet_Sm1_G1g_P0_piS_single_pivot_n4_m4_d16_c150
+#       - isosinglet_Sm1_G1u_P0_piS_single_pivot_n4_m4_d16_c150
+#       - isosinglet_Sm1_G1u_P0_kN_single_pivot_n4_m4_d16_c150
+#       - isosinglet_Sm1_Hu_P0_kN_single_pivot_n4_m4_d16_c150
+#       - isosinglet_Sm1_Hu_P0_piS_single_pivot_n4_m4_d16_c150
+#       - isosinglet_Sm1_G1_P1_kN_single_pivot_n4_m4_d16_c150
+#       - isosinglet_Sm1_G1_P1_piS_single_pivot_n4_m4_d16_c150
+#       - isosinglet_Sm1_G2_P1_piS_single_pivot_n4_m4_d16_c150
+#       - isosinglet_Sm1_G2_P1_kN_single_pivot_n4_m4_d16_c150
+#       - isosinglet_Sm1_G_P2_kN_single_pivot_n4_m4_d16_c150
+#       - isosinglet_Sm1_G_P2_piS_single_pivot_n4_m4_d16_c150
+#       - isosinglet_Sm1_F1_P3_piS_single_pivot_n4_m4_d16_c150
+#       - isosinglet_Sm1_F1_P3_kN_single_pivot_n4_m4_d16_c150
+#       - isosinglet_Sm1_F2_P3_piS_single_pivot_n4_m4_d16_c150
+#       - isosinglet_Sm1_F2_P3_kN_single_pivot_n4_m4_d16_c150
+#       - isosinglet_Sm1_G_P3_piS_single_pivot_n4_m4_d16_c150
+#       - isosinglet_Sm1_G_P3_kN_single_pivot_n4_m4_d16_c150
+      - isosinglet_Sm1_G1u_P0_single_pivot_n4_m4_d16_c150
+      - isosinglet_Sm1_G1u_P0_single_pivot_n4_m4_d14_c150
+      - isosinglet_Sm1_G1u_P0_t_single_pivot_n4_m4_d16_c150
+      - isosinglet_Sm1_G1u_P0_single_pivot_n4_m4_d12_c150
+      - isosinglet_Sm1_G1g_P0_single_pivot_n4_m4_d12_c150
+      - isosinglet_Sm1_G1g_P0_single_pivot_n4_m4_d14_c150
+      - isosinglet_Sm1_G1g_P0_single_pivot_n4_m4_d16_c150
+      - isosinglet_Sm1_G1g_P0_t_single_pivot_n4_m4_d16_c150
+      - isosinglet_Sm1_Hu_P0_single_pivot_n4_m4_d16_c150
+      - isosinglet_Sm1_Hu_P0_single_pivot_n4_m4_d14_c150
+      - isosinglet_Sm1_Hu_P0_t_single_pivot_n4_m4_d16_c150
+      - isosinglet_Sm1_Hu_P0_single_pivot_n4_m4_d12_c150
+      - isosinglet_Sm1_G1_P1_single_pivot_n4_m4_d16_c150
+      - isosinglet_Sm1_G1_P1_single_pivot_n4_m4_d14_c150
+      - isosinglet_Sm1_G1_P1_t_single_pivot_n4_m4_d16_c150
+      - isosinglet_Sm1_G1_P1_single_pivot_n4_m4_d12_c150
+      - isosinglet_Sm1_G2_P1_single_pivot_n4_m4_d16_c150
+      - isosinglet_Sm1_G2_P1_single_pivot_n4_m4_d14_c150
+      - isosinglet_Sm1_G2_P1_t_single_pivot_n4_m4_d16_c150
+      - isosinglet_Sm1_G2_P1_single_pivot_n4_m4_d12_c150
+      - isosinglet_Sm1_G_P2_single_pivot_n4_m4_d16_c150
+      - isosinglet_Sm1_G_P2_single_pivot_n4_m4_d14_c150
+      - isosinglet_Sm1_G_P2_t_single_pivot_n4_m4_d16_c150
+      - isosinglet_Sm1_G_P2_single_pivot_n4_m4_d12_c150
+      - isosinglet_Sm1_F1_P3_single_pivot_n4_m4_d16_c150
+      - isosinglet_Sm1_F1_P3_single_pivot_n4_m4_d14_c150
+      - isosinglet_Sm1_F1_P3_t_single_pivot_n4_m4_d16_c150
+      - isosinglet_Sm1_F1_P3_single_pivot_n4_m4_d12_c150
+      - isosinglet_Sm1_F2_P3_single_pivot_n4_m4_d14_c150
+      - isosinglet_Sm1_F2_P3_single_pivot_n4_m4_d16_c150
+      - isosinglet_Sm1_F2_P3_t_single_pivot_n4_m4_d16_c150
+      - isosinglet_Sm1_F2_P3_single_pivot_n4_m4_d12_c150
+      - isosinglet_Sm1_G_P3_single_pivot_n4_m4_d16_c150
+      - isosinglet_Sm1_G_P3_single_pivot_n4_m4_d14_c150
+      - isosinglet_Sm1_G_P3_single_pivot_n4_m4_d12_c150
+      - isosinglet_Sm1_G_P3_t_single_pivot_n4_m4_d16_c150
+    select:
+      _simon_kN_single_pivot_n4_m4_d16_c150: 
+        geometric fit: geometric fit
+        double-exponential fit: double-exponential fit
+        single-exponential ratio fit: single-exponential $N\overline{K}$ ratio fit
+      _simon_piS_single_pivot_n4_m4_d16_c150:
+        single-exponential ratio fit: single-exponential $S\pi$ ratio fit
+    fit_choices:
+#       isosinglet_Sm1_G1g_P0:
+#           - single-exponential $S\pi$ ratio fit
+#           - single-exponential $S\pi$ ratio fit
+#           - single-exponential $N\overline{K}$ ratio fit
+#           - single-exponential $S\pi$ ratio fit
+#           - single-exponential $S\pi$ ratio fit
+      isosinglet_Sm1_G1u_P0:
+          - single-exponential $S\pi$ ratio fit
+          - single-exponential $S\pi$ ratio fit
+          - single-exponential $N\overline{K}$ ratio fit
+          - single-exponential $S\pi$ ratio fit
+          - single-exponential $N\overline{K}$ ratio fit
+          - single-exponential $S\pi$ ratio fit
+          - single-exponential $N\overline{K}$ ratio fit
+          - single-exponential $N\overline{K}$ ratio fit
+#       isosinglet_Sm1_Hu_P0:
+#           - single-exponential $S\pi$ ratio fit
+#           - single-exponential $N\overline{K}$ ratio fit
+#           - single-exponential $N\overline{K}$ ratio fit
+#       isosinglet_Sm1_G1_P1:
+#           - single-exponential $S\pi$ ratio fit
+#           - single-exponential $S\pi$ ratio fit
+#           - single-exponential $N\overline{K}$ ratio fit
+#           - single-exponential $N\overline{K}$ ratio fit
+#           - single-exponential $N\overline{K}$ ratio fit
+#           - single-exponential $N\overline{K}$ ratio fit
+#           - single-exponential $S\pi$ ratio fit
+#           - single-exponential $S\pi$ ratio fit
+#           - single-exponential $S\pi$ ratio fit
+#       isosinglet_Sm1_G2_P1:
+#           - single-exponential $S\pi$ ratio fit
+#           - single-exponential $S\pi$ ratio fit
+#           - single-exponential $N\overline{K}$ ratio fit
+#           - single-exponential $N\overline{K}$ ratio fit
+#           - single-exponential $N\overline{K}$ ratio fit
+#           - single-exponential $S\pi$ ratio fit
+#           - single-exponential $S\pi$ ratio fit
+#       isosinglet_Sm1_G_P2:
+#           - single-exponential $S\pi$ ratio fit
+#           - single-exponential $S\pi$ ratio fit
+#           - single-exponential $N\overline{K}$ ratio fit
+#           - single-exponential $N\overline{K}$ ratio fit
+#           - single-exponential $S\pi$ ratio fit
+#           - single-exponential $S\pi$ ratio fit
+#           - single-exponential $N\overline{K}$ ratio fit
+#           - single-exponential $N\overline{K}$ ratio fit
+#           - single-exponential $N\overline{K}$ ratio fit
+#           - single-exponential $N\overline{K}$ ratio fit
+#           - single-exponential $N\overline{K}$ ratio fit
+#           - single-exponential $S\pi$ ratio fit
+#           - single-exponential $N\overline{K}$ ratio fit
+#           - single-exponential $S\pi$ ratio fit
+#           - single-exponential $S\pi$ ratio fit
+#       isosinglet_Sm1_F1_P3:
+#           - single-exponential $S\pi$ ratio fit
+#           - single-exponential $N\overline{K}$ ratio fit
+#           - single-exponential $N\overline{K}$ ratio fit
+#           - single-exponential $S\pi$ ratio fit
+#           - single-exponential $S\pi$ ratio fit
+#           - single-exponential $S\pi$ ratio fit
+#       isosinglet_Sm1_F2_P3:
+#           - single-exponential $S\pi$ ratio fit
+#           - single-exponential $N\overline{K}$ ratio fit
+#           - single-exponential $N\overline{K}$ ratio fit
+#           - single-exponential $S\pi$ ratio fit
+#           - single-exponential $N\overline{K}$ ratio fit
+#           - single-exponential $N\overline{K}$ ratio fit
+#       isosinglet_Sm1_G_P3:
+#           - single-exponential $S\pi$ ratio fit
+#           - single-exponential $S\pi$ ratio fit
+#           - single-exponential $N\overline{K}$ ratio fit
+#           - single-exponential $N\overline{K}$ ratio fit
+#           - single-exponential $N\overline{K}$ ratio fit
+#           - single-exponential $S\pi$ ratio fit
+#           - single-exponential $S\pi$ ratio fit
+#           - single-exponential $S\pi$ ratio fit
+#           - single-exponential $N\overline{K}$ ratio fit
+#           - single-exponential $N\overline{K}$ ratio fit
+#           - single-exponential $N\overline{K}$ ratio fit
+#           - single-exponential $N\overline{K}$ ratio fit
+#           - single-exponential $N\overline{K}$ ratio fit
+    bases:
+#       - isosinglet_Sm1_G1g_P0
+      - isosinglet_Sm1_G1u_P0
+#       - isosinglet_Sm1_Hu_P0
+#       - isosinglet_Sm1_G1_P1
+#       - isosinglet_Sm1_G2_P1
+#       - isosinglet_Sm1_G_P2
+#       - isosinglet_Sm1_F1_P3
+#       - isosinglet_Sm1_F2_P3
+#       - isosinglet_Sm1_G_P3
+    
+      

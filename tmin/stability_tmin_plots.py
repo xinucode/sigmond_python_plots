@@ -48,135 +48,139 @@ channels: #list of the tmin plot batches to generate, ideally all that are assoc
           - ...
       ...
 """
-    
-config_file = "isosinglet_strange.yml"
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("config", help="config file")
-    args = parser.parse_args()
-    config_file = args.config
+  
+def stability_tmin_plots():
+    config_file = "isosinglet_strange.yml"
+    if __name__ == "__main__":
+        parser = argparse.ArgumentParser()
+        parser.add_argument("config", help="config file")
+        args = parser.parse_args()
+        config_file = args.config
 
-with open(config_file, "r") as yamlfile:
-    project_info = yaml.load(yamlfile, Loader=yaml.FullLoader)
-        
-    for channel in project_info["channels"]:
-        print("\n",channel["name"])
-        
-        #generate output directory
-        out_dir = channel['out_dir']
-        if not os.path.exists(out_dir):
-            os.mkdir(out_dir)
-            
-        graph_type = 'E'
-        if 'graph_type' in channel:
-            graph_type = channel['graph_type']
-            
-        combine_fit_forms = False
-        if 'combine_fit_forms' in channel:
-            combine_fit_forms = channel['combine_fit_forms']
-            
-        selections = {} #if empty, all are selected
-        if 'select' in channel:
-            selections = channel['select']
-        selected_bases = {}
-        if selections:
+    with open(config_file, "r") as yamlfile:
+        project_info = yaml.load(yamlfile, Loader=yaml.FullLoader)
+
+        for channel in project_info["channels"]:
+            print("\n",channel["name"])
+
+            #generate output directory
+            out_dir = channel['out_dir']
+            if not os.path.exists(out_dir):
+                os.mkdir(out_dir)
+
+            graph_type = 'E'
+            if 'graph_type' in channel:
+                graph_type = channel['graph_type']
+
+            combine_fit_forms = False
+            if 'combine_fit_forms' in channel:
+                combine_fit_forms = channel['combine_fit_forms']
+
+            selections = {} #if empty, all are selected
+            if 'select' in channel:
+                selections = channel['select']
+            selected_bases = {}
+            if selections:
+                for basis in channel['bases']:
+                    for tag in selections.keys():
+                        selected_bases[basis+tag] = tag
+
+            fit_choices = {}
+            if 'fit_choices' in channel:
+                fit_choices = channel['fit_choices']
+
+            #reorganize plots by basis, level, fit, then pivot
+            these_tmin_plots = utils.find_tmin_spectrum_files_python(channel)
+            plots_by_bases = {}
             for basis in channel['bases']:
-                for tag in selections.keys():
-                    selected_bases[basis+tag] = tag
-        
-        fit_choices = {}
-        if 'fit_choices' in channel:
-            fit_choices = channel['fit_choices']
-        
-        #reorganize plots by basis, level, fit, then pivot
-        these_tmin_plots = utils.find_tmin_spectrum_files_python(channel)
-        plots_by_bases = {}
-        for basis in channel['bases']:
-            plots_by_bases[basis] = {}
-            for pivot in these_tmin_plots.keys():
-                if basis in pivot:
-                    if selected_bases:
-                        if pivot not in list(selected_bases.keys()):
-                            continue
-                    for level in these_tmin_plots[pivot].keys():
-                        if level not in plots_by_bases[basis].keys():
-                            plots_by_bases[basis][level] = {}
-                        for fit in these_tmin_plots[pivot][level].keys():
+                plots_by_bases[basis] = {}
+                for pivot in these_tmin_plots.keys():
+                    if basis in pivot:
+                        if selected_bases:
+                            if pivot not in list(selected_bases.keys()):
+                                continue
+                        for level in these_tmin_plots[pivot].keys():
+                            if level not in plots_by_bases[basis].keys():
+                                plots_by_bases[basis][level] = {}
+                            for fit in these_tmin_plots[pivot][level].keys():
+                                if selections:
+                                    if fit not in list(selections[selected_bases[pivot]].keys()):
+                                        continue
+                                if fit not in plots_by_bases[basis][level].keys():
+                                    plots_by_bases[basis][level][fit] = {}
+                                plots_by_bases[basis][level][fit][pivot] = these_tmin_plots[pivot][level][fit]
+
+            #generate plots for each bases level and fit
+            files_to_zip = []
+
+            if __name__ == "__main__":
+                f = plt.figure()
+                f.set_figwidth(8)
+                f.set_figheight(8)
+            for basis in plots_by_bases:
+                for level in plots_by_bases[basis]:
+                    file_stub = f"{basis}_ROT{level}"
+                    i=0
+                    for fit in plots_by_bases[basis][level]:
+                        if not combine_fit_forms:
+                            file_stub += f"_{settings.fit_nicknames[fit]}"
+                            i=0
+
+                        data = tmin_plots.retrieve_xmgrace_data_xydydy( plots_by_bases[basis][level][fit] )
+                        fits = tmin_plots.retrieve_xmgrace_data_xy( plots_by_bases[basis][level][fit] )
+
+                        for this_label in data.keys():
+                            print(f"\t{this_label}")
                             if selections:
-                                if fit not in list(selections[selected_bases[pivot]].keys()):
-                                    continue
-                            if fit not in plots_by_bases[basis][level].keys():
-                                plots_by_bases[basis][level][fit] = {}
-                            plots_by_bases[basis][level][fit][pivot] = these_tmin_plots[pivot][level][fit]
-        
-        #generate plots for each bases level and fit
-        files_to_zip = []
-        
-        if __name__ == "__main__":
-            f = plt.figure()
-            f.set_figwidth(8)
-            f.set_figheight(8)
-        for basis in plots_by_bases:
-            for level in plots_by_bases[basis]:
-                file_stub = f"{basis}_ROT{level}"
-                i=0
-                for fit in plots_by_bases[basis][level]:
-                    if not combine_fit_forms:
-                        file_stub += f"_{settings.fit_nicknames[fit]}"
-                        i=0
-                    
-                    data = tmin_plots.retrieve_xmgrace_data_xydydy( plots_by_bases[basis][level][fit] )
-                    fits = tmin_plots.retrieve_xmgrace_data_xy( plots_by_bases[basis][level][fit] )
-                    
-                    for this_label in data.keys():
-                        print(f"\t{this_label}")
-                        if selections:
-                            legend_label = selections[selected_bases[this_label]][fit]
-                            if fit_choices:
-                                if legend_label==fit_choices[basis][level]:
-                                    this_fit = fits[this_label]
-                                    plt.axhline(this_fit['fit'],color="black")
-                                    plt.axhline(this_fit['err'][0],color="black",ls="--")
-                                    plt.axhline(this_fit['err'][1],color="black",ls="--")
-                            legend_label = rf"{legend_label}"
-                        else:
-                            legend_label = this_label.replace(basis,"")
-                            legend_label = legend_label.replace("_"," ")
-                            if combine_fit_forms:
-                                legend_label += f" {settings.fit_nicknames[fit]}"
-                        
-                        plt.errorbar(np.array(data[this_label][0]),np.array(data[this_label][1]),np.concatenate([[np.array(data[this_label][3])],[np.array(data[this_label][2])]]),  capsize=5, color=settings.colors[i], marker=settings.markers[i], linewidth=0.0, elinewidth=1.5,label = legend_label)
-                        i+=1
-                    
-                    if not combine_fit_forms:
+                                legend_label = selections[selected_bases[this_label]][fit]
+                                if fit_choices:
+                                    if legend_label==fit_choices[basis][level]:
+                                        this_fit = fits[this_label]
+                                        plt.axhline(this_fit['fit'],color="black")
+                                        plt.axhline(this_fit['err'][0],color="black",ls="--")
+                                        plt.axhline(this_fit['err'][1],color="black",ls="--")
+                                legend_label = rf"{legend_label}"
+                            else:
+                                legend_label = this_label.replace(basis,"")
+                                legend_label = legend_label.replace("_"," ")
+                                if combine_fit_forms:
+                                    legend_label += f" {settings.fit_nicknames[fit]}"
+
+                            plt.errorbar(np.array(data[this_label][0]),np.array(data[this_label][1]),np.concatenate([[np.array(data[this_label][3])],[np.array(data[this_label][2])]]),  capsize=5, color=settings.colors[i], marker=settings.markers[i], linewidth=0.0, elinewidth=1.5,label = legend_label)
+                            i+=1
+
+                        if not combine_fit_forms:
+                            print(file_stub)
+                            plt.xlabel(r"$t_{\textup{min}}/a$")
+                            plt.ylabel(r"$aE_{\textup{fit}}$")
+                            if graph_type == 'dE':
+                                plt.ylabel(r"$adE_{\textup{fit}}$")
+                            plt.legend()
+                            if __name__ == "__main__":
+                                plt.tight_layout()
+                                plt.savefig(f'{os.path.join(out_dir,file_stub)}_tmin.png')
+                                files_to_zip.append(f'{file_stub}_tmin.png')
+                                plt.savefig(f'{os.path.join(out_dir,file_stub)}_tmin.pdf')
+                                files_to_zip.append(f'{file_stub}_tmin.pdf')
+                                plt.clf()
+
+                    if combine_fit_forms and plots_by_bases[basis][level]:
                         print(file_stub)
                         plt.xlabel(r"$t_{\textup{min}}/a$")
                         plt.ylabel(r"$aE_{\textup{fit}}$")
                         if graph_type == 'dE':
                             plt.ylabel(r"$adE_{\textup{fit}}$")
-                        plt.legend()
+                        plt.legend() #bbox_to_anchor=(1.0, 1.5)
                         if __name__ == "__main__":
                             plt.tight_layout()
                             plt.savefig(f'{os.path.join(out_dir,file_stub)}_tmin.png')
                             files_to_zip.append(f'{file_stub}_tmin.png')
                             plt.savefig(f'{os.path.join(out_dir,file_stub)}_tmin.pdf')
                             files_to_zip.append(f'{file_stub}_tmin.pdf')
-                        plt.clf()
-                        
-                if combine_fit_forms and plots_by_bases[basis][level]:
-                    print(file_stub)
-                    plt.xlabel(r"$t_{\textup{min}}/a$")
-                    plt.ylabel(r"$aE_{\textup{fit}}$")
-                    if graph_type == 'dE':
-                        plt.ylabel(r"$adE_{\textup{fit}}$")
-                    plt.legend() #bbox_to_anchor=(1.0, 1.5)
-                    if __name__ == "__main__":
-                        plt.tight_layout()
-                        plt.savefig(f'{os.path.join(out_dir,file_stub)}_tmin.png')
-                        files_to_zip.append(f'{file_stub}_tmin.png')
-                        plt.savefig(f'{os.path.join(out_dir,file_stub)}_tmin.pdf')
-                        files_to_zip.append(f'{file_stub}_tmin.pdf')
-                    plt.clf()
-                    
-        if __name__ == "__main__":
-            utils.zip_channel( channel["name"], files_to_zip, "", out_dir)
+                            plt.clf()
+
+            if __name__ == "__main__":
+                utils.zip_channel( channel["name"], files_to_zip, "", out_dir)
+
+if __name__ == "__main__":
+    stability_tmin_plots()
