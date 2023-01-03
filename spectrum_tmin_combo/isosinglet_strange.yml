@@ -83,7 +83,7 @@ fig_height: 8
 
 #look at single irrep
 compare_spectrums:
-    fig_width: 8
+    fig_width: 9
     fig_height: 4
     best_legend_loc: upper right
     do_scattering_particles: false
