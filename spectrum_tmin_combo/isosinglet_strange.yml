@@ -1,5 +1,5 @@
 channel: isosinglet_strange
-title: $I=1$
+# title: $I=1$
 scattering_particles:
   - N
   - pi
