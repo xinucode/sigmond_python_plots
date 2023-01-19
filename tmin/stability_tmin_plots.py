@@ -91,6 +91,7 @@ def stability_tmin_plots():
 
             #reorganize plots by basis, level, fit, then pivot
             these_tmin_plots = utils.find_tmin_spectrum_files_python(channel)
+            
             plots_by_bases = {}
             for basis in channel['bases']:
                 plots_by_bases[basis] = {}
@@ -115,15 +116,15 @@ def stability_tmin_plots():
 
             if __name__ == "__main__":
                 f = plt.figure()
-                f.set_figwidth(8)
-                f.set_figheight(8)
+                f.set_figwidth(7)
+                f.set_figheight(7)
             for basis in plots_by_bases:
                 for level in plots_by_bases[basis]:
                     file_stub = f"{basis}_ROT{level}"
                     i=0
                     for fit in plots_by_bases[basis][level]:
                         if not combine_fit_forms:
-                            file_stub += f"_{settings.fit_nicknames[fit]}"
+                            file_stub = f"{basis}_ROT{level}_{settings.fit_nicknames[fit]}"
                             i=0
 
                         data = tmin_plots.retrieve_xmgrace_data_xydydy( plots_by_bases[basis][level][fit] )
