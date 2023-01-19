@@ -216,6 +216,8 @@ def compare_spectrums():
         #import info from files
         for file in files.keys():
             datasets[file] = utils.unpack_file(files[file],spectrum_type)
+            if datasets[file] is None:
+                sys.exit()
 
         for scat in particle_names:
             value = 0.0
@@ -366,11 +368,14 @@ def compare_spectrums():
                 for i, unique_key in enumerate(list(set(scat_keys2))):
                     if key == unique_key:
                         scat_indexes2[j] = i
+                        
+        
         indexes = {}
+        this_list = []
         for dataset in datasets.keys():
             indexes[dataset] = np.zeros(len(keys[dataset]))
             for j, key in enumerate(keys[dataset]):
-                this_list = list(set(keys[dataset]+keys_used[dataset]))
+                this_list = list(set(this_list+keys[dataset]+keys_used[dataset]))
                 this_list.sort(key=utils.sort_by_mom)
                 for i, unique_key in enumerate(this_list):
                     if key == unique_key:
@@ -380,7 +385,7 @@ def compare_spectrums():
         for dataset in datasets.keys():
             indexes_used[dataset] = np.zeros(len(keys_used[dataset]))
             for j, ukey in enumerate(keys_used[dataset]):
-                this_list = list(set(keys[dataset]+keys_used[dataset]))
+                this_list = list(set(this_list+keys[dataset]+keys_used[dataset]))
                 this_list.sort(key=utils.sort_by_mom)
                 for i, unique_key in enumerate(this_list):
                     if ukey == unique_key:
@@ -463,7 +468,7 @@ def compare_spectrums():
             shifted_array = 0.0 
             used_shifted_array = 0.0 
     #         if ('compare_spectrums' in configdata.keys()) and (graph=='compare_spectrums'):
-            if 'zshift' in configdata[graph].keys() or 'sshift' in configdata[graph].keys() or 's4shift' in configdata[graph].keys() or 's5shift' in configdata[graph].keys():
+            if ('zshift' in configdata[graph].keys() or 'sshift' in configdata[graph].keys() or 's4shift' in configdata[graph].keys() or 's5shift' in configdata[graph].keys()) and dataset!="fit":
                 shifted_array = []
                 for j,lev in enumerate(levs[dataset]):
                     this_shift = 0.0
@@ -540,8 +545,8 @@ def compare_spectrums():
         if not remove_xlabel:
             plt.xlabel(r"$\Lambda(d^2)$")
         latex_keys = [settings.latex_format[key.split('(')[0]]+"("+key.split('(')[1] for key in keys[somekey]+keys_used[somekey]]
-    #     plt.xticks(utils.unique(list(indexes[somekey])+list(indexes_used[somekey])), utils.unique(latex_keys),size="small")
-        plt.xticks([])
+        plt.xticks(utils.unique(list(indexes[somekey])+list(indexes_used[somekey])), utils.unique(latex_keys),size="small")
+#         plt.xticks([])
         if 'xrange' in configdata[graph].keys():
             print("Old xrange:", plt.xlim() )
             plt.xlim( configdata[graph]['xrange'] )

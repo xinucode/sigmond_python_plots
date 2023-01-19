@@ -154,6 +154,31 @@ def retrieve_sigmond_script_data_dat(file,spectrum_type):
     dataframe_input.insert(4, "err", errs)
     dataset = pd.DataFrame(columns=["obs-mom","obs-irrep","obs-level", 'val', 'err'],data=dataframe_input[["obs-mom","obs-irrep","obs-level","val","err"]])
     return dataset
+
+def retrieve_barbara_data(file):
+    q2s = h5py.File(file,'r')
+    dataset = pd.DataFrame(columns=['obs', 'val', 'err'])
+    for key in q2s.keys():
+        obs_mom = key.split("_")[0]
+        obs_irrep = key.split("_")[1]
+        for level in q2s[key]["1exp"]["t0_12"]["Tmin"]["Correlated"]["Mean"].keys():
+            index = int(level.split("_")[1])
+            data = np.array(q2s[key]["1exp"]["t0_12"]["Tmin"]["Correlated"]["Mean"][level])
+            chisqr = data[-1]
+            tmin = data[0]
+            tmax = data[1]
+            dof = tmax-tmin-2
+            chisqr_dof = chisqr/dof
+            for i in range(len(chisqr_dof)):
+                if chisqr_dof[i]<1.0:
+                    chisqr_dof[i] = 1.0/chisqr_dof[i]
+            minimum_index = np.where( chisqr_dof==min(chisqr_dof) )[0][0]
+            value = data[3][minimum_index]
+            error = data[4][minimum_index]
+            operators = q2s[key]["Operators"][index]
+            print(f"{obs_mom}/{obs_irrep}/ecm_{index}",value,error,operators)
+    q2s.close()
+    return None
     
 #retrieves data from john's ascii files
 def select_val_ascii(dataset, mom, irrep, energy,energy_or_mom='energy'):
@@ -237,11 +262,14 @@ def unpack_file( filename, spectrum_type):
         dataset1 = retrieve_sigmond_script_data_hdf5(filename)
     elif os.path.isfile(filename) and filename.endswith(".dat"):
         dataset1 = retrieve_sigmond_script_data_dat(filename, spectrum_type)
+    elif os.path.isfile(filename) and filename.endswith(".h5"):
+        dataset1 = retrieve_barbara_data(filename)
     elif os.path.isdir(filename):
         dataset1 = pd.DataFrame()
     else:
         print("Bad filename:",filename)
         sys.exit()
+    print(dataset1)
     return dataset1
 
 #retrieve rest mass from dataset
