@@ -175,8 +175,8 @@ def retrieve_barbara_data(file):
             minimum_index = np.where( chisqr_dof==min(chisqr_dof) )[0][0]
             value = data[3][minimum_index]
             error = data[4][minimum_index]
-            operators = q2s[key]["Operators"][index]
-            print(f"{obs_mom}/{obs_irrep}/ecm_{index}",value,error,operators)
+            operators = q2s[key]["Single_hadron_corrs"][index]
+            print(f"{obs_mom}/{obs_irrep}/d_ecm_{index}",value,error,operators)
     q2s.close()
     return None
     
