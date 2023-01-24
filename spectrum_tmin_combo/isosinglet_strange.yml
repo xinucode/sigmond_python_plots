@@ -9,7 +9,7 @@ scattering_particles:
 thresholds:
   "Spi": [ S, pi ]
   "Lpipi": [ L, pi, pi]
-#   "Nk": [ N, k]
+  "Nk": [ N, k]
 rest_mass: pi
 used_levels:
   G1u(0): [0,1,2,3]
@@ -90,7 +90,7 @@ compare_spectrums:
     spectrum_type: energy
     file_directory: pivots
     xrange: [-0.3,0.705]
-#     yrange: [6.5,8.75]
+    yrange: [6.5,8.75]
     files:
       (7,4a,16a): energy_estimates_isosinglet_strange_fermionic_rebin10_Bootstrap-4_16t.csv
       (8,4a,16a): energy_estimates_isosinglet_strange_fermionic_rebin10_Bootstrap-4_16.csv
