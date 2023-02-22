@@ -18,6 +18,9 @@ def unique(an_ordered_list):
             final_list.append(element)
     return final_list
 
+def effenergy(t, C):
+    return t[:-1]+0.5*(t[1]-t[0]), np.log( C[:-1]/C[1:] )
+
 # def zig_zag_shifts( irreps, levels, used_levels ):
 #     shifts = np.zeros(len(levels))
 #     used_shifts = np.zeros(len(used_levels))
@@ -157,28 +160,38 @@ def retrieve_sigmond_script_data_dat(file,spectrum_type):
 
 def retrieve_barbara_data(file):
     q2s = h5py.File(file,'r')
-    dataset = pd.DataFrame(columns=['obs', 'val', 'err'])
+    dataset = pd.DataFrame(columns=['obs', 'val', 'err','ops'])
+#     print( q2s.keys() )
     for key in q2s.keys():
+#         print( q2s[key].keys() )
+#         print( q2s[key]["1exp"]["t0_12"].keys() )
         obs_mom = key.split("_")[0]
         obs_irrep = key.split("_")[1]
-        for level in q2s[key]["1exp"]["t0_12"]["Tmin"]["Correlated"]["Mean"].keys():
+        for level in q2s[key]["1exp"]["t0_7"]["Tmin"]["Correlated"]["Mean"].keys():
             index = int(level.split("_")[1])
-            data = np.array(q2s[key]["1exp"]["t0_12"]["Tmin"]["Correlated"]["Mean"][level])
-            chisqr = data[-1]
-            tmin = data[0]
-            tmax = data[1]
-            dof = tmax-tmin-2
-            chisqr_dof = chisqr/dof
-            for i in range(len(chisqr_dof)):
-                if chisqr_dof[i]<1.0:
-                    chisqr_dof[i] = 1.0/chisqr_dof[i]
-            minimum_index = np.where( chisqr_dof==min(chisqr_dof) )[0][0]
-            value = data[3][minimum_index]
-            error = data[4][minimum_index]
+            data = np.array(q2s[key]["1exp"]["t0_7"]["Tmin"]["Correlated"]["Mean"][level])
+#             data = np.array(q2s[key]["1exp"]["t0_7"]["Tmin"]["Correlated"]["Resample"][level])
+#             chisqr = data[-1]
+#             tmin = data[0]
+#             tmax = data[1]
+#             dof = tmax-tmin-2
+#             chisqr_dof = chisqr/dof
+#             for i in range(len(chisqr_dof)):
+#                 if chisqr_dof[i]<1.0:
+#                     chisqr_dof[i] = 1.0/chisqr_dof[i]
+#             minimum_index = np.where( chisqr_dof==min(chisqr_dof) )[0][0]
+#             value = data[3][minimum_index]
+#             error = data[4][minimum_index]
+            value = data[3][0]
+            error = data[4][0]
             operators = q2s[key]["Single_hadron_corrs"][index]
-            print(f"{obs_mom}/{obs_irrep}/d_ecm_{index}",value,error,operators)
+            dataset.loc[len(dataset)] = [f"{obs_mom}/{obs_irrep}/dElab_{index}",value,error,operators]
+#             print(f"{obs_mom}/{obs_irrep}/d_ecm_{index}",value,error,operators)
     q2s.close()
-    return None
+    split_obs_col(dataset)
+#     print(dataset)
+#     return None
+    return dataset
     
 #retrieves data from john's ascii files
 def select_val_ascii(dataset, mom, irrep, energy,energy_or_mom='energy'):
@@ -269,7 +282,7 @@ def unpack_file( filename, spectrum_type):
     else:
         print("Bad filename:",filename)
         sys.exit()
-    print(dataset1)
+#     print(dataset1)
     return dataset1
 
 #retrieve rest mass from dataset

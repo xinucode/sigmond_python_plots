@@ -210,10 +210,26 @@ def compare_spectrums():
                 ni_width = configdata['final_spectrum']['ni_width']
     #         non_interacting_levels = configdata['final_spectrum']['non_interacting_levels']
 
+        if 'used_levels' in configdata.keys():
+            used_levels=configdata['used_levels']
+        else:
+            used_levels = {}
+
+        remove_xlabel = False
+        if "remove_xlabel" in configdata[graph].keys():
+            remove_xlabel = configdata[graph]["remove_xlabel"]
+
+        graph_unused_levels = True
+        if "graph_unused_levels" in  configdata[graph].keys():
+            graph_unused_levels = configdata[graph]["graph_unused_levels"]
+            
+        #########################################################
+        ############### import info from files ##################
+        #########################################################
+        
         Refs = {}
         datasets = {}
 
-        #import info from files
         for file in files.keys():
             datasets[file] = utils.unpack_file(files[file],spectrum_type)
             if datasets[file] is None:
@@ -227,30 +243,17 @@ def compare_spectrums():
                     Refs[scat] = value
                     break
 
-        if 'used_levels' in configdata.keys():
-            used_levels=configdata['used_levels']
-        else:
-            used_levels = {}
-
-        remove_xlabel = False
-        if "remove_xlabel" in configdata[graph].keys():
-            remove_xlabel = configdata[graph]["remove_xlabel"]
-
-        graph_unused_levels = True
-        if "graph_unused_levels" in  configdata[graph].keys():
-            graph_unused_levels = configdata[graph]["graph_unused_levels"]
-
-        expected_keys = ['PSQ0', 'PSQ1', 'PSQ2', 'PSQ3', 'PSQ4']
+        expected_keys = [f"PSQ{i}" for i in range(4)]
         possible_irreps = ['G1u', 'Hg', 'G1', 'G2', 'F1', 'F2', 'G','A1g','G1g','Hu', 'T1g','A1u','A2u','Eg','Eu',
                            'T1u','T2g','T2u','A1','A2','B1','B2','E']
+#         diff_keys = [f"d_ecm_{i}" for i in range(15)] #probably change this to elab
         if spectrum_type=="mom":
-            energy_keys = ['q2cm_0_ref', 'q2cm_1_ref', 'q2cm_2_ref', 'q2cm_3_ref', 'q2cm_4_ref', 'q2cm_5_ref', 
-                           'q2cm_6_ref', 'q2cm_7_ref', 'q2cm_8_ref', 'q2cm_9_ref', 'q2cm_10_ref', 'q2cm_11_ref', 'q2cm_12_ref', 'q2cm_13_ref', 'q2cm_14_ref', 'q2cm_15_ref']
+            energy_keys = [f'q2cm_{i}_ref' for i in range(15)]
         elif spectrum_type=="energy":
             if remove_ref:
-                energy_keys = ['ecm_0', 'ecm_1', 'ecm_2', 'ecm_3', 'ecm_4', 'ecm_5', 'ecm_6', 'ecm_7', 'ecm_8', 'ecm_9', 'ecm_10', 'ecm_10', 'ecm_11', 'ecm_12', 'ecm_13', 'ecm_14', 'ecm_15']
+                energy_keys = [f'ecm_{i}' for i in range(15)]
             else:
-                energy_keys = ['ecm_0_ref', 'ecm_1_ref', 'ecm_2_ref', 'ecm_3_ref', 'ecm_4_ref', 'ecm_5_ref', 'ecm_6_ref', 'ecm_7_ref', 'ecm_8_ref', 'ecm_9_ref', 'ecm_10_ref', 'ecm_11_ref', 'ecm_12_ref', 'ecm_13_ref', 'ecm_14_ref', 'ecm_15_ref']
+                energy_keys = [f'ecm_{i}_ref' for i in range(15)]
         else:
             print("Bad spectrum type")
 
