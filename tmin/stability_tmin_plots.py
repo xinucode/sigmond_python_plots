@@ -116,8 +116,8 @@ def stability_tmin_plots():
 
             if __name__ == "__main__":
                 f = plt.figure()
-                f.set_figwidth(7)
-                f.set_figheight(7)
+                f.set_figwidth(10)
+                f.set_figheight(6)
             for basis in plots_by_bases:
                 for level in plots_by_bases[basis]:
                     file_stub = f"{basis}_ROT{level}"
