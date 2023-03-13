@@ -116,30 +116,33 @@ def stability_tmin_plots():
 
             if __name__ == "__main__":
                 f = plt.figure()
-                f.set_figwidth(10)
-                f.set_figheight(6)
+                f.set_figwidth(8)
+                f.set_figheight(8)
             for basis in plots_by_bases:
                 for level in plots_by_bases[basis]:
                     file_stub = f"{basis}_ROT{level}"
                     i=0
+                    dd = 0
                     for fit in plots_by_bases[basis][level]:
                         if not combine_fit_forms:
                             file_stub = f"{basis}_ROT{level}_{settings.fit_nicknames[fit]}"
                             i=0
-
                         data = tmin_plots.retrieve_xmgrace_data_xydydy( plots_by_bases[basis][level][fit] )
                         fits = tmin_plots.retrieve_xmgrace_data_xy( plots_by_bases[basis][level][fit] )
 
                         for this_label in data.keys():
+                            chosen_fit = pd.DataFrame()
                             print(f"\t{this_label}")
                             if selections:
                                 legend_label = selections[selected_bases[this_label]][fit]
                                 if fit_choices:
                                     if legend_label==fit_choices[basis][level]:
                                         this_fit = fits[this_label]
-                                        plt.axhline(this_fit['fit'],color="black")
-                                        plt.axhline(this_fit['err'][0],color="black",ls="--")
-                                        plt.axhline(this_fit['err'][1],color="black",ls="--")
+                                        plt.axhline(this_fit['fit'],color="black",zorder=1)
+#                                         plt.axhline(this_fit['err'][0],color="black",ls="--")
+#                                         plt.axhline(this_fit['err'][1],color="black",ls="--")
+                                        plt.axhspan(this_fit['err'][0],this_fit['err'][1],color="darkgrey",zorder=1)
+                                        chosen_fit = data[this_label].loc[ data[this_label][1]==this_fit['fit'] ]
                                 legend_label = rf"{legend_label}"
                             else:
                                 legend_label = this_label.replace(basis,"")
@@ -147,8 +150,14 @@ def stability_tmin_plots():
                                 if combine_fit_forms:
                                     legend_label += f" {settings.fit_nicknames[fit]}"
 
-                            plt.errorbar(np.array(data[this_label][0]),np.array(data[this_label][1]),np.concatenate([[np.array(data[this_label][3])],[np.array(data[this_label][2])]]),  capsize=5, color=settings.colors[i], marker=settings.markers[i], linewidth=0.0, elinewidth=1.5,label = legend_label)
+                            plt.errorbar(np.array(data[this_label][0])+dd,np.array(data[this_label][1]),np.concatenate([[np.array(data[this_label][3])],[np.array(data[this_label][2])]]),  capsize=5, color=settings.colors[i], marker=settings.markers[i], linewidth=0.0, elinewidth=1.5,label = legend_label,zorder=2,markerfacecolor="white")
+                            if not chosen_fit.empty:
+                                plt.errorbar(np.array(chosen_fit[0])+dd,np.array(chosen_fit[1]),np.concatenate([[np.array(chosen_fit[3])],[np.array(chosen_fit[2])]]),  capsize=5, color=settings.colors[i], marker=settings.markers[i], linewidth=0.0, elinewidth=1.5,zorder=3)
+#                                 plt.ylim(np.array(chosen_fit[1])[0]-4.0*np.array(chosen_fit[3])[0],np.array(chosen_fit[1])[0]+6.0*np.array(chosen_fit[2])[0])
+                            if combine_fit_forms:
+                                dd+=0.1
                             i+=1
+                            
 
                         if not combine_fit_forms:
                             print(file_stub)
@@ -172,6 +181,19 @@ def stability_tmin_plots():
                         if graph_type == 'dE':
                             plt.ylabel(r"$adE_{\textup{fit}}$")
                         plt.legend() #bbox_to_anchor=(1.0, 1.5)
+                        
+                        #add ni level S(0)pi(0)
+#                         val = 0.44916829252886237
+#                         err = 0.00208263848513058
+#                         plt.axhspan(val-err,val+err,color="lightgray",zorder=1)
+#                         plt.axhline(val,color="darkgrey",zorder=1)
+# #                         plt.axhline(val-err,color="lightgray",ls="--")
+# #                         plt.axhline(val+err,color="lightgray",ls="--")
+#                         plt.yticks([0.42,0.43,0.44,0.45])
+#                         left, right = plt.xlim()
+#                         plt.text( abs(left-right)*0.75+left -2.0,val+err+0.0005,r"$\Sigma\pi$ threshold",
+#                                  color="black",zorder=3,fontsize="x-small")
+                        
                         if __name__ == "__main__":
                             plt.tight_layout()
                             plt.savefig(f'{os.path.join(out_dir,file_stub)}_tmin.png')
