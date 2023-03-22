@@ -562,7 +562,7 @@ def compare_spectrums():
             elif best_legend_loc:
                 plt.legend(loc=best_legend_loc)
 
-    #         plt.tight_layout()
+            plt.tight_layout()
         if __name__=="__main__":
             plt.savefig(os.path.join(channel,file_directory,file_name))
             plt.clf()
