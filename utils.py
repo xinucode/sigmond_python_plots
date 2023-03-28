@@ -428,3 +428,51 @@ def zip_channel( name,this_file_list, this_type = ".svg", sub_dir = None):
         else:
             this_zip.write(basis+this_type)
     this_zip.close()
+    
+def collectDiagonalRealCorrelatorAtTime(data_object, corr_str, time, tag='rotated_correlators'):
+    corr_key = f"<MCObservable><CorrT>GI{{{corr_str}}} GI{{{corr_str}}} time={time} HermMat<|CorrT><Arg>Re<|Arg><|MCObservable>"
+    return data_object[tag]['Values'][corr_key][()]
+def collectCorrEstimates(data_object, corr_str, tag='rotated_correlators'):
+    t = []
+    values = []
+    errs = []
+    for i in range(64):
+        try:
+            this_corrt = collectDiagonalRealCorrelatorAtTime(data_object,corr_str,i, tag)
+            t.append(i)
+            values.append(this_corrt[0])
+            errs.append(bootstrap_error_by_array(this_corrt))
+        except:
+            pass
+        
+    return t, values, errs
+
+def collectEnergyEstimates(data_object, corr_str, tag='rotated_correlators'):
+    t = []
+    values = []
+    errs = []
+    for i in range(63):
+        try:
+            this_corrt = collectDiagonalRealCorrelatorAtTime(data_object,corr_str,i, tag)
+            this_corrt2 = collectDiagonalRealCorrelatorAtTime(data_object,corr_str,i+1, tag)
+            new_t, this_effE = effenergy(np.array([i,i+1]),np.array([this_corrt,this_corrt2]))
+            if not np.isnan([this_effE[0][0]])[0] and not np.isnan([bootstrap_error_by_array(this_effE[0])])[0]:
+                t.append(new_t[0])
+                values.append(this_effE[0][0])
+                errs.append(bootstrap_error_by_array(this_effE[0]))
+        except Exception as error:
+            pass #print(error)
+        
+    return t, values, errs
+
+def multi_exp_func(t, E0, E1, A0, A1, A2, A3, A4, A5, n2, n3, n4, n5):
+    return A0*np.exp(-E0*t)*(1.0 + A1*np.exp(-E1*E1*t) + A2*np.exp(-n2*E1*E1*t)
+                + A3*np.exp(-n3*E1*E1*t) + A4*np.exp(-n4*E1*E1*t) + A5*np.exp(-n5*E1*E1*t))
+
+def multi_exp_func_dt(t, E0, E1, A0, A1, A2, A3, A4, A5, n2, n3, n4, n5):
+    return -E0*A0*np.exp(-E0*t)*(1.0 +A1*np.exp(-E1*E1*t) + A2*np.exp(-n2*E1*E1*t)
+                + A3*np.exp(-n3*E1*E1*t) + A4*np.exp(-n4*E1*E1*t) + A5*np.exp(-n5*E1*E1*t)) - E1*E1*A0*np.exp(-E0*t)*(A1*np.exp(-E1*E1*t) +n2*A2*np.exp(-n2*E1*E1*t)
+                +n3*A3*np.exp(-n3*E1*E1*t) +n4*A4*np.exp(-n4*E1*E1*t) + n5*A5*np.exp(-n5*E1*E1*t))
+
+def multi_exp_func_eff(t, E0, E1, A0, A1, A2, A3, A4, A5, n2, n3, n4, n5):
+    return np.abs(multi_exp_func_dt(t, E0, E1, A0, A1, A2, A3, A4, A5, n2, n3, n4, n5)/multi_exp_func(t, E0, E1, A0, A1, A2, A3, A4, A5, n2, n3, n4, n5))
