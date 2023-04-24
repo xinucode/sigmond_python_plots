@@ -244,7 +244,7 @@ def compare_spectrums():
                     break
 
         expected_keys = [f"PSQ{i}" for i in range(4)]
-        possible_irreps = ['G1u', 'Hg', 'G1', 'G2', 'F1', 'F2', 'G','A1g','G1g','Hu', 'T1g','A1u','A2u','Eg','Eu',
+        possible_irreps = ['G1u', 'Hg', 'G1', 'G2', 'F1', 'F2', 'G','A1g','A1gm','G1g','Hu', 'T1g','A1u','A2u','Eg','Eu',
                            'T1u','T2g','T2u','A1','A2','B1','B2','E']
 #         diff_keys = [f"d_ecm_{i}" for i in range(15)] #probably change this to elab
         if spectrum_type=="mom":
@@ -428,7 +428,7 @@ def compare_spectrums():
         if not remove_ref and spectrum_type=="energy":
             if configdata['thresholds']:
                 plt.xlim(minx-0.5-dd*(len(vals.keys())/2),(maxx+dd*(len(vals.keys())/2))*1.025+0.5)
-
+                
         if ('compare_spectrums' in configdata.keys()) and (graph=='compare_spectrums'):
             #plot scattering particles
             if do_scattering_particles:

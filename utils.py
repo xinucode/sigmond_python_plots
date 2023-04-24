@@ -21,6 +21,11 @@ def unique(an_ordered_list):
 def effenergy(t, C):
     return t[:-1]+0.5*(t[1]-t[0]), np.log( C[:-1]/C[1:] )
 
+def effenergy2(t, C):
+    return t[1:-1], np.arctanh( (C[:-2]-C[2:])/(C[:-2]+C[2:]) ) #or sinh recode
+
+# def effenergy2(t, C):
+
 # def zig_zag_shifts( irreps, levels, used_levels ):
 #     shifts = np.zeros(len(levels))
 #     used_shifts = np.zeros(len(used_levels))
@@ -447,15 +452,19 @@ def collectCorrEstimates(data_object, corr_str, tag='rotated_correlators'):
         
     return t, values, errs
 
-def collectEnergyEstimates(data_object, corr_str, tag='rotated_correlators'):
+def collectEnergyEstimates(data_object, corr_str, tag='rotated_correlators',func=1):
     t = []
     values = []
     errs = []
-    for i in range(63):
+    for i in range(func-1,63-func):
         try:
+            this_corrt0 = collectDiagonalRealCorrelatorAtTime(data_object,corr_str,i-1, tag)
             this_corrt = collectDiagonalRealCorrelatorAtTime(data_object,corr_str,i, tag)
             this_corrt2 = collectDiagonalRealCorrelatorAtTime(data_object,corr_str,i+1, tag)
-            new_t, this_effE = effenergy(np.array([i,i+1]),np.array([this_corrt,this_corrt2]))
+            if func==1:
+                new_t, this_effE = effenergy(np.array([i,i+1]),np.array([this_corrt,this_corrt2]))
+            else:
+                new_t, this_effE = effenergy2(np.array([i-1,i,i+1]),np.array([this_corrt0,this_corrt,this_corrt2]))
             if not np.isnan([this_effE[0][0]])[0] and not np.isnan([bootstrap_error_by_array(this_effE[0])])[0]:
                 t.append(new_t[0])
                 values.append(this_effE[0][0])
