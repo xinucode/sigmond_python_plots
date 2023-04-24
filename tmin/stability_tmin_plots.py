@@ -153,7 +153,7 @@ def stability_tmin_plots():
                             plt.errorbar(np.array(data[this_label][0])+dd,np.array(data[this_label][1]),np.concatenate([[np.array(data[this_label][3])],[np.array(data[this_label][2])]]),  capsize=5, color=settings.colors[i], marker=settings.markers[i], linewidth=0.0, elinewidth=1.5,label = legend_label,zorder=2,markerfacecolor="white")
                             if not chosen_fit.empty:
                                 plt.errorbar(np.array(chosen_fit[0])+dd,np.array(chosen_fit[1]),np.concatenate([[np.array(chosen_fit[3])],[np.array(chosen_fit[2])]]),  capsize=5, color=settings.colors[i], marker=settings.markers[i], linewidth=0.0, elinewidth=1.5,zorder=3)
-#                                 plt.ylim(np.array(chosen_fit[1])[0]-4.0*np.array(chosen_fit[3])[0],np.array(chosen_fit[1])[0]+6.0*np.array(chosen_fit[2])[0])
+                                plt.ylim(np.array(chosen_fit[1])[0]-4.0*np.array(chosen_fit[3])[0],np.array(chosen_fit[1])[0]+6.0*np.array(chosen_fit[2])[0])
                             if combine_fit_forms:
                                 dd+=0.1
                             i+=1

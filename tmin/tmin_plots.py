@@ -635,7 +635,7 @@ def recolor_data( plot_handle1, this_list, color_index):
         prints the plot_handle to svg file (filestub.svg)
 """
 def print_to_svg(plot_handle,filestub):
-    this_output = plot_handle.hardcopy(filestub+".svg")
+    this_output = plot_handle.hardcopy(filestub+".png")
     if "truncated" in this_output:
         for i in range(0,30):
             if "truncated" in this_output:
@@ -643,7 +643,7 @@ def print_to_svg(plot_handle,filestub):
                 current_size[0] = current_size[0]+0.2
                 plot_handle.set_size(current_size[0],current_size[1])
                 plot_handle.set_graph_view(0, x_max=current_size[0]-settings.standard_xmax_gap, width=settings.standard_graph_width, y_min=settings.standard_y_min, height=settings.standard_graph_height)
-                this_output = plot_handle.hardcopy(filestub+".svg")
+                this_output = plot_handle.hardcopy(filestub+".png")
             else:
                 print("SUcceess")
                 break
@@ -669,6 +669,7 @@ def retrieve_xmgrace_data_xydydy( files ):
             xydydy_data_indexes = get_data_by_type(this_plot,xydydy)
             for (g,s) in xydydy_data_indexes:
                 this_t, this_val, this_err1, this_err2 = this_plot.get_dataset(g,s).get_data()
+#                 print(this_t, this_val)
                 if this_t.shape:
                     t = np.concatenate((t, this_t))
                     val = np.concatenate((val, this_val))
@@ -676,15 +677,16 @@ def retrieve_xmgrace_data_xydydy( files ):
                     err2 = np.concatenate((err2, this_err2))
                 else:
                     if len(t):
-                        np.insert(t, -1, this_t)
-                        np.insert(val, -1, this_val)
-                        np.insert(err1, -1, this_err1)
-                        np.insert(err2, -1, this_err2)
+                        t = np.append(t, [this_t])
+                        val = np.append(val, [this_val])
+                        err1 = np.append(err1, [this_err1])
+                        err2 = np.append(err2, [this_err2])
                     else:
                         t = np.array([this_t])
                         val = np.array([this_val])
                         err1 = np.array([this_err1])
                         err2 = np.array([this_err2])
+#                 print(t, val)
             
         else:
             for file in files[key]:
