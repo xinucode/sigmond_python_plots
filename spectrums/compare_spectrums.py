@@ -405,6 +405,26 @@ def compare_spectrums():
                     if ukey == unique_key:
                         eindexes[dataset][j] = i
 
+        
+        if ('compare_spectrums' in configdata.keys()) and (graph=='compare_spectrums'):
+            #plot scattering particles
+            if do_scattering_particles:
+                f2 = plt.figure()
+                f2.set_figwidth(6)
+                f2.set_figheight(12)
+                dd = 0.1
+
+                for i,dataset in enumerate(scat_vals.keys()):
+                    plt.scatter(scat_indexes2+dd*i,scat_vals[dataset],color=settings.colors[i], marker=settings.markers[i], label = dataset)
+                    plt.errorbar(scat_indexes2+dd*i, scat_vals[dataset], scat_errs[dataset], fmt='.', capsize=5,color=settings.colors[i])
+                plt.ylabel(r"$E_{cm}/m_\pi$")
+                plt.xlabel("Noninteracting Scattering Levels")
+                plt.legend()
+                plt.xticks(scat_indexes2, scat_keys2)
+#                 plt.title(channel)
+                plt.savefig(os.path.join(channel,file_directory,channel+"-ni_comparison_graph.pdf"))
+                plt.clf()
+                        
         #plot spectrum
         if __name__=="__main__":
             f = plt.figure()
@@ -429,23 +449,6 @@ def compare_spectrums():
             if configdata['thresholds']:
                 plt.xlim(minx-0.5-dd*(len(vals.keys())/2),(maxx+dd*(len(vals.keys())/2))*1.025+0.5)
                 
-        if ('compare_spectrums' in configdata.keys()) and (graph=='compare_spectrums'):
-            #plot scattering particles
-            if do_scattering_particles:
-                f2 = plt.figure()
-                f2.set_figwidth(6)
-                f2.set_figheight(12)
-                dd = 0.1
-
-                for i,dataset in enumerate(scat_vals.keys()):
-                    plt.scatter(scat_indexes2+dd*i,scat_vals[dataset],color=settings.colors[i], marker=settings.markers[i], label = dataset)
-                    plt.errorbar(scat_indexes2+dd*i, scat_vals[dataset], scat_errs[dataset], fmt='.', capsize=5,color=settings.colors[i])
-                plt.ylabel(r"$E_{cm}/m_\pi$")
-                plt.xlabel("Noninteracting Scattering Levels")
-                plt.legend()
-#                 plt.xticks(scat_indexes2, scat_keys2)
-#                 plt.title(channel)
-#                 plt.savefig(os.path.join(channel,configdata['compare_spectrums']['file_directory'],channel+"-ni_comparison_graph.pdf"))
 
 
         if not remove_ref and spectrum_type=="energy":

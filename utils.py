@@ -22,7 +22,13 @@ def effenergy(t, C):
     return t[:-1]+0.5*(t[1]-t[0]), np.log( C[:-1]/C[1:] )
 
 def effenergy2(t, C):
-    return t[1:-1], np.arctanh( (C[:-2]-C[2:])/(C[:-2]+C[2:]) ) #or sinh recode
+    return t[1:-1], np.arctanh( (C[:-2]-C[2:])/(C[:-2]+C[2:]) ) #alternate function
+
+def effenergy3(t, C):
+    return t[1:-1], -2.0*( C[2:]-2.0*C[1:-1]+C[:-2] )/( C[2:]-C[:-2] ) #-C"/C'
+
+# def effenergy4(t, C):
+#     return t[1:-1],  #-C/I[C]
 
 # def effenergy2(t, C):
 
@@ -463,8 +469,10 @@ def collectEnergyEstimates(data_object, corr_str, tag='rotated_correlators',func
             this_corrt2 = collectDiagonalRealCorrelatorAtTime(data_object,corr_str,i+1, tag)
             if func==1:
                 new_t, this_effE = effenergy(np.array([i,i+1]),np.array([this_corrt,this_corrt2]))
-            else:
+            elif func==2:
                 new_t, this_effE = effenergy2(np.array([i-1,i,i+1]),np.array([this_corrt0,this_corrt,this_corrt2]))
+            elif func==3:
+                new_t, this_effE = effenergy3(np.array([i-1,i,i+1]),np.array([this_corrt0,this_corrt,this_corrt2]))
             if not np.isnan([this_effE[0][0]])[0] and not np.isnan([bootstrap_error_by_array(this_effE[0])])[0]:
                 t.append(new_t[0])
                 values.append(this_effE[0][0])
@@ -485,3 +493,13 @@ def multi_exp_func_dt(t, E0, E1, A0, A1, A2, A3, A4, A5, n2, n3, n4, n5):
 
 def multi_exp_func_eff(t, E0, E1, A0, A1, A2, A3, A4, A5, n2, n3, n4, n5):
     return np.abs(multi_exp_func_dt(t, E0, E1, A0, A1, A2, A3, A4, A5, n2, n3, n4, n5)/multi_exp_func(t, E0, E1, A0, A1, A2, A3, A4, A5, n2, n3, n4, n5))
+
+
+def multi_exp_func(t, E0, E1, E2, E3, E4, A0, A1, A2, A3, A4):
+    return A0*np.exp(-E0*t)*(1.0 + A1*np.exp(-E1*t) + A2*np.exp(-E2*t) + A3*np.exp(-E3*t) + A4*np.exp(-E4*t))
+
+def multi_exp_func_dt(t, E0, E1, E2, E3, E4, A0, A1, A2, A3, A4):
+    return -E0*A0*np.exp(-E0*t)*(1.0 + A1*np.exp(-E1*t) + A2*np.exp(-E2*t) + A3*np.exp(-E3*t) + A4*np.exp(-E4*t)) + A0*np.exp(-E0*t)*(-E1*A1*np.exp(-E1*t) + -E2*A2*np.exp(-E2*t) + -E3*A3*np.exp(-E3*t) + -E4*A4*np.exp(-E4*t))
+
+def multi_exp_func_eff(t, E0, E1, E2, E3, E4, A0, A1, A2, A3, A4):
+    return np.abs(multi_exp_func_dt(t, E0, E1, E2, E3, E4, A0, A1, A2, A3, A4)/multi_exp_func(t, E0, E1, E2, E3, E4, A0, A1, A2, A3, A4))
