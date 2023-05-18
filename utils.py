@@ -56,6 +56,60 @@ def effenergy3(t, C):
         
 #     return shifts,used_shifts
 
+def shift_levels( indexes, levels, vals, errors, shifted_array=np.array([]), index=0 ):
+    if indexes.any():
+        if not shifted_array.any():
+            shifted_array = np.array([0.0]*len(indexes))
+            
+        if index==len(indexes):
+            return shifted_array
+            
+        these_indexes = indexes[index:]
+        this_remaining_irrep_index = these_indexes[0]
+        this_remaining_irrep_indexes = np.where( these_indexes==this_remaining_irrep_index )[0]+index
+        
+        if len(this_remaining_irrep_indexes)==1:
+            return shift_levels( indexes, levels, vals, errors, shifted_array, index=index+1 )
+        else:
+            shift = 1
+            this_val_upper = vals[index]+errors[index]
+            this_val_lower = vals[index]-errors[index]
+            this_cluster = [index]
+            for i in this_remaining_irrep_indexes[1:]:
+                overlap = False  
+                compare_upper = vals[i]+errors[i]
+                compare_lower = vals[i]-errors[i]
+                if shifted_array[i]!=0.0:
+                    continue
+                if compare_lower<=this_val_lower and compare_upper>=this_val_upper: #set new bounds on this_value
+                    overlap=True
+                elif compare_lower>=this_val_lower and compare_upper<=this_val_upper:
+                    overlap=True
+                elif compare_lower<=this_val_upper and compare_lower>=this_val_lower and compare_upper>=this_val_upper:
+                    overlap=True
+                elif compare_lower<=this_val_lower and compare_upper<=this_val_upper and compare_upper>=this_val_lower:
+                    overlap=True
+                if overlap:
+                    shifted_array[i] = shift
+                    this_cluster.append(i)
+                    if shift>0:
+                        shift = -shift
+                    else:
+                        shift = abs(shift)+1
+            
+            if len(this_cluster)%2==0 and len(this_cluster):
+                for i in this_cluster:
+                    shifted_array[i]-=0.5
+            
+            new_index = np.where(shifted_array[index+1:]==0.0)[0]
+            if new_index.any():
+                return shift_levels( indexes, levels, vals, errors, shifted_array, index=new_index[0]+index+1 )
+            else:
+                return shifted_array
+                        
+    return 0.0
+    
+
 #uses the irrep and momentum in form G1u(0) and orders based on momentum number + irrep's "alphabetical" value
 def sort_by_mom(irrep):
     parts = irrep.split("(")
@@ -164,7 +218,7 @@ def retrieve_sigmond_script_data_dat(file,spectrum_type):
         print("Code this (utils.retrieve_sigmond_script_data_dat) if possible.")
         return None
     dataframe_input.insert(3, "val", ecm)
-    errs = np.zeros( len(dataframe_input["obs-irrep"]) )
+    errs = dataframe_input["a"] #np.zeros( len(dataframe_input["obs-irrep"]) )
     dataframe_input.insert(4, "err", errs)
     dataset = pd.DataFrame(columns=["obs-mom","obs-irrep","obs-level", 'val', 'err'],data=dataframe_input[["obs-mom","obs-irrep","obs-level","val","err"]])
     return dataset

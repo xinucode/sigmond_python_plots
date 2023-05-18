@@ -460,9 +460,9 @@ def compare_spectrums():
                         threshold_value+=Refs[particle][0]
                         threshold_label=threshold_label.replace(settings.latex_format[particle], particle)
                         threshold_label=threshold_label.replace(particle, settings.latex_format[particle])
-
+                    miny,maxy = plt.ylim()
                     plt.hlines(threshold_value,minx-dd*(len(vals.keys())/2),maxx+dd*(len(vals.keys())/2),color='black', linestyle="--", zorder=1) 
-                    plt.text( (maxx+dd*(len(vals.keys())/2))*(1.01),threshold_value-0.04, threshold_label, zorder=6,size="x-small")
+                    plt.text( (maxx+dd*(len(vals.keys())/2))*(1.01),threshold_value-0.015*abs(maxy-miny), threshold_label, zorder=6,size="x-small")
         if spectrum_type=="mom":
             if "yrange" in configdata[graph].keys():
                 if (0.0>configdata[graph]["yrange"][0]) and (0.0<configdata[graph]["yrange"][1]):
@@ -471,46 +471,51 @@ def compare_spectrums():
                 plt.hlines(0.0,minx-dd*(len(vals.keys())/2),maxx+dd*(len(vals.keys())/2),color='black', linestyle="--", linewidth=1.0, zorder=1)
 
         for i,dataset in enumerate(vals.keys()):
+            print(dataset)
             shifted_array = 0.0 
             used_shifted_array = 0.0 
-    #         if ('compare_spectrums' in configdata.keys()) and (graph=='compare_spectrums'):
-            if ('zshift' in configdata[graph].keys() or 'sshift' in configdata[graph].keys() or 's4shift' in configdata[graph].keys() or 's5shift' in configdata[graph].keys()) and dataset!="fit":
-                shifted_array = []
-                for j,lev in enumerate(levs[dataset]):
-                    this_shift = 0.0
-                    if 'zshift' in configdata[graph].keys():
-                        if keys[dataset][j] in configdata[graph]['zshift']:
-                            this_shift = 0.1*dd*settings.zigzag_shifts[lev]
-                    if 'sshift' in configdata[graph].keys():
-                        if keys[dataset][j] in configdata[graph]['sshift']:
-                            this_shift = 0.2*dd*settings.stripe_shifts[lev]
-                    if 's4shift' in configdata[graph].keys():
-                        if keys[dataset][j] in configdata[graph]['s4shift']:
-                            this_shift = 0.3*dd*settings.stripe4_shifts[lev]
-                    if 's5shift' in configdata[graph].keys():
-                        if keys[dataset][j] in configdata[graph]['s5shift']:
-                            this_shift = 0.2*dd*settings.stripe5_shifts[lev]
-                    shifted_array.append(this_shift)
+#         if ('compare_spectrums' in configdata.keys()) and (graph=='compare_spectrums'):
+#             if ('zshift' in configdata[graph].keys() or 'sshift' in configdata[graph].keys() or 's4shift' in configdata[graph].keys() or 's5shift' in configdata[graph].keys()): # and dataset!="fit"
+#                 shifted_array = []
+#                 for j,lev in enumerate(levs[dataset]):
+#                     this_shift = 0.0
+#                     if 'zshift' in configdata[graph].keys():
+#                         if keys[dataset][j] in configdata[graph]['zshift']:
+#                             this_shift = 0.1*dd*settings.zigzag_shifts[lev]
+#                     if 'sshift' in configdata[graph].keys():
+#                         if keys[dataset][j] in configdata[graph]['sshift']:
+#                             this_shift = 0.2*dd*settings.stripe_shifts[lev]
+#                     if 's4shift' in configdata[graph].keys():
+#                         if keys[dataset][j] in configdata[graph]['s4shift']:
+#                             this_shift = 0.3*dd*settings.stripe4_shifts[lev]
+#                     if 's5shift' in configdata[graph].keys():
+#                         if keys[dataset][j] in configdata[graph]['s5shift']:
+#                             this_shift = 0.2*dd*settings.stripe5_shifts[lev]
+#                     shifted_array.append(this_shift)
 
-                used_shifted_array = []
-                for j,lev in enumerate(levs_used[dataset]):
-                    this_used_shift = 0.0
-                    if 'zshift' in configdata[graph].keys():
-                        if keys_used[dataset][j] in configdata[graph]['zshift']:
-                            this_used_shift = 0.1*dd*settings.zigzag_shifts[lev]
-                    if 'sshift' in configdata[graph].keys():
-                        if keys_used[dataset][j] in configdata[graph]['sshift']:
-                            this_used_shift = 0.2*dd*settings.stripe_shifts[lev]
-                    if 's4shift' in configdata[graph].keys():
-                        if keys_used[dataset][j] in configdata[graph]['s4shift']:
-                            this_used_shift = 0.3*dd*settings.stripe4_shifts[lev]
-                    if 's5shift' in configdata[graph].keys():
-                        if keys_used[dataset][j] in configdata[graph]['s5shift']:
-                            this_used_shift = 0.2*dd*settings.stripe5_shifts[lev]
-                    used_shifted_array.append(this_used_shift)
+#                 used_shifted_array = []
+#                 for j,lev in enumerate(levs_used[dataset]):
+#                     this_used_shift = 0.0
+#                     if 'zshift' in configdata[graph].keys():
+#                         if keys_used[dataset][j] in configdata[graph]['zshift']:
+#                             this_used_shift = 0.1*dd*settings.zigzag_shifts[lev]
+#                     if 'sshift' in configdata[graph].keys():
+#                         if keys_used[dataset][j] in configdata[graph]['sshift']:
+#                             this_used_shift = 0.2*dd*settings.stripe_shifts[lev]
+#                     if 's4shift' in configdata[graph].keys():
+#                         if keys_used[dataset][j] in configdata[graph]['s4shift']:
+#                             this_used_shift = 0.3*dd*settings.stripe4_shifts[lev]
+#                     if 's5shift' in configdata[graph].keys():
+#                         if keys_used[dataset][j] in configdata[graph]['s5shift']:
+#                             this_used_shift = 0.2*dd*settings.stripe5_shifts[lev]
+#                     used_shifted_array.append(this_used_shift)
 
-                shifted_array = np.array(shifted_array)
-                used_shifted_array = np.array(used_shifted_array)
+#                 shifted_array = np.array(shifted_array)
+#                 used_shifted_array = np.array(used_shifted_array)
+
+            # utils.shift_levels(np.array(indexes[dataset]),levs[dataset],vals[dataset],errs[dataset])
+            used_shifted_array = 0.2*dd*utils.shift_levels(np.array(indexes_used[dataset]),levs_used[dataset],vals_used[dataset],errs_used[dataset])
+            
 
             if used_levels:
                 marker_color = 'white'
