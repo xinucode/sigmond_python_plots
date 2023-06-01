@@ -116,8 +116,10 @@ def stability_tmin_plots():
 
             if __name__ == "__main__":
                 f = plt.figure()
-                f.set_figwidth(8)
-                f.set_figheight(8)
+#                 f.set_figwidth(8)
+#                 f.set_figheight(8)
+                f.set_figheight(6)
+                f.set_figwidth(10)
             for basis in plots_by_bases:
                 for level in plots_by_bases[basis]:
                     file_stub = f"{basis}_ROT{level}"
@@ -153,7 +155,7 @@ def stability_tmin_plots():
                             plt.errorbar(np.array(data[this_label][0])+dd,np.array(data[this_label][1]),np.concatenate([[np.array(data[this_label][3])],[np.array(data[this_label][2])]]),  capsize=5, color=settings.colors[i], marker=settings.markers[i], linewidth=0.0, elinewidth=1.5,label = legend_label,zorder=2,markerfacecolor="white")
                             if not chosen_fit.empty:
                                 plt.errorbar(np.array(chosen_fit[0])+dd,np.array(chosen_fit[1]),np.concatenate([[np.array(chosen_fit[3])],[np.array(chosen_fit[2])]]),  capsize=5, color=settings.colors[i], marker=settings.markers[i], linewidth=0.0, elinewidth=1.5,zorder=3)
-                                plt.ylim(np.array(chosen_fit[1])[0]-4.0*np.array(chosen_fit[3])[0],np.array(chosen_fit[1])[0]+6.0*np.array(chosen_fit[2])[0])
+#                                 plt.ylim(np.array(chosen_fit[1])[0]-4.0*np.array(chosen_fit[3])[0],np.array(chosen_fit[1])[0]+6.0*np.array(chosen_fit[2])[0])
                             if combine_fit_forms:
                                 dd+=0.1
                             i+=1
@@ -177,22 +179,24 @@ def stability_tmin_plots():
                     if combine_fit_forms and plots_by_bases[basis][level]:
                         print(file_stub)
                         plt.xlabel(r"$t_{\textup{min}}/a$")
-                        plt.ylabel(r"$aE_{\textup{fit}}$")
+                        plt.ylabel(r"$aE_{\textup{lab}}$")
                         if graph_type == 'dE':
                             plt.ylabel(r"$adE_{\textup{fit}}$")
                         plt.legend() #bbox_to_anchor=(1.0, 1.5)
                         
                         #add ni level S(0)pi(0)
-#                         val = 0.44916829252886237
-#                         err = 0.00208263848513058
-#                         plt.axhspan(val-err,val+err,color="lightgray",zorder=1)
-#                         plt.axhline(val,color="darkgrey",zorder=1)
-# #                         plt.axhline(val-err,color="lightgray",ls="--")
-# #                         plt.axhline(val+err,color="lightgray",ls="--")
-#                         plt.yticks([0.42,0.43,0.44,0.45])
-#                         left, right = plt.xlim()
-#                         plt.text( abs(left-right)*0.75+left -2.0,val+err+0.0005,r"$\Sigma\pi$ threshold",
-#                                  color="black",zorder=3,fontsize="x-small")
+                        val = 0.44916829252886237
+                        err = 0.00208263848513058
+                        plt.axhspan(val-err,val+err,color="lightgray",zorder=1)
+                        plt.axhline(val,color="darkgrey",zorder=1)
+#                         plt.axhline(val-err,color="lightgray",ls="--")
+#                         plt.axhline(val+err,color="lightgray",ls="--")
+                        plt.yticks([0.42,0.43,0.44,0.45])
+                        left, right = plt.xlim()
+                        down, up = plt.ylim()
+                        plt.ylim(down, up+0.0005)
+                        plt.text( abs(left-right)*0.75+left -2.0,val+err+0.00025,r"$\pi\Sigma$ threshold",
+                                 color="black",zorder=3,fontsize="x-small")
                         
                         if __name__ == "__main__":
                             plt.tight_layout()
