@@ -239,21 +239,25 @@ def compare_spectrums():
             value = 0.0
             for file in files.keys():
                 value = utils.find_rest_mass( datasets[file], scat )
-                if value:
-                    Refs[scat] = value
-                    break
+                if not value:
+                    continue
+                if not value[0]:
+                    continue
+                Refs[scat] = value
+                break
 
         expected_keys = [f"PSQ{i}" for i in range(4)]
         possible_irreps = ['G1u', 'Hg', 'G1', 'G2', 'F1', 'F2', 'G','A1g','A1gm','G1g','Hu', 'T1g','A1u','A2u','Eg','Eu',
                            'T1u','T2g','T2u','A1','A2','B1','B2','E']
 #         diff_keys = [f"d_ecm_{i}" for i in range(15)] #probably change this to elab
+        max_level = 9
         if spectrum_type=="mom":
-            energy_keys = [f'q2cm_{i}_ref' for i in range(15)]
+            energy_keys = [f'q2cm_{i}_ref' for i in range(max_level)]
         elif spectrum_type=="energy":
             if remove_ref:
-                energy_keys = [f'ecm_{i}' for i in range(15)]
+                energy_keys = [f'ecm_{i}' for i in range(max_level)]
             else:
-                energy_keys = [f'ecm_{i}_ref' for i in range(15)]
+                energy_keys = [f'ecm_{i}_ref' for i in range(max_level)]
         else:
             print("Bad spectrum type")
 
@@ -556,7 +560,10 @@ def compare_spectrums():
         if not remove_xlabel:
             plt.xlabel(r"$\Lambda(d^2)$")
         latex_keys = [settings.latex_format[key.split('(')[0]]+"("+key.split('(')[1] for key in keys[somekey]+keys_used[somekey]]
+        
+#         print(len(list(indexes[somekey])+list(indexes_used[somekey])),len(latex_keys))
         plt.xticks(utils.unique(list(indexes[somekey])+list(indexes_used[somekey])), utils.unique(latex_keys),size="small")
+#         plt.xticks(list(indexes[somekey])+list(indexes_used[somekey]), latex_keys,size="small")
 #         plt.xticks([])
         if 'xrange' in configdata[graph].keys():
             print("Old xrange:", plt.xlim() )

@@ -138,10 +138,10 @@ def stability_tmin_plots():
                                 if fit_choices:
                                     if legend_label==fit_choices[basis][level]:
                                         this_fit = fits[this_label]
-                                        plt.axhline(this_fit['fit'],color="black",zorder=1)
 #                                         plt.axhline(this_fit['err'][0],color="black",ls="--")
 #                                         plt.axhline(this_fit['err'][1],color="black",ls="--")
                                         plt.axhspan(this_fit['err'][0],this_fit['err'][1],color="darkgrey",zorder=1)
+                                        plt.axhline(this_fit['fit'],color="black",zorder=1)
                                         chosen_fit = data[this_label].loc[ data[this_label][1]==this_fit['fit'] ]
                                 legend_label = rf"{legend_label}"
                             else:
