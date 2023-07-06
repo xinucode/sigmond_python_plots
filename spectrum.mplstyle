@@ -464,7 +464,7 @@ axes.labelcolor:    black
 #xtick.major.pad:     3.5     # distance to major tick label in points
 #xtick.minor.pad:     3.4     # distance to the minor tick label in points
 #xtick.color:         black   # color of the tick labels
-xtick.labelsize:     medium  # fontsize of the tick labels
+xtick.labelsize:     small  # fontsize of the tick labels
 #xtick.direction:     out     # direction: {in, out, inout}
 #xtick.minor.visible: False   # visibility of minor ticks on x-axis
 #xtick.major.top:     True    # draw x axis top major ticks
@@ -484,7 +484,7 @@ xtick.labelsize:     medium  # fontsize of the tick labels
 #ytick.major.pad:     3.5     # distance to major tick label in points
 #ytick.minor.pad:     3.4     # distance to the minor tick label in points
 #ytick.color:         black   # color of the tick labels
-#ytick.labelsize:     medium  # fontsize of the tick labels
+ytick.labelsize:     small  # fontsize of the tick labels
 #ytick.direction:     out     # direction: {in, out, inout}
 #ytick.minor.visible: False   # visibility of minor ticks on y-axis
 #ytick.major.left:    True    # draw y axis left major ticks
@@ -517,7 +517,7 @@ legend.shadow:        True    # if True, give background a shadow effect
 #legend.numpoints:     1        # the number of marker points in the legend line
 #legend.scatterpoints: 1        # number of scatter points
 #legend.markerscale:   1.0      # the relative size of legend markers vs. original
-legend.fontsize:      17.0
+legend.fontsize:      20.0
 legend.title_fontsize: 25.0    # None sets to the same as the default axes.
 
 ## Dimensions as fraction of fontsize:
