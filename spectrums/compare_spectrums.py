@@ -223,6 +223,14 @@ def compare_spectrums():
         if "graph_unused_levels" in  configdata[graph].keys():
             graph_unused_levels = configdata[graph]["graph_unused_levels"]
             
+        if "remove_ref" in configdata[graph].keys():
+            remove_ref = configdata[graph]["remove_ref"]
+            
+        if spectrum_type=="energy":
+            energy_key = "ecm"
+            if "energy_key" in  configdata[graph].keys():
+                energy_key = configdata[graph]["energy_key"]
+            
         #########################################################
         ############### import info from files ##################
         #########################################################
@@ -255,9 +263,9 @@ def compare_spectrums():
             energy_keys = [f'q2cm_{i}_ref' for i in range(max_level)]
         elif spectrum_type=="energy":
             if remove_ref:
-                energy_keys = [f'ecm_{i}' for i in range(max_level)]
+                energy_keys = [f'{energy_key}_{i}' for i in range(max_level)]
             else:
-                energy_keys = [f'ecm_{i}_ref' for i in range(max_level)]
+                energy_keys = [f'{energy_key}_{i}_ref' for i in range(max_level)]
         else:
             print("Bad spectrum type")
 
@@ -451,7 +459,7 @@ def compare_spectrums():
         plt.xlim(minx-0.5-dd*(len(vals.keys())/2),maxx+0.5+dd*(len(vals.keys())/2))
         if not remove_ref and spectrum_type=="energy":
             if configdata['thresholds']:
-                plt.xlim(minx-0.5-dd*(len(vals.keys())/2),(maxx+dd*(len(vals.keys())/2))*1.025+0.5)
+                plt.xlim(minx-0.5-dd*len(vals.keys()),(maxx+dd*len(vals.keys()))*1.025+0.5)
                 
 
 
@@ -465,8 +473,8 @@ def compare_spectrums():
                         threshold_label=threshold_label.replace(settings.latex_format[particle], particle)
                         threshold_label=threshold_label.replace(particle, settings.latex_format[particle])
                     miny,maxy = plt.ylim()
-                    plt.hlines(threshold_value,minx-dd*(len(vals.keys())/2),maxx+dd*(len(vals.keys())/2),color='black', linestyle="--", zorder=1) 
-                    plt.text( (maxx+dd*(len(vals.keys())/2))*(1.01),threshold_value-0.015*abs(maxy-miny), threshold_label, zorder=6,size="x-small")
+                    plt.hlines(threshold_value,minx-dd*len(vals.keys()),maxx+dd*len(vals.keys()),color='black', linestyle="--", zorder=1) 
+                    plt.text( (maxx+dd*len(vals.keys()))*(1.01),threshold_value-0.015*abs(maxy-miny), threshold_label, zorder=6,size="x-small")
         if spectrum_type=="mom":
             if "yrange" in configdata[graph].keys():
                 if (0.0>configdata[graph]["yrange"][0]) and (0.0<configdata[graph]["yrange"][1]):
@@ -519,6 +527,8 @@ def compare_spectrums():
 
             # utils.shift_levels(np.array(indexes[dataset]),levs[dataset],vals[dataset],errs[dataset])
             used_shifted_array = 0.2*dd*utils.shift_levels(np.array(indexes_used[dataset]),levs_used[dataset],vals_used[dataset],errs_used[dataset])
+            if not used_levels:
+                shifted_array = 0.2*dd*utils.shift_levels(np.array(indexes[dataset]),levs[dataset],vals[dataset],errs[dataset])
             
 
             if used_levels:
@@ -577,7 +587,7 @@ def compare_spectrums():
             elif best_legend_loc:
                 plt.legend(loc=best_legend_loc)
 
-            plt.tight_layout()
+        plt.tight_layout()
         if __name__=="__main__":
             plt.savefig(os.path.join(channel,file_directory,file_name))
             plt.clf()
