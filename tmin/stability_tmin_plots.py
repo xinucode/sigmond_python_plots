@@ -5,6 +5,8 @@ import yaml
 import pandas as pd
 import matplotlib.pyplot as plt
 import argparse
+import itertools
+import matplotlib.axes
 
 import tmin_plots
 sys.path.insert(0,'../')
@@ -68,6 +70,14 @@ def stability_tmin_plots():
             if not os.path.exists(out_dir):
                 os.mkdir(out_dir)
 
+            wide = False
+            if 'wide' in channel:
+                wide = channel['wide']
+                
+            grid = False
+            if 'grid' in channel:
+                grid = channel['grid']
+                
             graph_type = 'E'
             if 'graph_type' in channel:
                 graph_type = channel['graph_type']
@@ -93,6 +103,7 @@ def stability_tmin_plots():
             these_tmin_plots = utils.find_tmin_spectrum_files_python(channel)
             
             plots_by_bases = {}
+            
             for basis in channel['bases']:
                 plots_by_bases[basis] = {}
                 for pivot in these_tmin_plots.keys():
@@ -113,18 +124,47 @@ def stability_tmin_plots():
 
             #generate plots for each bases level and fit
             files_to_zip = []
-
+            
+            #find out the number of plots
+            num_plots = 0
+            for basis in fit_choices:
+                if basis in channel['bases']:
+                    num_plots += len(fit_choices[basis])
+                    
             if __name__ == "__main__":
-                f = plt.figure()
-#                 f.set_figwidth(8)
-#                 f.set_figheight(8)
-                f.set_figheight(6)
-                f.set_figwidth(10)
+                if grid:
+                    f, axes = plt.subplots(int(np.ceil(num_plots/4)),4)
+                else:
+                    f, ax = plt.subplots(1,1)
+#                     ax = axes[0]
+                if grid:
+                    f.set_figheight(int(np.ceil(num_plots/4))*6)
+                    f.set_figwidth(30)
+                elif wide:
+                    f.set_figheight(6)
+                    f.set_figwidth(10)
+                else:
+                    f.set_figwidth(8)
+                    f.set_figheight(8)
+                    
+            ii=0;
             for basis in plots_by_bases:
                 for level in plots_by_bases[basis]:
+                    if not plots_by_bases[basis][level]:
+                        continue
+                    if level not in fit_choices[basis].keys():
+                        continue
+                        
+                    ax = axes[int(np.floor(ii/4)),ii%4]
                     file_stub = f"{basis}_ROT{level}"
                     i=0
                     dd = 0
+                    for fit,this_label in itertools.product(plots_by_bases[basis][level],selected_bases.keys()):
+                        if fit in selections[selected_bases[this_label]]:
+                            if fit_choices[basis][level] in selections[selected_bases[this_label]][fit]:
+                                fit_label_index = selections[selected_bases[this_label]][fit].index(fit_choices[basis][level])
+                                break
+                            
                     for fit in plots_by_bases[basis][level]:
                         if not combine_fit_forms:
                             file_stub = f"{basis}_ROT{level}_{settings.fit_nicknames[fit]}"
@@ -136,15 +176,17 @@ def stability_tmin_plots():
                             chosen_fit = pd.DataFrame()
                             print(f"\t{this_label}")
                             if selections:
-                                legend_label = selections[selected_bases[this_label]][fit]
+                                legend_label = selections[selected_bases[this_label]][fit][fit_label_index]
                                 if fit_choices:
-                                    if legend_label==fit_choices[basis][level]:
+                                    if fit_choices[basis][level] in selections[selected_bases[this_label]][fit]:
+                                        legend_label = fit_choices[basis][level]
                                         this_fit = fits[this_label]
 #                                         plt.axhline(this_fit['err'][0],color="black",ls="--")
 #                                         plt.axhline(this_fit['err'][1],color="black",ls="--")
-                                        plt.axhspan(this_fit['err'][0],this_fit['err'][1],color="darkgrey",zorder=1)
-                                        plt.axhline(this_fit['fit'],color="black",zorder=1)
+                                        ax.axhspan(this_fit['err'][0],this_fit['err'][1],color="darkgrey",zorder=1)
+                                        ax.axhline(this_fit['fit'],color="black",zorder=1)
                                         chosen_fit = data[this_label].loc[ data[this_label][1]==this_fit['fit'] ]
+                    
                                 legend_label = rf"{legend_label}"
                             else:
                                 legend_label = this_label.replace(basis,"")
@@ -152,10 +194,10 @@ def stability_tmin_plots():
                                 if combine_fit_forms:
                                     legend_label += f" {settings.fit_nicknames[fit]}"
 
-                            plt.errorbar(np.array(data[this_label][0])+dd,np.array(data[this_label][1]),np.concatenate([[np.array(data[this_label][3])],[np.array(data[this_label][2])]]),  capsize=5, color=settings.colors[i], marker=settings.markers[i], linewidth=0.0, elinewidth=1.5,label = legend_label,zorder=2,markerfacecolor="white")
+                            ax.errorbar(np.array(data[this_label][0])+dd,np.array(data[this_label][1]),np.concatenate([[np.array(data[this_label][3])],[np.array(data[this_label][2])]]),  capsize=5, color=settings.colors[i], marker=settings.markers[i], linewidth=0.0, elinewidth=1.5,label = legend_label,zorder=2,markerfacecolor="white")
                             if not chosen_fit.empty:
-                                plt.errorbar(np.array(chosen_fit[0])+dd,np.array(chosen_fit[1]),np.concatenate([[np.array(chosen_fit[3])],[np.array(chosen_fit[2])]]),  capsize=5, color=settings.colors[i], marker=settings.markers[i], linewidth=0.0, elinewidth=1.5,zorder=3)
-#                                 plt.ylim(np.array(chosen_fit[1])[0]-4.0*np.array(chosen_fit[3])[0],np.array(chosen_fit[1])[0]+6.0*np.array(chosen_fit[2])[0])
+                                ax.errorbar(np.array(chosen_fit[0])+dd,np.array(chosen_fit[1]),np.concatenate([[np.array(chosen_fit[3])],[np.array(chosen_fit[2])]]),  capsize=5, color=settings.colors[i], marker=settings.markers[i], linewidth=0.0, elinewidth=1.5,zorder=3)
+#                                 ax.ylim(np.array(chosen_fit[1])[0]-4.0*np.array(chosen_fit[3])[0],np.array(chosen_fit[1])[0]+6.0*np.array(chosen_fit[2])[0])
                             if combine_fit_forms:
                                 dd+=0.1
                             i+=1
@@ -163,51 +205,69 @@ def stability_tmin_plots():
 
                         if not combine_fit_forms:
                             print(file_stub)
-                            plt.xlabel(r"$t_{\textup{min}}/a$")
-                            plt.ylabel(r"$aE_{\textup{fit}}$")
+                            ax.set_xlabel(r"$t_{\textup{min}}/a$")
+                            ax.set_ylabel(r"$aE_{\textup{fit}}$")
                             if graph_type == 'dE':
-                                plt.ylabel(r"$adE_{\textup{fit}}$")
-                            plt.legend()
-                            if __name__ == "__main__":
+                                ax.ylabel(r"$adE_{\textup{fit}}$")
+                            ax.legend()
+                            if __name__ == "__main__" and not grid:
                                 plt.tight_layout()
                                 plt.savefig(f'{os.path.join(out_dir,file_stub)}_tmin.png')
                                 files_to_zip.append(f'{file_stub}_tmin.png')
                                 plt.savefig(f'{os.path.join(out_dir,file_stub)}_tmin.pdf')
                                 files_to_zip.append(f'{file_stub}_tmin.pdf')
-                                plt.clf()
+                                ax.cla()
 
                     if combine_fit_forms and plots_by_bases[basis][level]:
                         print(file_stub)
-                        plt.xlabel(r"$t_{\textup{min}}/a$")
-                        plt.ylabel(r"$aE_{\textup{lab}}$")
-                        if graph_type == 'dE':
-                            plt.ylabel(r"$adE_{\textup{fit}}$")
-                        plt.legend() #bbox_to_anchor=(1.0, 1.5)
+                        if not grid or int(np.floor(ii/4))==int(np.ceil(num_plots/4))-1:
+                            ax.set_xlabel(r"$t_{\textup{min}}/a$")
+                        if not grid or ii%4==0:
+                            ax.set_ylabel(r"$aE_{\textup{lab}}$")
+                            if graph_type == 'dE':
+                                ax.set_ylabel(r"$adE_{\textup{fit}}$")
+                        irrepstr = file_stub.split("_")[2]
+                        momstr = file_stub.split("_")[3].strip("P")
+                        levelstr = file_stub.split("_")[4].replace("ROT", "ROT ")
+                        if grid:
+                            ax.legend(title=f"{settings.latex_format[irrepstr]}({momstr}) {levelstr}")
+                        else:
+                            ax.legend() #bbox_to_anchor=(1.0, 1.5)
                         
                         #add ni level S(0)pi(0)
-                        val = 0.44916829252886237
-                        err = 0.00208263848513058
-                        plt.axhspan(val-err,val+err,color="lightgray",zorder=1)
-                        plt.axhline(val,color="darkgrey",zorder=1)
-#                         plt.axhline(val-err,color="lightgray",ls="--")
-#                         plt.axhline(val+err,color="lightgray",ls="--")
-                        plt.yticks([0.42,0.43,0.44,0.45])
-                        left, right = plt.xlim()
-                        down, up = plt.ylim()
-                        plt.ylim(down, up+0.0005)
-                        plt.text( abs(left-right)*0.75+left -2.0,val+err+0.00025,r"$\pi\Sigma$ threshold",
-                                 color="black",zorder=3,fontsize="x-small")
+                        if wide:
+                            val = 0.44916829252886237
+                            err = 0.00208263848513058
+                            ax.axhspan(val-err,val+err,color="lightgray",zorder=1)
+                            ax.axhline(val,color="darkgrey",zorder=1)
+    #                         ax.axhline(val-err,color="lightgray",ls="--")
+    #                         ax.axhline(val+err,color="lightgray",ls="--")
+                            ax.yticks([0.42,0.43,0.44,0.45])
+                            left, right = ax.xlim()
+                            down, up = ax.ylim()
+                            ax.ylim(down, up+0.0005)
+                            ax.text( abs(left-right)*0.75+left -2.0,val+err+0.00025,r"$\pi\Sigma$ threshold",
+                                     color="black",zorder=3,fontsize="small")
                         
-                        if __name__ == "__main__":
+                        if __name__ == "__main__" and not grid:
                             plt.tight_layout()
                             plt.savefig(f'{os.path.join(out_dir,file_stub)}_tmin.png')
                             files_to_zip.append(f'{file_stub}_tmin.png')
                             plt.savefig(f'{os.path.join(out_dir,file_stub)}_tmin.pdf')
                             files_to_zip.append(f'{file_stub}_tmin.pdf')
-                            plt.clf()
+                            ax.cla()
+                    
+                    ii+=1
+                
 
             if __name__ == "__main__":
-                utils.zip_channel( channel["name"], files_to_zip, "", out_dir)
+                if grid:
+                    plt.tight_layout()
+                    plt.savefig(f'{channel["name"]}_tmin.png')
+                    plt.savefig(f'{channel["name"]}_tmin.pdf')
+                    
+                else:
+                    utils.zip_channel( channel["name"], files_to_zip, "", out_dir)
 
 if __name__ == "__main__":
     stability_tmin_plots()
