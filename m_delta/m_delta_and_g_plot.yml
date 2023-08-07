@@ -1,0 +1,11 @@
+# figheight: 10
+# figwidth: 8
+# align: vertical
+# ratios: [2,1] #else num_plots
+data_roots: [mdelta, g]
+
+# figheight: 6
+# figwidth: 16
+# align: vertical
+# ratios: [2,1] #else num_plots
+# data_roots: [mdelta, g]
