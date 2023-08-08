@@ -1,0 +1,24 @@
+#m_delta_plots config
+plots:
+  # - filename: m_deltag.pdf
+    # figheight: 10
+    # figwidth: 8
+    # align: vertical
+    # ratios: [2,1] 
+    # data_roots: [mdelta, g]
+
+  # - filename: m_g.pdf
+    # figheight: 6
+    # figwidth: 8
+    # data_roots: [g]
+    
+  - filename: a12.pdf
+    figheight: 6
+    figwidth: 8
+    data_roots: [mpia12]
+    
+  - filename: scat_lengths.pdf
+    figheight: 6
+    figwidth: 16
+    data_roots: [mpia12, mpia32]
+    
