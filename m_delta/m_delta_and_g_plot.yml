@@ -1,11 +1,13 @@
-# figheight: 10
-# figwidth: 8
-# align: vertical
-# ratios: [2,1] #else num_plots
+#m_delta_plots config
+
+filename: m_deltag.pdf
+figheight: 10
+figwidth: 8
+align: vertical
+ratios: [2,1] 
 data_roots: [mdelta, g]
 
+# filename: m_g.pdf
 # figheight: 6
-# figwidth: 16
-# align: vertical
-# ratios: [2,1] #else num_plots
-# data_roots: [mdelta, g]
+# figwidth: 8
+# data_roots: [g]
