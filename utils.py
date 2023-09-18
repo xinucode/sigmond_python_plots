@@ -57,7 +57,7 @@ def effenergy3(t, C):
 #     return shifts,used_shifts
 
 def shift_levels( indexes, levels, vals, errors, shifted_array=np.array([]), index=0 ):
-    if indexes.any():
+    if len(indexes):
         if not shifted_array.any():
             shifted_array = np.array([0.0]*len(indexes))
             
@@ -496,14 +496,23 @@ def zip_channel( name,this_file_list, this_type = ".svg", sub_dir = None):
     
 def collectDiagonalRealCorrelatorAtTime(data_object, corr_str, time, tag='rotated_correlators'):
     corr_key = f"<MCObservable><CorrT>GI{{{corr_str}}} GI{{{corr_str}}} time={time} HermMat<|CorrT><Arg>Re<|Arg><|MCObservable>"
+    if corr_key in data_object[tag]['Values'].keys():
+        return data_object[tag]['Values'][corr_key][()]
+    corr_key = f"<MCObservable><CorrT>BL{{{corr_str}}} BL{{{corr_str}}} time={time} HermMat<|CorrT><Arg>Re<|Arg><|MCObservable>"
     return data_object[tag]['Values'][corr_key][()]
+
 def collectCorrEstimates(data_object, corr_str, tag='rotated_correlators'):
     t = []
     values = []
     errs = []
-    for i in range(64):
+    for i in range(64): #maybe set up global max
         try:
-            this_corrt = collectDiagonalRealCorrelatorAtTime(data_object,corr_str,i, tag)
+            if type(corr_str)==list: #simple ratio correlator
+                this_numt = collectDiagonalRealCorrelatorAtTime(data_object,corr_str[0],i, tag)
+                this_dett = collectDiagonalRealCorrelatorAtTime(data_object,corr_str[1],i, tag)
+                this_corrt = this_numt/this_dett
+            else:
+                this_corrt = collectDiagonalRealCorrelatorAtTime(data_object,corr_str,i, tag)
             t.append(i)
             values.append(this_corrt[0])
             errs.append(bootstrap_error_by_array(this_corrt))
@@ -518,9 +527,23 @@ def collectEnergyEstimates(data_object, corr_str, tag='rotated_correlators',func
     errs = []
     for i in range(func-1,63-func):
         try:
-            this_corrt0 = collectDiagonalRealCorrelatorAtTime(data_object,corr_str,i-1, tag)
-            this_corrt = collectDiagonalRealCorrelatorAtTime(data_object,corr_str,i, tag)
-            this_corrt2 = collectDiagonalRealCorrelatorAtTime(data_object,corr_str,i+1, tag)
+            if type(corr_str)==list: #simple ratio correlator
+                this_numt = collectDiagonalRealCorrelatorAtTime(data_object,corr_str[0],i-1, tag)
+                this_dett = collectDiagonalRealCorrelatorAtTime(data_object,corr_str[1],i-1, tag)
+                this_corrt0 = this_numt/this_dett
+                
+                this_numt = collectDiagonalRealCorrelatorAtTime(data_object,corr_str[0],i, tag)
+                this_dett = collectDiagonalRealCorrelatorAtTime(data_object,corr_str[1],i, tag)
+                this_corrt = this_numt/this_dett
+                
+                this_numt = collectDiagonalRealCorrelatorAtTime(data_object,corr_str[0],i+1, tag)
+                this_dett = collectDiagonalRealCorrelatorAtTime(data_object,corr_str[1],i+1, tag)
+                this_corrt2 = this_numt/this_dett
+            else:
+                this_corrt0 = collectDiagonalRealCorrelatorAtTime(data_object,corr_str,i-1, tag)
+                this_corrt = collectDiagonalRealCorrelatorAtTime(data_object,corr_str,i, tag)
+                this_corrt2 = collectDiagonalRealCorrelatorAtTime(data_object,corr_str,i+1, tag)
+                
             if func==1:
                 new_t, this_effE = effenergy(np.array([i,i+1]),np.array([this_corrt,this_corrt2]))
             elif func==2:

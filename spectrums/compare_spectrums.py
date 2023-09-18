@@ -131,7 +131,7 @@ def compare_spectrums():
     with open(config_file, "r") as yamlfile:
         configdata = yaml.load(yamlfile, Loader=yaml.FullLoader)
 
-    particle_names = configdata['scattering_particles']
+    particle_names = configdata.pop('scattering_particles', [] )
     # print()
 
     scat_momentum_tags = ['(0)_ref','(1)_ref','(2)_ref','(3)_ref','(4)_ref']
@@ -173,55 +173,34 @@ def compare_spectrums():
 
         if "omit" in configdata[graph].keys():
             omit = configdata[graph]["omit"]
+        file_directory = configdata[graph]['file_directory']
+        spectrum_type = configdata[graph].pop('spectrum_type','energy')
+        best_legend_loc = configdata[graph].pop('best_legend_loc', "")
 
         if ('compare_spectrums' in configdata.keys()) and (graph=='compare_spectrums'):
-            file_directory = configdata['compare_spectrums']['file_directory']
             for key in configdata['compare_spectrums']['files'].keys():
                 if configdata['compare_spectrums']['file_directory']:
                     files[key] = os.path.join(channel,file_directory,configdata['compare_spectrums']['files'][key])
-            spectrum_type = configdata['compare_spectrums']['spectrum_type']
-            if 'do_scattering_particles' in configdata['compare_spectrums'].keys():
-                do_scattering_particles = bool(configdata['compare_spectrums']['do_scattering_particles'])
-
-            if 'best_legend_loc' in configdata['compare_spectrums'].keys():
-                best_legend_loc=configdata['compare_spectrums']['best_legend_loc']
-            else:
-                best_legend_loc = ""
-
+            
+            do_scattering_particles = configdata['compare_spectrums'].pop('do_scattering_particles', False)
             if spectrum_type=="mom":
                 do_scattering_particles = False
-
+            
+            plot_ni_levels = configdata['compare_spectrums'].pop('plot_ni_levels', False)
             file_name = channel+f"-{spectrum_type}_spectrum_comparison_graph.pdf"
-            if 'plot_ni_levels' in configdata['compare_spectrums'].keys():
-                plot_ni_levels = configdata['compare_spectrums']['plot_ni_levels']
-                if 'ni_width' in configdata['compare_spectrums'].keys():
-                    ni_width = configdata['compare_spectrums']['ni_width']
-            else:
-                plot_ni_levels = False
-
 
         if ('final_spectrum' in configdata.keys()) and (graph=='final_spectrum'):
-            file_directory = configdata['final_spectrum']['file_directory']
-            best_legend_loc=configdata['final_spectrum']['best_legend_loc']
             files["this"] = os.path.join(channel,file_directory,configdata['final_spectrum']['file'])
-            spectrum_type = configdata['final_spectrum']['spectrum_type']
             file_name = channel+"_spectrum_graph.pdf"
-            if 'ni_width' in configdata['final_spectrum'].keys():
-                ni_width = configdata['final_spectrum']['ni_width']
-    #         non_interacting_levels = configdata['final_spectrum']['non_interacting_levels']
 
-        if 'used_levels' in configdata.keys():
-            used_levels=configdata['used_levels']
-        else:
-            used_levels = {}
-
-        remove_xlabel = False
-        if "remove_xlabel" in configdata[graph].keys():
-            remove_xlabel = configdata[graph]["remove_xlabel"]
-
-        graph_unused_levels = True
-        if "graph_unused_levels" in  configdata[graph].keys():
-            graph_unused_levels = configdata[graph]["graph_unused_levels"]
+        used_levels = configdata.pop( 'used_levels', {} )
+        
+        
+        remove_xlabel = configdata[graph].pop( 'remove_xlabel', False )
+        max_level = configdata[graph].pop( "max_level", 9 )
+        graph_unused_levels = configdata[graph].pop( "graph_unused_levels", True )
+        preliminary = configdata[graph].pop( 'preliminary', False )
+        ni_width = configdata[graph].pop('ni_width', 80.0)
             
         if "remove_ref" in configdata[graph].keys():
             remove_ref = configdata[graph]["remove_ref"]
@@ -253,12 +232,14 @@ def compare_spectrums():
                     continue
                 Refs[scat] = value
                 break
+        if not Refs and particle_names:
+            print("No values found for scattering particles:", particle_names )
 
         expected_keys = [f"PSQ{i}" for i in range(4)]
         possible_irreps = ['G1u', 'Hg', 'G1', 'G2', 'F1', 'F2', 'G','A1g','A1gm','G1g','Hu', 'T1g','A1u','A2u','Eg','Eu',
                            'T1u','T2g','T2u','A1','A2','B1','B2','E']
 #         diff_keys = [f"d_ecm_{i}" for i in range(15)] #probably change this to elab
-        max_level = 9
+        # max_level = 9
         if spectrum_type=="mom":
             energy_keys = [f'q2cm_{i}_ref' for i in range(max_level)]
         elif spectrum_type=="energy":
@@ -268,6 +249,7 @@ def compare_spectrums():
                 energy_keys = [f'{energy_key}_{i}_ref' for i in range(max_level)]
         else:
             print("Bad spectrum type")
+            
 
         keys = {}
         vals = {}
@@ -429,7 +411,10 @@ def compare_spectrums():
                 for i,dataset in enumerate(scat_vals.keys()):
                     plt.scatter(scat_indexes2+dd*i,scat_vals[dataset],color=settings.colors[i], marker=settings.markers[i], label = dataset)
                     plt.errorbar(scat_indexes2+dd*i, scat_vals[dataset], scat_errs[dataset], fmt='.', capsize=5,color=settings.colors[i])
-                plt.ylabel(r"$E_{cm}/m_\pi$")
+                if remove_ref:
+                    plt.ylabel(r"$E_{cm}$")
+                else:
+                    plt.ylabel(r"$E_{cm}/m_\pi$")
                 plt.xlabel("Noninteracting Scattering Levels")
                 plt.legend()
                 plt.xticks(scat_indexes2, scat_keys2)
@@ -469,18 +454,22 @@ def compare_spectrums():
                     threshold_value = 0.0
                     threshold_label = threshold
                     for particle in configdata['thresholds'][threshold]:
-                        threshold_value+=Refs[particle][0]
-                        threshold_label=threshold_label.replace(settings.latex_format[particle], particle)
-                        threshold_label=threshold_label.replace(particle, settings.latex_format[particle])
+                        if particle in Refs:
+                            threshold_value+=Refs[particle][0]
+                            threshold_label=threshold_label.replace(settings.latex_format[particle], particle)
+                            threshold_label=threshold_label.replace(particle, settings.latex_format[particle])
+                        else:
+                            print("{particle} is not listed in scattering_particles.")
+                            
                     miny,maxy = plt.ylim()
-                    plt.hlines(threshold_value,minx-dd*len(vals.keys()),maxx+dd*len(vals.keys()),color='black', linestyle="--", zorder=1) 
+                    plt.hlines(threshold_value,minx-dd*len(vals.keys()),maxx+dd*len(vals.keys()),color='black', linestyle="--", zorder=4) 
                     plt.text( (maxx+dd*len(vals.keys()))*(1.01),threshold_value-0.015*abs(maxy-miny), threshold_label, zorder=6,size="x-small")
         if spectrum_type=="mom":
             if "yrange" in configdata[graph].keys():
                 if (0.0>configdata[graph]["yrange"][0]) and (0.0<configdata[graph]["yrange"][1]):
-                    plt.hlines(0.0,minx-dd*(len(vals.keys())/2),maxx+dd*(len(vals.keys())/2),color='black', linestyle="--", zorder=1, linewidth=1.0)
+                    plt.hlines(0.0,minx-dd*(len(vals.keys())/2),maxx+dd*(len(vals.keys())/2),color='black', linestyle="--", zorder=4, linewidth=1.0)
             else:
-                plt.hlines(0.0,minx-dd*(len(vals.keys())/2),maxx+dd*(len(vals.keys())/2),color='black', linestyle="--", linewidth=1.0, zorder=1)
+                plt.hlines(0.0,minx-dd*(len(vals.keys())/2),maxx+dd*(len(vals.keys())/2),color='black', linestyle="--", linewidth=1.0, zorder=4)
 
         for i,dataset in enumerate(vals.keys()):
             print(dataset)
@@ -530,7 +519,6 @@ def compare_spectrums():
             if not used_levels:
                 shifted_array = 0.2*dd*utils.shift_levels(np.array(indexes[dataset]),levs[dataset],vals[dataset],errs[dataset])
             
-
             if used_levels:
                 marker_color = 'white'
             else:
@@ -545,15 +533,15 @@ def compare_spectrums():
 
             if (not used_levels) or (used_levels and graph_unused_levels):
                 if len(np.nonzero(errs[dataset])[0]):
-                    plt.errorbar(indexes[dataset]+dd*splitting_factor+shifted_array, vals[dataset], np.array(errs[dataset]),  capsize=5, color=settings.colors[i], marker=settings.markers[i], linewidth=0.0, elinewidth=1.5,mfc=marker_color,zorder=4,label=unused_label)
+                    plt.errorbar(indexes[dataset]+dd*splitting_factor+shifted_array, vals[dataset], np.array(errs[dataset]),  capsize=5, color=settings.colors[i], marker=settings.markers[i], linewidth=0.0, elinewidth=1.5,mfc=marker_color,zorder=5,label=unused_label)
                 else:
-                    plt.scatter(indexes[dataset]+dd*splitting_factor+shifted_array, vals[dataset], color=settings.colors[i], marker=settings.markers[i],linewidth=0.0, zorder=4,label=unused_label)
+                    plt.scatter(indexes[dataset]+dd*splitting_factor+shifted_array, vals[dataset], color=settings.colors[i], marker=settings.markers[i],linewidth=0.0, zorder=5,label=unused_label)
 
             if used_levels:
                 if len(np.nonzero(errs_used[dataset])[0]):
-                    plt.errorbar(indexes_used[dataset]+dd*splitting_factor+used_shifted_array,vals_used[dataset], np.array(errs_used[dataset]),  capsize=5, color=settings.colors[i], marker=settings.markers[i], linewidth=0.0, elinewidth=1.5, mfc=settings.colors[i], zorder=4, label=dataset)
+                    plt.errorbar(indexes_used[dataset]+dd*splitting_factor+used_shifted_array,vals_used[dataset], np.array(errs_used[dataset]),  capsize=5, color=settings.colors[i], marker=settings.markers[i], linewidth=0.0, elinewidth=1.5, mfc=settings.colors[i], zorder=5, label=dataset)
                 else:
-                    plt.scatter(indexes_used[dataset]+dd*splitting_factor+used_shifted_array,vals_used[dataset], color=settings.colors[i], marker=settings.markers[i], linewidth=0.0, zorder=4,label=dataset)
+                    plt.scatter(indexes_used[dataset]+dd*splitting_factor+used_shifted_array,vals_used[dataset], color=settings.colors[i], marker=settings.markers[i], linewidth=0.0, zorder=5,label=dataset)
 
         if (graph=='final_spectrum') or plot_ni_levels:
             for i,dataset in enumerate(evals.keys()):
@@ -563,7 +551,10 @@ def compare_spectrums():
 
         latex_rest_mass = settings.latex_format[rest_mass].replace('$',"")
         if spectrum_type=='energy':
-            plt.ylabel(rf"$E_{{\textup{{cm}}}}/m_{{{latex_rest_mass}}}$")
+            if remove_ref:
+                plt.ylabel(rf"$E_{{\textup{{cm}}}}$")
+            else:
+                plt.ylabel(rf"$E_{{\textup{{cm}}}}/m_{{{latex_rest_mass}}}$")
         else:
             plt.ylabel(rf"$q^2_{{\textup{{cm}}}}/m_{{{latex_rest_mass}}}^2$")
 
@@ -579,6 +570,9 @@ def compare_spectrums():
             print("Old xrange:", plt.xlim() )
             plt.xlim( configdata[graph]['xrange'] )
             print("New xrange:", plt.xlim() )
+        
+        if preliminary:
+            plt.figtext( 0.4, 0.4, "PRELIMINARY", alpha = 0.5, color="red", fontweight="bold", rotation= 30,zorder=0)
 
 
         if (graph=='compare_spectrums'):
@@ -586,10 +580,11 @@ def compare_spectrums():
                 plt.legend(title=rf"{configdata['title']}", loc=best_legend_loc)
             elif best_legend_loc:
                 plt.legend(loc=best_legend_loc)
+                
 
         plt.tight_layout()
         if __name__=="__main__":
-            plt.savefig(os.path.join(channel,file_directory,file_name))
+            plt.savefig(os.path.join(channel,file_directory,file_name), transparent=True)
             plt.clf()
 
 if __name__=="__main__":
