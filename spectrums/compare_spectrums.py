@@ -4,12 +4,14 @@ import os, sys
 import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib import image as mpimg
+from matplotlib import colors as mc
 import yaml
 import argparse
 import itertools
 
 sys.path.append('../')
 import utils
+import cmd_plot
 import settings
 plt.style.use('../spectrum.mplstyle')
 
@@ -105,7 +107,7 @@ final_spectrum: #(optional) generates graph that plots just one spectrum
     yrange: [0.0,2.5] #(optional) manually select the yrange, otherwise matplotlib automatically sets it
 """
 
-def compare_spectrums():
+def compare_spectrums(config_file = "isosinglet_strange.yml"):
     remove_ref = False
     do_scattering_particles = False
     file1 = ""
@@ -120,14 +122,6 @@ def compare_spectrums():
     figlabel5 = ""
 
     #import info from config
-    config_file = "isosinglet_strange.yml"
-    if __name__=="__main__":
-        parser = argparse.ArgumentParser()
-        parser.add_argument("config", help="config file")
-        args = parser.parse_args()
-        config_file = args.config
-
-
     with open(config_file, "r") as yamlfile:
         configdata = yaml.load(yamlfile, Loader=yaml.FullLoader)
 
@@ -146,13 +140,6 @@ def compare_spectrums():
         for i in range(max_mom):
             for j in range(max_mom):
                 elastic_scat_keys.append( f"{particle_names[0]}({i}){particle_names[0]}({j})_ref" )
-    elif len(particle_names)==2:
-        for i in range(max_mom):
-            for j in range(max_mom):
-                elastic_scat_keys.append( f"{particle_names[0]}({i}){particle_names[1]}({j})_ref" )
-        for i in range(max_mom):
-            for j in range(max_mom):
-                elastic_scat_keys.append( f"{particle_names[1]}({i}){particle_names[0]}({j})_ref" )
     else:
         for combo in itertools.product(particle_names,particle_names):
             for i in range(max_mom):
@@ -160,7 +147,7 @@ def compare_spectrums():
                     elastic_scat_keys.append( f"{combo[0]}({i}){combo[1]}({j})_ref" )
 
     channel = configdata['channel']
-    rest_mass = configdata['rest_mass']
+    rest_mass = configdata.pop('rest_mass',None)
 
     graphs = ['compare_spectrums','final_spectrum']
     ni_width = 80.0
@@ -235,7 +222,7 @@ def compare_spectrums():
         if not Refs and particle_names:
             print("No values found for scattering particles:", particle_names )
 
-        expected_keys = [f"PSQ{i}" for i in range(4)]
+        expected_keys = [f"PSQ{i}" for i in range(5)]
         possible_irreps = ['G1u', 'Hg', 'G1', 'G2', 'F1', 'F2', 'G','A1g','A1gm','G1g','Hu', 'T1g','A1u','A2u','Eg','Eu',
                            'T1u','T2g','T2u','A1','A2','B1','B2','E']
 #         diff_keys = [f"d_ecm_{i}" for i in range(15)] #probably change this to elab
@@ -255,10 +242,12 @@ def compare_spectrums():
         vals = {}
         errs = {}
         levs = {}
+        zmags = {}
         vals_used = {}
         keys_used = {}
         errs_used = {}
         levs_used = {}
+        zmags_used = {}
         ekeys = {}
         evals = {}
         eerrs = {}
@@ -268,10 +257,12 @@ def compare_spectrums():
             keys[dataset] = []
             errs[dataset] = []
             levs[dataset] = []
+            zmags[dataset] = []
             vals_used[dataset] = []
             keys_used[dataset] = []
             errs_used[dataset] = []
             levs_used[dataset] = []
+            zmags_used[dataset] = []
             evals[dataset] = []
             ekeys[dataset] = []
             eerrs[dataset] = []
@@ -280,9 +271,10 @@ def compare_spectrums():
                     for k, (energy) in enumerate(energy_keys):
 
                         if not datasets[dataset].empty:
-                            val1, err1 = utils.select_val(datasets[dataset], mom, irrep, energy)
+                            val1, err1, zmag1 = utils.select_val(datasets[dataset], mom, irrep, energy)
                         else:
                             val1, err1 = utils.select_val_ascii(files[dataset],mom,irrep,energy,spectrum_type)
+                            zmag1 = None
 
                         if val1 is not None and err1 is not None:
                             irrep_key = f"{irrep}({mom.replace('PSQ','')})"
@@ -301,6 +293,7 @@ def compare_spectrums():
                                         keys_used[dataset].append(irrep_key)
                                         errs_used[dataset].append(err1)
                                         levs_used[dataset].append(k)
+                                        zmags_used[dataset].append(zmag1)
                                         used = True
     #                                     print(irrep_key,k,val1)
                             if not used:
@@ -308,16 +301,20 @@ def compare_spectrums():
                                 vals[dataset].append(val1)
                                 errs[dataset].append(err1)
                                 levs[dataset].append(k)
-
+                                zmags[dataset].append(zmag1)
 
                     for k, (energy) in enumerate(elastic_scat_keys):
 
                         if not datasets[dataset].empty:
-                            val1, err1 = utils.select_val(datasets[dataset], mom, irrep, energy)
+                            val1, err1, zmag1 = utils.select_val(datasets[dataset], mom, irrep, energy)
                         else:
                             val1, err1 = utils.select_val_ascii(files[dataset],mom,irrep,energy,spectrum_type)
+                            zmag1 = None
 
                         if val1 is not None and err1 is not None:
+                            if "yrange" in configdata[graph].keys():
+                                if (val1 < configdata[graph]["yrange"][0]) or (val1 > configdata[graph]["yrange"][1]):
+                                    continue
                             irrep_key = f"{irrep}({mom.replace('PSQ','')})"
                             if irrep_key in omit:
                                 continue
@@ -438,15 +435,16 @@ def compare_spectrums():
             plt.ylim( configdata[graph]["yrange"][0],configdata[graph]["yrange"][1])
 
         somekey = list(indexes.keys())[0]
-        minx = min(list(indexes[somekey])+list(indexes_used[somekey]))
+        try:
+            minx = min(list(indexes[somekey])+list(indexes_used[somekey]))
+        except ValueError as err:
+            print("Missing data for plot. Check energy_key is correct, check that there is data in the file, or try omitting the yrange.")
         maxx = max(list(indexes[somekey])+list(indexes_used[somekey]))
         dd=0.4/len(files.keys())
         plt.xlim(minx-0.5-dd*(len(vals.keys())/2),maxx+0.5+dd*(len(vals.keys())/2))
         if not remove_ref and spectrum_type=="energy":
             if configdata['thresholds']:
                 plt.xlim(minx-0.5-dd*len(vals.keys()),(maxx+dd*len(vals.keys()))*1.025+0.5)
-                
-
 
         if not remove_ref and spectrum_type=="energy":
             if configdata['thresholds']:
@@ -459,11 +457,11 @@ def compare_spectrums():
                             threshold_label=threshold_label.replace(settings.latex_format[particle], particle)
                             threshold_label=threshold_label.replace(particle, settings.latex_format[particle])
                         else:
-                            print("{particle} is not listed in scattering_particles.")
+                            print(f"{particle} is not listed in scattering_particles.")
                             
                     miny,maxy = plt.ylim()
                     plt.hlines(threshold_value,minx-dd*len(vals.keys()),maxx+dd*len(vals.keys()),color='black', linestyle="--", zorder=4) 
-                    plt.text( (maxx+dd*len(vals.keys()))*(1.01),threshold_value-0.015*abs(maxy-miny), threshold_label, zorder=6,size="x-small")
+                    plt.text( (maxx+dd*len(vals.keys()))*(1.01),threshold_value-0.0015*abs(maxy-miny), threshold_label, zorder=6,size="x-small")
         if spectrum_type=="mom":
             if "yrange" in configdata[graph].keys():
                 if (0.0>configdata[graph]["yrange"][0]) and (0.0<configdata[graph]["yrange"][1]):
@@ -475,49 +473,9 @@ def compare_spectrums():
             print(dataset)
             shifted_array = 0.0 
             used_shifted_array = 0.0 
-#         if ('compare_spectrums' in configdata.keys()) and (graph=='compare_spectrums'):
-#             if ('zshift' in configdata[graph].keys() or 'sshift' in configdata[graph].keys() or 's4shift' in configdata[graph].keys() or 's5shift' in configdata[graph].keys()): # and dataset!="fit"
-#                 shifted_array = []
-#                 for j,lev in enumerate(levs[dataset]):
-#                     this_shift = 0.0
-#                     if 'zshift' in configdata[graph].keys():
-#                         if keys[dataset][j] in configdata[graph]['zshift']:
-#                             this_shift = 0.1*dd*settings.zigzag_shifts[lev]
-#                     if 'sshift' in configdata[graph].keys():
-#                         if keys[dataset][j] in configdata[graph]['sshift']:
-#                             this_shift = 0.2*dd*settings.stripe_shifts[lev]
-#                     if 's4shift' in configdata[graph].keys():
-#                         if keys[dataset][j] in configdata[graph]['s4shift']:
-#                             this_shift = 0.3*dd*settings.stripe4_shifts[lev]
-#                     if 's5shift' in configdata[graph].keys():
-#                         if keys[dataset][j] in configdata[graph]['s5shift']:
-#                             this_shift = 0.2*dd*settings.stripe5_shifts[lev]
-#                     shifted_array.append(this_shift)
-
-#                 used_shifted_array = []
-#                 for j,lev in enumerate(levs_used[dataset]):
-#                     this_used_shift = 0.0
-#                     if 'zshift' in configdata[graph].keys():
-#                         if keys_used[dataset][j] in configdata[graph]['zshift']:
-#                             this_used_shift = 0.1*dd*settings.zigzag_shifts[lev]
-#                     if 'sshift' in configdata[graph].keys():
-#                         if keys_used[dataset][j] in configdata[graph]['sshift']:
-#                             this_used_shift = 0.2*dd*settings.stripe_shifts[lev]
-#                     if 's4shift' in configdata[graph].keys():
-#                         if keys_used[dataset][j] in configdata[graph]['s4shift']:
-#                             this_used_shift = 0.3*dd*settings.stripe4_shifts[lev]
-#                     if 's5shift' in configdata[graph].keys():
-#                         if keys_used[dataset][j] in configdata[graph]['s5shift']:
-#                             this_used_shift = 0.2*dd*settings.stripe5_shifts[lev]
-#                     used_shifted_array.append(this_used_shift)
-
-#                 shifted_array = np.array(shifted_array)
-#                 used_shifted_array = np.array(used_shifted_array)
-
-            # utils.shift_levels(np.array(indexes[dataset]),levs[dataset],vals[dataset],errs[dataset])
-            used_shifted_array = 0.2*dd*utils.shift_levels(np.array(indexes_used[dataset]),levs_used[dataset],vals_used[dataset],errs_used[dataset])
+            used_shifted_array = 0.5*dd*utils.shift_levels(np.array(indexes_used[dataset]),levs_used[dataset],vals_used[dataset],errs_used[dataset])
             if not used_levels:
-                shifted_array = 0.2*dd*utils.shift_levels(np.array(indexes[dataset]),levs[dataset],vals[dataset],errs[dataset])
+                shifted_array = 0.5*dd*utils.shift_levels(np.array(indexes[dataset]),levs[dataset],vals[dataset],errs[dataset])
             
             if used_levels:
                 marker_color = 'white'
@@ -529,43 +487,56 @@ def compare_spectrums():
             else:
                 unused_label = dataset
 
-            splitting_factor = (i-((len(vals.keys())-1)/2))
+            splitting_factor = 1.6*(i-((len(vals.keys())-1)/2))
 
             if (not used_levels) or (used_levels and graph_unused_levels):
-                if len(np.nonzero(errs[dataset])[0]):
-                    plt.errorbar(indexes[dataset]+dd*splitting_factor+shifted_array, vals[dataset], np.array(errs[dataset]),  capsize=5, color=settings.colors[i], marker=settings.markers[i], linewidth=0.0, elinewidth=1.5,mfc=marker_color,zorder=5,label=unused_label)
+                colors = [settings.colors[i]]*len(vals[dataset])
+                if zmags[dataset][0] is not None:
+                    maxz = max(zmags[dataset])
+                    colors = [mc.to_rgba(c,z/maxz) for c,z in zip(colors,zmags[dataset])]
                 else:
-                    plt.scatter(indexes[dataset]+dd*splitting_factor+shifted_array, vals[dataset], color=settings.colors[i], marker=settings.markers[i],linewidth=0.0, zorder=5,label=unused_label)
+                    colors = [mc.to_rgba('white',0.0)]*len(vals[dataset])
+                if len(np.nonzero(errs[dataset])[0]):
+                    # for index, val, err, color in zip(indexes[dataset],vals[dataset],errs[dataset],colors)
+                    plt.errorbar(indexes[dataset]+dd*splitting_factor+shifted_array, vals[dataset], np.array(errs[dataset]),  capsize=5, color=settings.colors[i], marker=settings.markers[i], linewidth=0.0, mfc='white',elinewidth=1.5,zorder=5,label=unused_label)
+                    plt.scatter(indexes[dataset]+dd*splitting_factor+shifted_array,vals[dataset], color=colors, marker=settings.markers[i], linewidth=0.0, zorder=6)
+                else:
+                    plt.scatter(indexes[dataset]+dd*splitting_factor+shifted_array, vals[dataset], color=colors, marker=settings.markers[i],linewidth=0.0, zorder=5,label=unused_label)
 
             if used_levels:
-                if len(np.nonzero(errs_used[dataset])[0]):
-                    plt.errorbar(indexes_used[dataset]+dd*splitting_factor+used_shifted_array,vals_used[dataset], np.array(errs_used[dataset]),  capsize=5, color=settings.colors[i], marker=settings.markers[i], linewidth=0.0, elinewidth=1.5, mfc=settings.colors[i], zorder=5, label=dataset)
+                colors = [settings.colors[i]]*len(vals_used[dataset])
+                if zmags[dataset][0] is not None:
+                    colors = [mc.to_rgba(c,z) for c,z in zip(colors,zmags_used[dataset])]
                 else:
-                    plt.scatter(indexes_used[dataset]+dd*splitting_factor+used_shifted_array,vals_used[dataset], color=settings.colors[i], marker=settings.markers[i], linewidth=0.0, zorder=5,label=dataset)
+                    colors = ['white']*len(vals_used[dataset])
+                print(colors)
+                if len(np.nonzero(errs_used[dataset])[0]):
+                    plt.errorbar(indexes_used[dataset]+dd*splitting_factor+used_shifted_array,vals_used[dataset], np.array(errs_used[dataset]),  capsize=5, color=settings.colors[i], mfc='white', marker=settings.markers[i], linewidth=0.0, elinewidth=1.5, zorder=5, label=dataset)
+                    plt.scatter(indexes_used[dataset]+dd*splitting_factor+used_shifted_array,vals_used[dataset], color=colors, marker=settings.markers[i], linewidth=0.0, zorder=6)
+                else:
+                    plt.scatter(indexes_used[dataset]+dd*splitting_factor+used_shifted_array,vals_used[dataset], color=colors, marker=settings.markers[i], linewidth=0.0, zorder=5,label=dataset)
 
         if (graph=='final_spectrum') or plot_ni_levels:
             for i,dataset in enumerate(evals.keys()):
                 plt.errorbar(eindexes[dataset]+dd*(i-((len(evals.keys())-1)/2)), evals[dataset], np.array(eerrs[dataset]), color="lightgray", marker="_",linestyle="", linewidth=0.0, elinewidth=ni_width,zorder=2)
                 plt.scatter(eindexes[dataset]+dd*(i-((len(evals.keys())-1)/2)),evals[dataset],color="darkgrey", marker="_",s=ni_width*ni_width,zorder=3)
 
-
-        latex_rest_mass = settings.latex_format[rest_mass].replace('$',"")
-        if spectrum_type=='energy':
-            if remove_ref:
-                plt.ylabel(rf"$E_{{\textup{{cm}}}}$")
+        if rest_mass:
+            latex_rest_mass = settings.latex_format[rest_mass].replace('$',"")
+            energy_tag = energy_key[1:]
+            if spectrum_type=='energy':
+                if remove_ref:
+                    plt.ylabel(rf"$E_{{\textup{{{energy_tag}}}}}$")
+                else:
+                    plt.ylabel(rf"$E_{{\textup{{{energy_tag}}}}}/m_{{{latex_rest_mass}}}$")
             else:
-                plt.ylabel(rf"$E_{{\textup{{cm}}}}/m_{{{latex_rest_mass}}}$")
-        else:
-            plt.ylabel(rf"$q^2_{{\textup{{cm}}}}/m_{{{latex_rest_mass}}}^2$")
+                plt.ylabel(rf"$q^2_{{\textup{{{energy_tag}}}}}/m_{{{latex_rest_mass}}}^2$")
 
         if not remove_xlabel:
             plt.xlabel(r"$\Lambda(d^2)$")
         latex_keys = [settings.latex_format[key.split('(')[0]]+"("+key.split('(')[1] for key in keys[somekey]+keys_used[somekey]]
         
-#         print(len(list(indexes[somekey])+list(indexes_used[somekey])),len(latex_keys))
         plt.xticks(utils.unique(list(indexes[somekey])+list(indexes_used[somekey])), utils.unique(latex_keys),size="small")
-#         plt.xticks(list(indexes[somekey])+list(indexes_used[somekey]), latex_keys,size="small")
-#         plt.xticks([])
         if 'xrange' in configdata[graph].keys():
             print("Old xrange:", plt.xlim() )
             plt.xlim( configdata[graph]['xrange'] )
@@ -577,15 +548,17 @@ def compare_spectrums():
 
         if (graph=='compare_spectrums'):
             if best_legend_loc and "title" in configdata.keys():
-                plt.legend(title=rf"{configdata['title']}", loc=best_legend_loc)
+                plt.legend(title=rf"{configdata['title']}", loc=best_legend_loc).set_zorder(7)
             elif best_legend_loc:
-                plt.legend(loc=best_legend_loc)
+                plt.legend(loc=best_legend_loc).set_zorder(7)
                 
 
         plt.tight_layout()
         if __name__=="__main__":
             plt.savefig(os.path.join(channel,file_directory,file_name), transparent=True)
+            plt.show()
             plt.clf()
 
 if __name__=="__main__":
-    compare_spectrums()
+    config_file = cmd_plot.pickup_config()
+    compare_spectrums(config_file)

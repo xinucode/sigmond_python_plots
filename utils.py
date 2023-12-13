@@ -3,6 +3,7 @@ import numpy as np
 import h5py
 import os, sys
 from zipfile import ZipFile
+import gvar
 
 import settings
 
@@ -143,16 +144,24 @@ def select_val(dataset, mom, irrep, energy):
     else:
         reduced_dataset = dataset[(dataset["obs-mom"]==mom) & (dataset["obs-irrep"]==irrep) & (dataset["obs-level"]==energy)]
     if len(reduced_dataset["val"])==0:
-        return None, None
+        return None, None, None
     elif len(reduced_dataset["val"])==1:
         values = np.array(reduced_dataset["val"][:])
         errors = np.array(reduced_dataset["err"][:])
-        return values[0],errors[0]
+        if "zmags" in reduced_dataset:
+            zmags = np.array(reduced_dataset["zmags"][:])
+        else:
+            zmags = [None]
+        return values[0],errors[0],zmags[0]
     else:
         print(f"Duplicate Values: {mom}, {irrep}, {energy}")
         values = np.array(reduced_dataset["val"][:])
         errors = np.array(reduced_dataset["err"][:])
-        return values[0],errors[0]
+        if "zmags" in reduced_dataset:
+            zmags = np.array(reduced_dataset["zmags"][:])
+        else:
+            zmags = [None]
+        return values[0],errors[0],zmags[0]
     
 #takes and the csv file produced by sigmond scripts and returns a dataframe with the data
 #sampling method has already been used to calculate errors in sigmond scripts
@@ -342,13 +351,28 @@ def unpack_file( filename, spectrum_type):
         dataset1 = retrieve_sigmond_script_data_dat(filename, spectrum_type)
     elif os.path.isfile(filename) and filename.endswith(".h5"):
         dataset1 = retrieve_barbara_data(filename)
+    elif os.path.isfile(filename) and filename.endswith(".data"):
+        dataset1 = retrieve_andre_data(filename)
     elif os.path.isdir(filename):
         dataset1 = pd.DataFrame()
     else:
         print("Bad filename:",filename)
         sys.exit()
-#     print(dataset1)
     return dataset1
+
+def retrieve_andre_data(file):
+    dataset0 = pd.read_csv(file, header=None )
+    dataset = pd.DataFrame(columns=['obs', 'val', 'err'])
+    for i,row in dataset0.iterrows():
+        obs_mom = row[0]
+        obs_irrep = row[1]
+        index = row[2]
+        elab = row[8]
+        dataset.loc[len(dataset)] = [f"PSQ{obs_mom}/{obs_irrep}/elab_{index}",gvar.gvar(elab).mean,gvar.gvar(elab).sdev]
+        ecm = row[9]
+        dataset.loc[len(dataset)] = [f"PSQ{obs_mom}/{obs_irrep}/ecm_{index}",gvar.gvar(ecm).mean,gvar.gvar(ecm).sdev]
+    split_obs_col(dataset)
+    return dataset
 
 #retrieve rest mass from dataset
 def find_rest_mass( dataset, rest_mass_name ):
