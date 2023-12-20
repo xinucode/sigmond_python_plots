@@ -20,6 +20,7 @@ legend_tag = "legend"
 legend_bool_tag = "legend_on_off"
 xydydy = "xydydy"
 xy = "xy"
+xydy = "xydy"
 symbol_pattern_empty = ['1'] #['0']
 symbol_pattern_filled = ['1']
 red_index = 2
