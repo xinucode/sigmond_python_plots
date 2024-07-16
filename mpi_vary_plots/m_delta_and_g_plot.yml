@@ -1,5 +1,18 @@
 #m_delta_plots config
-plots:
+plots: 
+  - filename: scat_lengths_lines.pdf
+    figheight: 10
+    figwidth: 8
+    data_roots: [mpia32, mpia12 ]
+    function_ga_input: [0,1.267]
+    align: vertical
+    
+  - filename: scat_lengths.pdf
+    figheight: 10
+    figwidth: 8
+    data_roots: [mpia32, mpia12 ]
+    align: vertical
+    
   # - filename: m_deltag.pdf
     # figheight: 10
     # figwidth: 8
@@ -12,13 +25,7 @@ plots:
     # figwidth: 8
     # data_roots: [g]
     
-  - filename: a12.pdf
-    figheight: 6
-    figwidth: 8
-    data_roots: [mpia12]
-    
-  - filename: scat_lengths.pdf
-    figheight: 6
-    figwidth: 16
-    data_roots: [mpia12, mpia32]
-    
+#   - filename: a12.pdf
+#     figheight: 6
+#     figwidth: 8
+#     data_roots: [mpia12]

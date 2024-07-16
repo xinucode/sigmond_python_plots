@@ -50,53 +50,66 @@ g:
     
 mpia12:
   ylabel: $m_\pi a^{\textup{\sfrac{1}{2}}}_0$
+  function: mpia_12_12
   physical_point:
+    mu: [0.148,0.0]
     mpi: [139.5704,0.002]
     datapoint: [0.1788, 0.0]
     style_index: 2
   data:
     - "Fukugita et al. 1995":
         mpi: [730, 0.0]
+        mu: [0.470, 0.0]
         datapoint: [1.54,0.33]
         style_index: 5
     - "Fukugita et al. 1995":
         mpi: [560, 0.0]
+        mu: [0.396, 0.0]
         datapoint: [-0.25,0.21]
         style_index: 5
     - "Lang and Verduci 2012":
-        mpi: [255, 0.0]
-        datapoint: [1.41,0.37]
+        mpi: [266, 3]
+        mu: [0.249, 0]
+        datapoint: [1.41,0.37] #check
         style_index: 6
     - "Bulava et al. 2022":
         mpi: [206.3,2.5]
+        mu: [0.211,0.0]
         datapoint: [0.142,0.022]
         style_index: 0
       
       
 mpia32:
   ylabel: $m_\pi a^{\textup{\sfrac{3}{2}}}_0$
+  function: mpia_32_12
   physical_point:
     mpi: [139.5704,0.002]
+    mu: [0.148,0.0]
     datapoint: [-0.0775, 0.0]
     style_index: 2
   data:
     - "Fukugita et al. 1995":
         mpi: [730, 0.0]
+        mu: [0.470, 0.0]
         datapoint: [-0.56,0.10]
         style_index: 5
     - "Fukugita et al. 1995":
         mpi: [560, 0.0]
+        mu: [0.396, 0.0]
         datapoint: [-0.48,0.08]
         style_index: 5
     - "Silvi et al. 2021":
-        mpi: [255, 0.0]
+        mpi: [255.4, 1.6]
+        mu: [0.238,0.0]
         datapoint: [0.057,0.81]
         style_index: 3
     - "Bulava et al. 2022":
         mpi: [206.3,2.5]
+        mu: [0.211,0.0]
         datapoint: [-0.2735,0.0081]
         style_index: 0
     - "Alexandrou et al. 2023":
         mpi: [139, 0.0]
+        mu: [0.147,0.0]
         datapoint: [-0.13,0.04]
         style_index: 4

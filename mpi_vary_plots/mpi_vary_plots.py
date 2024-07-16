@@ -75,6 +75,25 @@ plt.style.use('../spectrum.mplstyle')
 
 # python mpi_vary_plots.py [-h] config.yml data.yml
 
+############ from old stuff ##################
+# mu=0.211
+# Fpi=93.43 #check f = F/sqrt(2)
+mNsq_fpisq = 2.0*(939.5654133**2)/(130.41**2)
+
+# def mpia_minus_0(mpi): #mpi^2/fpi^2
+#     return 2.0*mpi/(8.0*np.pi*(1+mu))*(1.0+gA*gA*mu*mu/4.0/(1-(mu*mu)/4.0))
+# def mpia_plus_0(mpi):
+#     return -2.0*mpi*gA*gA/(16.0*np.pi*(1+mu))*mu/(1-(mu*mu)/4.0)
+
+def mpia_minus_0(mu,gA): #mpi^2/fpi^2
+    return mNsq_fpisq*mu*mu/(8.0*np.pi*(1.0+mu))*(1.0+gA*gA*mu*mu/(4-mu*mu))
+def mpia_plus_0(mu,gA):
+    return mNsq_fpisq*mu*mu*gA*gA*mu/(4.0*np.pi*(1.0+mu)*(4.0-mu*mu))
+def mpia_32_12(mpi,gA):
+    return mpia_plus_0(mpi,gA) - mpia_minus_0(mpi,gA)
+def mpia_12_12(mpi,gA):
+    return mpia_plus_0(mpi,gA) + 2.0*mpia_minus_0(mpi,gA)
+
 ###############################################
 
 # Function to check if a handle (line) with a given label is already in the legend
@@ -85,33 +104,47 @@ def check_handle_if_used(handles, label):
     return False
 
 # Function to plot data for varying m_pi
-def plot_mpi_vary(ax, yaml_file, root, legend=False, handles=[], keep_xlabels=True):
+def plot_mpi_vary(ax, yaml_file, root, legend=False, handles=[], keep_xlabels=True, ga_lines = []):
     with open(yaml_file, 'r') as f:
         plot_info = yaml.safe_load(f)
 
     # Extract data and physical point information from the YAML file
     data = plot_info[root]['data']
     physical_point = plot_info[root]['physical_point']
+    
+    if ga_lines:
+        xaxis = 'mu'
+    else:
+        xaxis = 'mpi'
 
     # Unpack data for physical point
     physical_point = [
-        physical_point['mpi'][0],
-        physical_point['mpi'][1],
+        physical_point[xaxis][0],
+        physical_point[xaxis][1],
         physical_point['datapoint'][0],
         physical_point['datapoint'][1],
         physical_point['style_index']
     ]
 
+    skip = []
+    for item in data:
+        if xaxis not in item[list(item.keys())[0]]:
+            skip.append(item)
+            
+    for item in skip:
+        data.remove(item)
+            
     # Unpack data for all other labels
     data_list = [{
         list(item.keys())[0]: [
-            item[list(item.keys())[0]]['mpi'][0],
-            item[list(item.keys())[0]]['mpi'][1],
+            item[list(item.keys())[0]][xaxis][0],
+            item[list(item.keys())[0]][xaxis][1],
             item[list(item.keys())[0]]['datapoint'][0],
             item[list(item.keys())[0]]['datapoint'][1],
             item[list(item.keys())[0]]['style_index']
         ]
     } for item in data ]
+        
 
     # Plot physical point and data
     linep, = ax.plot(physical_point[0], physical_point[2], color=settings.colors[physical_point[4]], lw=0.0, marker="*", label="Physical point", markersize=15)
@@ -126,17 +159,31 @@ def plot_mpi_vary(ax, yaml_file, root, legend=False, handles=[], keep_xlabels=Tr
             if not check_handle_if_used(handles, label):
                 handles.append(linep)
 
-    mpis = [np.floor(item[list(item.keys())[0]][0]) for item in data_list]
-    mpis.append(np.floor(physical_point[0]))
+    if xaxis=='mpi':
+        mpis = [np.floor(item[list(item.keys())[0]][0]) for item in data_list]
+        mpis.append(np.floor(physical_point[0]))
+    else:
+        mpis = [np.round(item[list(item.keys())[0]][0],2) for item in data_list]
+        mpis.append(np.round(physical_point[0],2))
 
+    #plot function lines
+    x = np.linspace(min(mpis),max(mpis),1000)
+    lss = ['solid', 'dashed', 'dashdot', 'dotted']
+    for ga in ga_lines:
+        ax.plot(x,globals()[plot_info[root]['function']](x,ga),color="black", ls=lss.pop(0))
+        
     if keep_xlabels:
-        ax.set_xlabel(r"$m_\pi$ (MeV)")
+        if xaxis == 'mpi':
+            ax.set_xlabel(r"$m_\pi$ (MeV)")
+        else:
+            ax.set_xlabel(r"$\mu$")
         ax.set_xticks(ticks=list(set(mpis)))
     else:
         ax.set_xticks(ticks=[])
     ax.set_ylabel(plot_info[root]['ylabel'])
     if legend:
         ax.legend()
+        
 
 # Main function
 def main():
@@ -187,10 +234,11 @@ def main():
         handles = []
 
         # Plot data for each root
+        function_ga_input = plot.pop('function_ga_input',[])
         for i, root in enumerate(data_roots):
             if i == len(data_roots) - 1:
                 keep_xlabels = True
-            plot_mpi_vary(axes[i], data_yaml_file, root, False, handles, keep_xlabels)
+            plot_mpi_vary(axes[i], data_yaml_file, root, False, handles, keep_xlabels, function_ga_input)
         axes[0].legend(handles=handles)
 
         plt.tight_layout()

@@ -4,6 +4,7 @@ import h5py
 import os, sys
 from zipfile import ZipFile
 import gvar
+from numba import njit
 
 import settings
 
@@ -19,12 +20,15 @@ def unique(an_ordered_list):
             final_list.append(element)
     return final_list
 
+@njit(parallel=True)
 def effenergy(t, C):
-    return t[:-1]+0.5*(t[1]-t[0]), np.log( C[:-1]/C[1:] )
+    return t[:-1]+0.5*(t[1]-t[0]), np.log( C[:-1]/C[1:] )/(t[1]-t[0])
 
+@njit(parallel=True)
 def effenergy2(t, C):
     return t[1:-1], np.arctanh( (C[:-2]-C[2:])/(C[:-2]+C[2:]) ) #alternate function
 
+@njit(parallel=True)
 def effenergy3(t, C):
     return t[1:-1], -2.0*( C[2:]-2.0*C[1:-1]+C[:-2] )/( C[2:]-C[:-2] ) #-C"/C'
 
@@ -57,10 +61,11 @@ def effenergy3(t, C):
         
 #     return shifts,used_shifts
 
-def shift_levels( indexes, levels, vals, errors, shifted_array=np.array([]), index=0 ):
+# @njit(parallel=True)
+def shift_levels( indexes, levels, vals, errors, shifted_array, index=0 ):
     if len(indexes):
-        if not shifted_array.any():
-            shifted_array = np.array([0.0]*len(indexes))
+        # if not shifted_array.any():
+            # shifted_array = np.array([0.0]*len(indexes))
             
         if index==len(indexes):
             return shifted_array
@@ -174,22 +179,49 @@ def retrieve_sigmond_script_data(file):
 #hdf5 files from sigmond scripts are a file with all the samples, must calculate the error
     #here and know whether it's a bootstrap or jackknife sampling method to calculate errors properly
     #assumes boostrap sampling unless filename is included in the jackknife sampling list above
-def retrieve_sigmond_script_data_hdf5(file):
+def retrieve_sigmond_script_data_hdf5(file, channel = None):
     q2s = h5py.File(file,'r')
     dataset = pd.DataFrame(columns=['obs', 'val', 'err'])
     if file in settings.jackknife_sampling_methods:
         print("jackknife success")
-    for mom in q2s.keys():
-        for basis in q2s[mom].keys():
-            try:
-                for value in q2s[mom+'/'+basis].keys():
-                    if file in settings.jackknife_sampling_methods:
-                        df2 = pd.DataFrame([[mom+'/'+basis+'/'+value, q2s[mom+'/'+basis+'/'+value][0], jackknife_error_by_array(q2s[mom+'/'+basis+'/'+value])]], columns=['obs', 'val', 'err'])
-                    else:
-                        df2 = pd.DataFrame([[mom+'/'+basis+'/'+value, q2s[mom+'/'+basis+'/'+value][0], bootstrap_error_by_array(q2s[mom+'/'+basis+'/'+value])]], columns=['obs', 'val', 'err'])
-                    dataset = dataset.append(df2)
-            except AttributeError:
+        
+    #get single hadron data
+    mom = 'single_hadrons'
+    for value in q2s[mom].keys():
+        try:
+            if file in settings.jackknife_sampling_methods:
+                df2 = pd.DataFrame([[mom+'/'+value, q2s[mom+'/'+value][0], jackknife_error_by_array(np.array(q2s[mom+'/'+value]))]], columns=['obs', 'val', 'err'])
+            else:
+                df2 = pd.DataFrame([[mom+'/'+value, q2s[mom+'/'+value][0], bootstrap_error_by_array(np.array(q2s[mom+'/'+value]))]], columns=['obs', 'val', 'err'])
+            dataset = pd.concat([dataset,df2], ignore_index=True)
+        except AttributeError:
                 pass
+    
+    if channel is not None:
+        channel_group = q2s[channel]
+    else:
+        channel_group = q2s
+    
+    
+    for mom in channel_group.keys():
+        if mom=='Info':
+            continue
+        elif mom=='single_hadrons':
+            continue
+        else:
+            for basis in channel_group[mom].keys():
+                for value in channel_group[mom+'/'+basis].keys():
+                    try:
+                        if file in settings.jackknife_sampling_methods:
+                            df2 = pd.DataFrame([[mom+'/'+basis+'/'+value, channel_group[mom+'/'+basis+'/'+value][0], jackknife_error_by_array(np.array(channel_group[mom+'/'+basis+'/'+value]))]], columns=['obs', 'val', 'err'])
+                        else:
+                            df2 = pd.DataFrame([[mom+'/'+basis+'/'+value, channel_group[mom+'/'+basis+'/'+value][0], bootstrap_error_by_array(np.array(channel_group[mom+'/'+basis+'/'+value]))]], columns=['obs', 'val', 'err'])
+                        dataset = pd.concat([dataset,df2], ignore_index=True)
+                    except AttributeError:
+                        pass
+                            
+        
+                        
     split_obs_col(dataset)
     q2s.close()
     return dataset
@@ -205,11 +237,12 @@ def retrieve_sigmond_script_data_dat(file,spectrum_type):
               "first line of file.")
         return None
     
-    dataframe_input = pd.read_csv(file,sep=" ",header=0,names=["obs-irrep","mom","qsqr","a","b","mass"])
+    # dataframe_input = pd.read_csv(file,sep=" ",header=0,names=["obs-irrep","mom","qsqr","a","b","mass"])
+    dataframe_input = pd.read_csv(file,sep=" ",header=0,names=["mom","obs-irrep","epredlab", "qsqr", "edatalab", "edatacm"])
     irrep = np.array(dataframe_input["obs-irrep"])+np.array(dataframe_input["mom"],dtype="str")
-    obs_mom = ["PSQ"+str(int(x)) for x in list(dataframe_input["mom"])]
+    obs_mom = ["PSQ"+str(round(float(x))) for x in list(dataframe_input["mom"])]
     levels = np.zeros( len(dataframe_input["obs-irrep"]) )
-    mass = dataframe_input["mass"][0]
+    # mass = dataframe_input["mass"][0]
     for i,row in enumerate(irrep):
         levels[i]=np.count_nonzero(irrep[0:i] == row)
         
@@ -222,12 +255,14 @@ def retrieve_sigmond_script_data_dat(file,spectrum_type):
     if spectrum_type=="energy" and line=="mom":
         ecm = np.sqrt(1.0+np.array(dataframe_input["qsqr"]))+np.sqrt(mass*mass+np.array(dataframe_input["qsqr"]))
     elif (spectrum_type=="mom" and line=="mom") or (spectrum_type=="energy" and line=="energy"):
-        ecm = np.array(dataframe_input["qsqr"])
+        data = [float(x) for x in dataframe_input["qsqr"]]
+        ecm = np.array(data)
     else:
         print("Code this (utils.retrieve_sigmond_script_data_dat) if possible.")
         return None
     dataframe_input.insert(3, "val", ecm)
-    errs = dataframe_input["a"] #np.zeros( len(dataframe_input["obs-irrep"]) )
+    # errs = dataframe_input["a"] #np.zeros( len(dataframe_input["obs-irrep"]) )
+    errs = np.zeros( len(dataframe_input["obs-irrep"]) )
     dataframe_input.insert(4, "err", errs)
     dataset = pd.DataFrame(columns=["obs-mom","obs-irrep","obs-level", 'val', 'err'],data=dataframe_input[["obs-mom","obs-irrep","obs-level","val","err"]])
     return dataset
@@ -296,7 +331,7 @@ def bootstrap_error_by_file( datafile ):
             data.append( float(line.strip().split(" ")[1]) )
             line = f.readline()
         
-        result = bootstrap_error_by_array( data )
+        result = bootstrap_error_by_array( np.array(data) )
         f.close()
     except:
         result = -1
@@ -304,17 +339,20 @@ def bootstrap_error_by_file( datafile ):
     return result
         
 #calculates boostrap error by samplings array of form [average, sample, sample...]
+#@jit
+@njit(parallel=True)
 def bootstrap_error_by_array( array ):
     average = array[0]
-    samples = np.array(array[1:])
+    samples = array[1:]
     sigmaB = np.sum( (samples-average)*(samples-average) ) 
     sigmaB = np.sqrt(sigmaB/(len(samples)-1))
     return sigmaB
 
 #calculates jackkife error by samplings array of form [average, sample, sample...]
+@njit(parallel=True)
 def jackknife_error_by_array( array ):
     average = array[0]
-    samples = np.array(array[1:])
+    samples = array[1:]
     sigmaJ = np.sum( (samples-average)*(samples-average) ) 
     sigmaJ = np.sqrt( (len(samples)-1)/len(samples) * sigmaJ )
     return sigmaJ
@@ -342,41 +380,65 @@ def select_val_dat(dataset, mom, irrep, energy, spec_type):
     return None, None
 
 #based on filetype, chooses how to unpack the files. Also retrieves the rest masses
-def unpack_file( filename, spectrum_type):
+def unpack_file( filename, spectrum_type, root=None):
     if os.path.isfile(filename) and filename.endswith(".csv"):
         dataset1 = retrieve_sigmond_script_data(filename)
     elif os.path.isfile(filename) and filename.endswith(".hdf5"):
-        dataset1 = retrieve_sigmond_script_data_hdf5(filename)
+        dataset1 = retrieve_sigmond_script_data_hdf5(filename, root)
     elif os.path.isfile(filename) and filename.endswith(".dat"):
         dataset1 = retrieve_sigmond_script_data_dat(filename, spectrum_type)
+    elif os.path.isfile(filename) and filename.endswith(".h5") and os.path.basename(filename).startswith("andre"):
+        dataset1 = retrieve_andre_data(filename)
     elif os.path.isfile(filename) and filename.endswith(".h5"):
         dataset1 = retrieve_barbara_data(filename)
-    elif os.path.isfile(filename) and filename.endswith(".data"):
-        dataset1 = retrieve_andre_data(filename)
+    # elif os.path.isfile(filename) and filename.endswith(".data"):
+        # dataset1 = retrieve_andre_data(filename)
     elif os.path.isdir(filename):
         dataset1 = pd.DataFrame()
     else:
         print("Bad filename:",filename)
         sys.exit()
+        
     return dataset1
 
 def retrieve_andre_data(file):
-    dataset0 = pd.read_csv(file, header=None )
+    # dataset0 = pd.read_csv(file, header=None )
+    # dataset = pd.DataFrame(columns=['obs', 'val', 'err'])
+    # for i,row in dataset0.iterrows():
+        # obs_mom = row[0]
+        # obs_irrep = row[1]
+        # index = row[2]
+        # elab = row[8]
+        # dataset.loc[len(dataset)] = [f"PSQ{obs_mom}/{obs_irrep}/elab_{index}",gvar.gvar(elab).mean,gvar.gvar(elab).sdev]
+        # ecm = row[9]
+        # dataset.loc[len(dataset)] = [f"PSQ{obs_mom}/{obs_irrep}/ecm_{index}",gvar.gvar(ecm).mean,gvar.gvar(ecm).sdev]
+    # split_obs_col(dataset)
+    # return dataset
+    
+    
     dataset = pd.DataFrame(columns=['obs', 'val', 'err'])
-    for i,row in dataset0.iterrows():
-        obs_mom = row[0]
-        obs_irrep = row[1]
-        index = row[2]
-        elab = row[8]
-        dataset.loc[len(dataset)] = [f"PSQ{obs_mom}/{obs_irrep}/elab_{index}",gvar.gvar(elab).mean,gvar.gvar(elab).sdev]
-        ecm = row[9]
-        dataset.loc[len(dataset)] = [f"PSQ{obs_mom}/{obs_irrep}/ecm_{index}",gvar.gvar(ecm).mean,gvar.gvar(ecm).sdev]
+    f = h5py.File(file)
+    for key in f.keys():
+        irrep, level, mom = key.split("_")
+        
+        data = f[key]['dEnn'][()]
+        dataset.loc[len(dataset)] = [f"{mom.upper()}/{irrep}/dElab_{level}",data[0],bootstrap_error_by_array(np.array(data))]
+        data = f[key]['dEnn'][()]+f[key]['N1'][()]+f[key]['N2'][()]
+        dataset.loc[len(dataset)] = [f"{mom.upper()}/{irrep}/elab_{level}",data[0],bootstrap_error_by_array(np.array(data))]
+        data = (f[key]['dEnn'][()]+f[key]['N1'][()]+f[key]['N2'][()])/f[key]['mN'][()]
+        dataset.loc[len(dataset)] = [f"{mom.upper()}/{irrep}/elab_{level}_ref",data[0],bootstrap_error_by_array(np.array(data))]
+        
+    f.close()
+    
     split_obs_col(dataset)
     return dataset
 
 #retrieve rest mass from dataset
-def find_rest_mass( dataset, rest_mass_name ):
-    tagname = rest_mass_name+'(0)_ref'
+def find_rest_mass( dataset, rest_mass_name, remove_ref ):
+    if remove_ref:
+        tagname = rest_mass_name+'(0)'
+    else:
+        tagname = rest_mass_name+'(0)_ref'
     return select_val(dataset, None, None, tagname)
 
 
@@ -583,24 +645,29 @@ def collectEnergyEstimates(data_object, corr_str, tag='rotated_correlators',func
         
     return t, values, errs
 
+@njit(parallel=True)
 def multi_exp_func(t, E0, E1, A0, A1, A2, A3, A4, A5, n2, n3, n4, n5):
     return A0*np.exp(-E0*t)*(1.0 + A1*np.exp(-E1*E1*t) + A2*np.exp(-n2*E1*E1*t)
                 + A3*np.exp(-n3*E1*E1*t) + A4*np.exp(-n4*E1*E1*t) + A5*np.exp(-n5*E1*E1*t))
 
+@njit(parallel=True)
 def multi_exp_func_dt(t, E0, E1, A0, A1, A2, A3, A4, A5, n2, n3, n4, n5):
     return -E0*A0*np.exp(-E0*t)*(1.0 +A1*np.exp(-E1*E1*t) + A2*np.exp(-n2*E1*E1*t)
                 + A3*np.exp(-n3*E1*E1*t) + A4*np.exp(-n4*E1*E1*t) + A5*np.exp(-n5*E1*E1*t)) - E1*E1*A0*np.exp(-E0*t)*(A1*np.exp(-E1*E1*t) +n2*A2*np.exp(-n2*E1*E1*t)
                 +n3*A3*np.exp(-n3*E1*E1*t) +n4*A4*np.exp(-n4*E1*E1*t) + n5*A5*np.exp(-n5*E1*E1*t))
 
+@njit(parallel=True)
 def multi_exp_func_eff(t, E0, E1, A0, A1, A2, A3, A4, A5, n2, n3, n4, n5):
     return np.abs(multi_exp_func_dt(t, E0, E1, A0, A1, A2, A3, A4, A5, n2, n3, n4, n5)/multi_exp_func(t, E0, E1, A0, A1, A2, A3, A4, A5, n2, n3, n4, n5))
 
-
+@njit(parallel=True)
 def multi_exp_func(t, E0, E1, E2, E3, E4, A0, A1, A2, A3, A4):
     return A0*np.exp(-E0*t)*(1.0 + A1*np.exp(-E1*t) + A2*np.exp(-E2*t) + A3*np.exp(-E3*t) + A4*np.exp(-E4*t))
 
+@njit(parallel=True)
 def multi_exp_func_dt(t, E0, E1, E2, E3, E4, A0, A1, A2, A3, A4):
     return -E0*A0*np.exp(-E0*t)*(1.0 + A1*np.exp(-E1*t) + A2*np.exp(-E2*t) + A3*np.exp(-E3*t) + A4*np.exp(-E4*t)) + A0*np.exp(-E0*t)*(-E1*A1*np.exp(-E1*t) + -E2*A2*np.exp(-E2*t) + -E3*A3*np.exp(-E3*t) + -E4*A4*np.exp(-E4*t))
 
+@njit(parallel=True)
 def multi_exp_func_eff(t, E0, E1, E2, E3, E4, A0, A1, A2, A3, A4):
     return np.abs(multi_exp_func_dt(t, E0, E1, E2, E3, E4, A0, A1, A2, A3, A4)/multi_exp_func(t, E0, E1, E2, E3, E4, A0, A1, A2, A3, A4))
